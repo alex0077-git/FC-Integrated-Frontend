@@ -1,0 +1,240 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:fuselage_kpp/data/mavlink/mavlink_messages.dart';
+import 'package:fuselage_kpp/data/session/fc_telemetry.dart';
+
+void main() {
+  test('K++ secondary SYS_STATUS bits detect GPS, compass and gyro', () {
+    // Live banner flags: 0x004A001A = GPS2 | MAG2 | GYRO2 | accel | baro | diff
+    final telemetry = const FcTelemetry().apply(
+      const SysStatus(
+        sensorsPresent: 0x004A001A,
+        sensorsEnabled: 0x48313610,
+        sensorsHealth: 0x5348364B,
+        load: 0,
+        voltageMillivolts: 48000,
+        currentCentiamps: 0,
+        batteryRemaining: 80,
+      ),
+    );
+
+    expect(telemetry.sensorsPresent & FcSensor.gps.bit, 0);
+    expect(telemetry.sensorsPresent & FcSensor.compass.bit, 0);
+    expect(telemetry.sensorsPresent & FcSensor.gyro.bit, 0);
+    // GPS2/MAG2 present bits alone are not enough — puck unplugged ⇒ both off.
+    expect(telemetry.healthOf(FcSensor.gps), SensorHealth.notConnected);
+    expect(telemetry.healthOf(FcSensor.compass), SensorHealth.notConnected);
+    expect(telemetry.healthOf(FcSensor.gyro), SensorHealth.healthy);
+    expect(telemetry.healthOf(FcSensor.accelerometer), SensorHealth.healthy);
+    expect(telemetry.healthOf(FcSensor.barometer), SensorHealth.healthy);
+  });
+
+  test('GPS unplugged stays Not connected even if GPS2 present bit is set', () {
+    final telemetry = const FcTelemetry(sensorsPresent: FcSensor.gps2Bit);
+    expect(telemetry.healthOf(FcSensor.gps), SensorHealth.notConnected);
+  });
+
+  test('GPS fix type 0 with zero sats is Not connected', () {
+    final telemetry = const FcTelemetry(
+      sensorsPresent: FcSensor.gps2Bit,
+      gpsFixType: 0,
+      satellites: 0,
+      gps2FixType: 0,
+      gps2Satellites: 0,
+    );
+    expect(telemetry.healthOf(FcSensor.gps), SensorHealth.notConnected);
+  });
+
+  test('GLOBAL_POSITION_INT at 0,0 does not invent a GPS fix or Normal', () {
+    final telemetry = const FcTelemetry().apply(
+      const GlobalPositionInt(
+        latE7: 0,
+        lonE7: 0,
+        altMm: -17000,
+        relativeAltMm: -1900,
+        vx: 0,
+        vy: 0,
+        vz: 0,
+        hdgCdeg: 0,
+      ),
+    );
+
+    expect(telemetry.gpsFixType, isNull);
+    expect(telemetry.latDeg, isNull);
+    expect(telemetry.healthOf(FcSensor.gps), SensorHealth.notConnected);
+  });
+
+  test('stale lat/lon alone never shows GPS or compass Normal', () {
+    final telemetry = const FcTelemetry(
+      latDeg: 12.9716,
+      lonDeg: 77.5946,
+      gpsFixType: 1,
+      satellites: 1,
+      gps2FixType: 1,
+      gps2Satellites: 3,
+      sensorsPresent: FcSensor.gps2Bit | FcSensor.mag2Bit,
+      imus: [
+        ImuReading(acc: [0, 0, -1000], gyro: [0, 0, 0], mag: [210, -35, 410]),
+        null,
+        null,
+      ],
+    );
+
+    expect(telemetry.healthOf(FcSensor.gps), SensorHealth.notConnected);
+    expect(telemetry.healthOf(FcSensor.compass), SensorHealth.notConnected);
+  });
+
+  test('unplug after a real fix clears coords and both rows go Not connected', () {
+    var telemetry = const FcTelemetry().apply(
+      const GpsRawInt(
+        latE7: 129716000,
+        lonE7: 775946000,
+        altMm: 920000,
+        eph: 80,
+        fixType: 3,
+        satellites: 14,
+      ),
+    );
+    expect(telemetry.healthOf(FcSensor.gps), SensorHealth.healthy);
+
+    telemetry = telemetry
+        .apply(const KppGpsStatus(fixType: 1, satellites: 1, fixType2: 1, satellites2: 3))
+        .apply(
+          const GlobalPositionInt(
+            latE7: 129716000,
+            lonE7: 775946000,
+            altMm: 920000,
+            relativeAltMm: 0,
+            vx: 0,
+            vy: 0,
+            vz: 0,
+            hdgCdeg: 0,
+          ),
+        );
+
+    expect(telemetry.latDeg, isNull);
+    expect(telemetry.lonDeg, isNull);
+    expect(telemetry.healthOf(FcSensor.gps), SensorHealth.notConnected);
+    expect(telemetry.healthOf(FcSensor.compass), SensorHealth.notConnected);
+  });
+
+  test('K++ status 206 with fix=1 and few sats is Not connected (unplugged stub)', () {
+    final telemetry = const FcTelemetry()
+        .apply(const KppGpsStatus(fixType: 1, satellites: 1, fixType2: 1, satellites2: 3))
+        .apply(
+          const GlobalPositionInt(
+            latE7: 0,
+            lonE7: 0,
+            altMm: -17000,
+            relativeAltMm: -1900,
+            vx: 0,
+            vy: 0,
+            vz: 0,
+            hdgCdeg: 0,
+          ),
+        );
+
+    expect(telemetry.gpsFixLabel, 'No fix');
+    expect(telemetry.gps2FixLabel, 'No fix');
+    expect(telemetry.satellites, 1);
+    expect(telemetry.gps2Satellites, 3);
+    expect(telemetry.healthOf(FcSensor.gps), SensorHealth.notConnected);
+  });
+
+  test('compass follows GPS puck — mag samples alone are not Normal', () {
+    final telemetry = const FcTelemetry(
+      imus: [
+        ImuReading(acc: [0, 0, -1000], gyro: [0, 0, 0], mag: [210, -35, 410]),
+        null,
+        null,
+      ],
+    );
+
+    expect(telemetry.healthOf(FcSensor.gps), SensorHealth.notConnected);
+    expect(telemetry.healthOf(FcSensor.compass), SensorHealth.notConnected);
+  });
+
+  test('compass is Normal only when GPS puck is present and mag reports', () {
+    final telemetry = const FcTelemetry(
+      gpsFixType: 1,
+      satellites: 6,
+      imus: [
+        ImuReading(acc: [0, 0, -1000], gyro: [0, 0, 0], mag: [210, -35, 410]),
+        null,
+        null,
+      ],
+    );
+
+    expect(telemetry.healthOf(FcSensor.gps), SensorHealth.healthy);
+    expect(telemetry.healthOf(FcSensor.compass), SensorHealth.healthy);
+  });
+
+  test('GPS_RAW_INT fills fix label and satellite count', () {
+    final telemetry = const FcTelemetry().apply(
+      const GpsRawInt(latE7: 129716000, lonE7: 775946000, altMm: 920000, eph: 80, fixType: 3, satellites: 14),
+    );
+
+    expect(telemetry.gpsFixLabel, '3D fix');
+    expect(telemetry.satellites, 14);
+    expect(telemetry.healthOf(FcSensor.gps), SensorHealth.healthy);
+  });
+
+  test('no-fix GPS with enough sats is Normal', () {
+    final telemetry = const FcTelemetry(
+      sensorsPresent: FcSensor.gps2Bit,
+      gpsFixType: 1,
+      satellites: 6,
+    );
+
+    expect(telemetry.healthOf(FcSensor.gps), SensorHealth.healthy);
+    expect(telemetry.gpsFixLabel, 'No fix');
+  });
+
+  test('no-fix GPS with zero sats is Not connected', () {
+    final telemetry = const FcTelemetry(
+      sensorsPresent: FcSensor.gps2Bit,
+      gpsFixType: 1,
+      satellites: 0,
+    );
+
+    expect(telemetry.healthOf(FcSensor.gps), SensorHealth.notConnected);
+    expect(telemetry.gpsFixLabel, 'No fix');
+  });
+
+  test('2D fix alone is Normal even with few sats', () {
+    final telemetry = const FcTelemetry(gpsFixType: 2, satellites: 2);
+    expect(telemetry.healthOf(FcSensor.gps), SensorHealth.healthy);
+  });
+
+  test('GPS2_RAW is applied like GPS_RAW_INT', () {
+    final telemetry = const FcTelemetry().apply(
+      const Gps2Raw(latE7: 129716000, lonE7: 775946000, altMm: 920000, eph: 120, fixType: 6, satellites: 18),
+    );
+
+    expect(telemetry.gpsFixLabel, 'RTK fixed');
+    expect(telemetry.satellites, 18);
+  });
+
+  test('K++ GPS status 206 reports GPS1/GPS2 like the assistant', () {
+    final telemetry = const FcTelemetry()
+        .apply(const KppGpsStatus(fixType: 1, satellites: 1, fixType2: 1, satellites2: 3))
+        .apply(
+          const GlobalPositionInt(
+            latE7: 0,
+            lonE7: 0,
+            altMm: -17000,
+            relativeAltMm: -1900,
+            vx: 0,
+            vy: 0,
+            vz: 0,
+            hdgCdeg: 0,
+          ),
+        );
+
+    expect(telemetry.gpsFixLabel, 'No fix');
+    expect(telemetry.gps2FixLabel, 'No fix');
+    expect(telemetry.satellites, 1);
+    expect(telemetry.gps2Satellites, 3);
+    expect(telemetry.latDeg, isNull);
+    expect(telemetry.lonDeg, isNull);
+  });
+}
