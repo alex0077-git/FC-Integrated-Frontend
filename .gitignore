@@ -1,0 +1,46 @@
+# Nested junk / vendor dumps (not part of the Flutter app)
+_analysis/
+JIYI*/
+*.zip
+*.7z
+*.rar
+
+# Flutter / Dart
+**/build/
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.pub-cache/
+**/.pub/
+**/coverage/
+**/doc/api/
+**/ios/Flutter/.last_build_id
+
+# IDE / OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
+*.log
+
+# Native / ephemeral plugin copies
+**/windows/flutter/ephemeral/
+**/linux/flutter/ephemeral/
+**/macos/Flutter/ephemeral/
+
+# Android local
+**/android/local.properties
+**/android/.gradle/
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/
+
+# Secrets / local env (none currently checked in)
+.env
+.env.*
+*.jks
+*.keystore
+*.p12
+*.pem
