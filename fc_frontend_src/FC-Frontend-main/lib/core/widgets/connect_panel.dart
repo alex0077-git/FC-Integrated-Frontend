@@ -120,7 +120,15 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
       return;
     }
     setState(() => _loadingPorts = true);
-    final ports = ref.read(serialPortListerProvider)();
+    List<SerialPortInfo> ports = const [];
+    try {
+      ports = ref.read(serialPortListerProvider)();
+    } catch (_) {
+      ports = const [];
+    }
+    if (!mounted) {
+      return;
+    }
     setState(() {
       _ports = ports;
       if (_selectedPort == null || !ports.any((p) => p.name == _selectedPort)) {
@@ -138,10 +146,18 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
       });
       return;
     }
-    final lister = ref.read(serialPortListerProvider);
-    final devices = _showAllComAsBt
-        ? listSerialPortsAsBluetoothCandidates(lister)
-        : listBluetoothTransmitterPorts(lister);
+    List<TransmitterBluetoothDevice> devices = const [];
+    try {
+      final lister = ref.read(serialPortListerProvider);
+      devices = _showAllComAsBt
+          ? listSerialPortsAsBluetoothCandidates(lister)
+          : listBluetoothTransmitterPorts(lister);
+    } catch (_) {
+      devices = const [];
+    }
+    if (!mounted) {
+      return;
+    }
     setState(() {
       _btDevices = devices;
       if (_selectedBtId == null || !devices.any((d) => d.id == _selectedBtId)) {
@@ -408,12 +424,15 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                     children: [
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          initialValue: _selectedPort,
+                          key: ValueKey('usb-port-${_selectedPort ?? 'none'}-${_ports.length}'),
+                          initialValue: _ports.isEmpty ? null : _selectedPort,
+                          isExpanded: true,
                           decoration: const InputDecoration(
                             labelText: 'COM port',
                             isDense: true,
                             border: OutlineInputBorder(),
                           ),
+                          hint: const Text('No COM port'),
                           items: [
                             for (final port in _ports)
                               DropdownMenuItem(
@@ -424,7 +443,7 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                                 ),
                               ),
                           ],
-                          onChanged: connected || busy
+                          onChanged: connected || busy || _ports.isEmpty
                               ? null
                               : (value) => setState(() => _selectedPort = value),
                         ),
@@ -491,33 +510,48 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                         const SizedBox(height: 12),
-                        SegmentedButton<_TxTransport>(
-                          segments: const [
-                            ButtonSegment(
-                              value: _TxTransport.bluetooth,
-                              label: Text('Bluetooth'),
-                              icon: Icon(Icons.bluetooth, size: 18),
-                            ),
-                            ButtonSegment(
-                              value: _TxTransport.wifi,
-                              label: Text('WiFi'),
-                              icon: Icon(Icons.wifi, size: 18),
-                            ),
-                          ],
-                          selected: {_txTransport},
-                          onSelectionChanged: connected || busy
-                              ? null
-                              : (next) {
-                                  setState(() {
-                                    _txTransport = next.first;
-                                    if (_txTransport == _TxTransport.wifi) {
-                                      _wifiMode = _WifiMode.tcp;
-                                      _remotePortController.text =
-                                          '${ConnectionSettings.defaultTcpPort}';
-                                      _refreshWifiNetworkHint();
-                                    }
-                                  });
-                                },
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final compact = constraints.maxWidth < 420;
+                            return SizedBox(
+                              width: constraints.maxWidth,
+                              child: SegmentedButton<_TxTransport>(
+                                showSelectedIcon: !compact,
+                                style: compact
+                                    ? const ButtonStyle(
+                                        visualDensity: VisualDensity.compact,
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      )
+                                    : null,
+                                segments: [
+                                  ButtonSegment(
+                                    value: _TxTransport.bluetooth,
+                                    label: Text(compact ? 'BT' : 'Bluetooth'),
+                                    icon: const Icon(Icons.bluetooth, size: 18),
+                                  ),
+                                  ButtonSegment(
+                                    value: _TxTransport.wifi,
+                                    label: const Text('WiFi'),
+                                    icon: const Icon(Icons.wifi, size: 18),
+                                  ),
+                                ],
+                                selected: {_txTransport},
+                                onSelectionChanged: connected || busy
+                                    ? null
+                                    : (next) {
+                                        setState(() {
+                                          _txTransport = next.first;
+                                          if (_txTransport == _TxTransport.wifi) {
+                                            _wifiMode = _WifiMode.tcp;
+                                            _remotePortController.text =
+                                                '${ConnectionSettings.defaultTcpPort}';
+                                            _refreshWifiNetworkHint();
+                                          }
+                                        });
+                                      },
+                              ),
+                            );
+                          },
                         ),
                         const SizedBox(height: 12),
                         if (_txTransport == _TxTransport.bluetooth) ...[
@@ -525,12 +559,17 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                             children: [
                               Expanded(
                                 child: DropdownButtonFormField<String>(
-                                  initialValue: _selectedBtId,
+                                  key: ValueKey(
+                                    'bt-${_selectedBtId ?? 'none'}-${_btDevices.length}-$_showAllComAsBt',
+                                  ),
+                                  initialValue: _btDevices.isEmpty ? null : _selectedBtId,
+                                  isExpanded: true,
                                   decoration: const InputDecoration(
                                     labelText: 'Bluetooth transmitter',
                                     isDense: true,
                                     border: OutlineInputBorder(),
                                   ),
+                                  hint: const Text('No Bluetooth port'),
                                   items: [
                                     for (final device in _btDevices)
                                       DropdownMenuItem(
@@ -541,7 +580,7 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                                         ),
                                       ),
                                   ],
-                                  onChanged: connected || busy
+                                  onChanged: connected || busy || _btDevices.isEmpty
                                       ? null
                                       : (value) => setState(() => _selectedBtId = value),
                                 ),
