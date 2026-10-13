@@ -38,14 +38,26 @@ class MapTileLayer extends ConsumerWidget {
   static const streetUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
   static const satelliteUrl =
       'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+  /// Place / boundary labels only — drawn on top of World Imagery (which has no names).
+  static const satelliteLabelsUrl =
+      'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final satellite = ref.watch(mapViewModeProvider) == MapViewMode.satellite;
     if (satellite) {
-      return TileLayer(
-        urlTemplate: satelliteUrl,
-        userAgentPackageName: 'fc_frontend',
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          TileLayer(
+            urlTemplate: satelliteUrl,
+            userAgentPackageName: 'fc_frontend',
+          ),
+          TileLayer(
+            urlTemplate: satelliteLabelsUrl,
+            userAgentPackageName: 'fc_frontend',
+          ),
+        ],
       );
     }
     return TileLayer(
