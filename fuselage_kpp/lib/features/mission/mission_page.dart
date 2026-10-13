@@ -4,6 +4,7 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fuselage_kpp/core/map/map_gps_focus.dart';
 import 'package:fuselage_kpp/core/widgets/live_gps_map_layers.dart';
 import 'package:fuselage_kpp/core/widgets/requires_connection.dart';
 import 'package:fuselage_kpp/data/mavlink/mavlink_messages.dart';
@@ -27,6 +28,7 @@ class MissionPage extends ConsumerStatefulWidget {
 
 class _MissionPageState extends ConsumerState<MissionPage> {
   final _mapController = MapController();
+  final _gpsFocus = MapGpsFocus();
   double _defaultAlt = 20;
   LatLng? _pointA;
   LatLng? _pointB;
@@ -34,13 +36,7 @@ class _MissionPageState extends ConsumerState<MissionPage> {
   bool _busy = false;
   String? _message;
 
-  LatLng get _center {
-    final t = ref.read(telemetryProvider);
-    if (t.latDeg != null && t.lonDeg != null) {
-      return LatLng(t.latDeg!, t.lonDeg!);
-    }
-    return const LatLng(12.9716, 77.5946);
-  }
+  LatLng get _center => liveFcGpsPoint(ref) ?? const LatLng(12.9716, 77.5946);
 
   Future<void> _run(Future<void> Function() action, String ok) async {
     setState(() {
@@ -141,6 +137,29 @@ class _MissionPageState extends ConsumerState<MissionPage> {
   Widget build(BuildContext context) {
     final mission = ref.watch(missionProvider);
     final telemetry = ref.watch(telemetryProvider);
+    final hasSession = ref.watch(fcConnectionProvider.select((s) => s.hasSession));
+
+    // New FC session → allow the map to snap again after remount.
+    ref.listen(fcConnectionProvider.select((s) => s.session), (previous, next) {
+      if (next != previous) {
+        _gpsFocus.reset();
+      }
+    });
+
+    // Snap when FC GPS is already live or arrives later (listen alone misses a
+    // pre-existing fix because Riverpod only notifies on changes).
+    ref.listen(telemetryProvider, (previous, next) {
+      _gpsFocus.tryFocusFc(ref, _mapController);
+    });
+
+    if (hasSession && !_gpsFocus.applied) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || _gpsFocus.applied) {
+          return;
+        }
+        _gpsFocus.focusOnOpen(ref, _mapController);
+      });
+    }
 
     return RequiresConnection(
       child: Column(
@@ -173,7 +192,11 @@ class _MissionPageState extends ConsumerState<MissionPage> {
                     mapController: _mapController,
                     options: MapOptions(
                       initialCenter: _center,
-                      initialZoom: 17,
+                      initialZoom: mapGpsFocusZoom,
+                      onMapReady: () {
+                        _gpsFocus.reset();
+                        _gpsFocus.focusOnOpen(ref, _mapController);
+                      },
                       onTap: _onMapTap,
                     ),
                     children: [

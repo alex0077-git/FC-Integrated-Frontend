@@ -1,96 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fuselage_kpp/core/map/map_gps_focus.dart' as kpp_gps;
 import 'package:fuselage_kpp/core/theme/app_theme.dart' as kpp_theme;
 import 'package:fuselage_kpp/data/repositories/telemetry_repository.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:latlong2/latlong.dart';
 
-/// Zoom used when auto-focusing Start / Ground Plan maps on GPS.
-const mapGpsFocusZoom = 17.0;
-
-/// Live FC / GPS-puck position from the same telemetry as K++ [LiveGpsMapLayers].
-LatLng? liveFcGpsPoint(WidgetRef ref) {
-  final telemetry = ref.read(telemetryProvider);
-  final lat = telemetry.latDeg;
-  final lon = telemetry.lonDeg;
-  if (lat == null || lon == null) {
-    return null;
-  }
-  return LatLng(lat, lon);
-}
-
-/// One-shot device GPS fix for map focus when FC has no position yet.
-final deviceGpsProvider = FutureProvider<LatLng?>((ref) async {
-  try {
-    final serviceOn = await Geolocator.isLocationServiceEnabled();
-    if (!serviceOn) {
-      return null;
-    }
-    var permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-    }
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever) {
-      return null;
-    }
-    final position = await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.high,
-        timeLimit: Duration(seconds: 10),
-      ),
-    );
-    return LatLng(position.latitude, position.longitude);
-  } catch (_) {
-    return null;
-  }
-});
+export 'package:fuselage_kpp/core/map/map_gps_focus.dart'
+    show liveFcGpsPoint, mapGpsFocusZoom, deviceGpsProvider;
 
 /// Moves a map to GPS once when the page opens (FC first, then device).
 class MapGpsFocus {
-  bool _applied = false;
+  final kpp_gps.MapGpsFocus _inner = kpp_gps.MapGpsFocus();
 
-  bool get applied => _applied;
+  bool get applied => _inner.applied;
 
-  void markApplied() => _applied = true;
+  void markApplied() => _inner.markApplied();
 
-  /// Prefer live FC GPS so the camera matches [LiveGpsMapLayers].
+  void reset() => _inner.reset();
+
   bool tryFocusFc(
     WidgetRef ref,
     MapController controller, {
-    double zoom = mapGpsFocusZoom,
+    double zoom = kpp_gps.mapGpsFocusZoom,
   }) {
-    if (_applied) {
-      return false;
-    }
-    final point = liveFcGpsPoint(ref);
-    if (point == null) {
-      return false;
-    }
-    controller.move(point, zoom);
-    _applied = true;
-    return true;
+    return _inner.tryFocusFc(ref, controller, zoom: zoom);
   }
 
-  /// FC GPS if available; otherwise device GPS. Safe to call from [onMapReady].
   Future<void> focusOnOpen(
     WidgetRef ref,
     MapController controller, {
-    double zoom = mapGpsFocusZoom,
-  }) async {
-    if (_applied) {
-      return;
-    }
-    if (tryFocusFc(ref, controller, zoom: zoom)) {
-      return;
-    }
-    final device = await ref.read(deviceGpsProvider.future);
-    if (_applied || device == null) {
-      return;
-    }
-    controller.move(device, zoom);
-    _applied = true;
+    double zoom = kpp_gps.mapGpsFocusZoom,
+  }) {
+    return _inner.focusOnOpen(ref, controller, zoom: zoom);
   }
 }
 
@@ -108,7 +49,7 @@ class DeviceGpsMapLayers extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final device = ref.watch(deviceGpsProvider).asData?.value;
+    final device = ref.watch(kpp_gps.deviceGpsProvider).asData?.value;
     if (device == null) {
       return const SizedBox.shrink();
     }

@@ -126,18 +126,35 @@ class FlightCommandRepository {
       return;
     }
     final telemetry = session.telemetry.current;
-    if (!_hasNavFix(telemetry)) {
-      throw const FlightCommandException(
-        'No GPS 3D fix yet. Wait for a live lock before arming or flying.',
-      );
+    final reason = _gpsNotReadyReason(telemetry);
+    if (reason != null) {
+      throw FlightCommandException(reason);
     }
   }
 
-  static bool _hasNavFix(FcTelemetry telemetry) {
-    final fix = telemetry.gpsFixType ?? 0;
-    final sats = telemetry.satellites ?? 0;
+  /// Same bar as the UI: best of GPS1/GPS2, 3D+ fix, ≥6 sats, live lat/lon.
+  static String? _gpsNotReadyReason(FcTelemetry telemetry) {
+    final fix = _max(telemetry.gpsFixType, telemetry.gps2FixType);
+    final sats = _max(telemetry.satellites, telemetry.gps2Satellites);
     final hasPosition = telemetry.latDeg != null && telemetry.lonDeg != null;
-    return fix >= 3 && sats >= 6 && hasPosition;
+    final label = FcTelemetry.fixLabelFor(fix == 0 ? null : fix);
+
+    if (fix < 3) {
+      return 'GPS is $label · $sats sats. Need a 3D fix (or better) before arming.';
+    }
+    if (sats < 6) {
+      return 'GPS is $label with only $sats satellites. Need at least 6 sats outdoors before arming.';
+    }
+    if (!hasPosition) {
+      return 'GPS fix looks up but no live position yet. Wait a few seconds and try again.';
+    }
+    return null;
+  }
+
+  static int _max(int? a, int? b) {
+    final left = a ?? 0;
+    final right = b ?? 0;
+    return left > right ? left : right;
   }
 }
 
