@@ -32,7 +32,10 @@ class FcConnectionState {
 /// download, link-loss watchdog and disconnect.
 class FcConnectionController extends Notifier<FcConnectionState> {
   static const Duration _watchdogInterval = Duration(seconds: 1);
-  static const Duration _linkLostAfter = Duration(seconds: 3);
+  /// Wired USB: short grace — cable drops are usually hard failures.
+  static const Duration _usbLinkLostAfter = Duration(seconds: 3);
+  /// Bluetooth / WiFi TX: radio stalls of several seconds are common.
+  static const Duration _transmitterLinkLostAfter = Duration(seconds: 12);
 
   Timer? _watchdog;
 
@@ -117,7 +120,8 @@ class FcConnectionController extends Notifier<FcConnectionState> {
       return;
     }
     final last = session.connection.lastPacketAt;
-    final lost = last == null || DateTime.now().difference(last) > _linkLostAfter;
+    final grace = session.isTransmitterLink ? _transmitterLinkLostAfter : _usbLinkLostAfter;
+    final lost = last == null || DateTime.now().difference(last) > grace;
     final next = lost ? FcLinkStatus.linkLost : FcLinkStatus.connected;
     if (next != state.status) {
       state = FcConnectionState(status: next, session: session, errorMessage: state.errorMessage);

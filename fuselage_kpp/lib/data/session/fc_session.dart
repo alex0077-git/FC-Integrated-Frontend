@@ -117,7 +117,7 @@ class ConnectionSettings {
           throw const FcLinkException('Choose a Bluetooth transmitter port first.');
         }
         return LabeledFcLink(
-          SerialFcLink(portName: port, baudRate: baudRate),
+          SerialFcLink(portName: port, baudRate: baudRate, resilient: true),
           'BT $port @ $baudRate',
         );
       case FcLinkKind.udp:
@@ -195,8 +195,9 @@ class FcSession {
   static Future<FcSession> open(ConnectionSettings settings) async {
     final connection = MavlinkConnection(link: settings.createLink());
     final session = FcSession._(connection);
-    final firstPacketTimeout =
-        settings.isNetwork ? const Duration(seconds: 12) : _firstPacketTimeout;
+    final firstPacketTimeout = settings.isTransmitter
+        ? const Duration(seconds: 12)
+        : _firstPacketTimeout;
     try {
       await connection.start();
       await connection.packets.first.timeout(firstPacketTimeout);

@@ -75,6 +75,10 @@ class MavlinkConnection {
   }
 
   void _sendHeartbeat() {
-    send(const Heartbeat(type: Heartbeat.typeGcs, autopilot: Heartbeat.autopilotInvalid));
+    try {
+      send(const Heartbeat(type: Heartbeat.typeGcs, autopilot: Heartbeat.autopilotInvalid));
+    } on FcLinkException {
+      // Bluetooth/WiFi can stall a write; keep the session and retry next tick.
+    }
   }
 }

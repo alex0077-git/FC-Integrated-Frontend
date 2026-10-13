@@ -32,17 +32,32 @@ class SerialPortInfo {
 /// of using `SerialPortReader`: that reader keeps the native port pointer in
 /// a background isolate which can outlive `close()`, so freeing the port
 /// afterwards is a use-after-free.
+///
+/// Set [resilient] for Bluetooth SPP / flaky bridges: longer write timeouts,
+/// write retries, and tolerate brief read errors instead of closing immediately.
 class SerialFcLink implements FcLink {
-  SerialFcLink({required this.portName, required this.baudRate});
+  SerialFcLink({
+    required this.portName,
+    required this.baudRate,
+    this.resilient = false,
+  });
 
   static const Duration _pollInterval = Duration(milliseconds: 10);
-  static const int _writeTimeoutMs = 200;
+  static const int _usbWriteTimeoutMs = 200;
+  static const int _resilientWriteTimeoutMs = 1000;
+  static const int _resilientWriteAttempts = 4;
+  /// ~1.5 s of consecutive poll failures before dropping a resilient link.
+  static const int _resilientMaxReadErrors = 150;
 
   final String portName;
   final int baudRate;
 
+  /// Bluetooth / radio bridges — more tolerant of stalls than a wired USB cable.
+  final bool resilient;
+
   SerialPort? _port;
   Timer? _pollTimer;
+  int _consecutiveReadErrors = 0;
   final StreamController<Uint8List> _incoming = StreamController.broadcast();
 
   @override
@@ -80,9 +95,23 @@ class SerialFcLink implements FcLink {
     if (port == null) {
       throw const FcLinkException('Serial link is not open.');
     }
-    final written = port.write(bytes, timeout: _writeTimeoutMs);
-    if (written != bytes.length) {
-      throw FcLinkException('Only $written of ${bytes.length} bytes were sent on $portName.');
+    final timeout = resilient ? _resilientWriteTimeoutMs : _usbWriteTimeoutMs;
+    final attempts = resilient ? _resilientWriteAttempts : 1;
+    var offset = 0;
+    for (var attempt = 0; attempt < attempts && offset < bytes.length; attempt++) {
+      final chunk = offset == 0 ? bytes : bytes.sublist(offset);
+      final written = port.write(chunk, timeout: timeout);
+      if (written <= 0) {
+        continue;
+      }
+      offset += written;
+    }
+    if (offset != bytes.length) {
+      if (resilient) {
+        // Heartbeats on Bluetooth may stall briefly; skip rather than tear down.
+        return;
+      }
+      throw FcLinkException('Only $offset of ${bytes.length} bytes were sent on $portName.');
     }
   }
 
@@ -117,9 +146,13 @@ class SerialFcLink implements FcLink {
       if (available > 0) {
         _incoming.add(port.read(available));
       }
+      _consecutiveReadErrors = 0;
     } on SerialPortError catch (error) {
-      _incoming.addError(FcLinkException('$portName read error: ${error.message}'));
-      close();
+      _consecutiveReadErrors++;
+      if (!resilient || _consecutiveReadErrors >= _resilientMaxReadErrors) {
+        _incoming.addError(FcLinkException('$portName read error: ${error.message}'));
+        close();
+      }
     }
   }
 }

@@ -15,10 +15,15 @@ class SerialPortInfo {
 
 /// Stub serial link — open always fails on platforms without libserialport.
 class SerialFcLink implements FcLink {
-  SerialFcLink({required this.portName, required this.baudRate});
+  SerialFcLink({
+    required this.portName,
+    required this.baudRate,
+    this.resilient = false,
+  });
 
   final String portName;
   final int baudRate;
+  final bool resilient;
 
   final StreamController<Uint8List> _incoming = StreamController.broadcast();
 
