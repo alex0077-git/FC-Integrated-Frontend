@@ -291,10 +291,26 @@ class FcTelemetry {
               systemStatus: message.systemStatus,
             ),
       SysStatus() => _copy(
-        voltage: message.voltageMillivolts / 1000,
-        batteryRemaining: message.batteryRemaining,
+        // UINT16_MAX means voltage not available.
+        voltage: message.voltageMillivolts >= 65535
+            ? null
+            : message.voltageMillivolts / 1000,
+        // MAVLink: −1 = autopilot does not estimate remaining energy.
+        // Keep an existing BATTERY_STATUS remaining when SYS_STATUS says unknown.
+        batteryRemaining: message.batteryRemaining < 0 ? null : message.batteryRemaining,
+        clearBatteryRemaining: message.batteryRemaining < 0 && batteryRemaining == null,
+        keepVoltage: message.voltageMillivolts >= 65535,
+        keepBatteryRemaining: message.batteryRemaining < 0 && batteryRemaining != null,
         sensorsPresent: message.sensorsPresent,
         sensorsHealth: message.sensorsHealth,
+      ),
+      BatteryStatus() => _copy(
+        voltage: message.packVoltage,
+        keepVoltage: message.packVoltage == null,
+        batteryRemaining: message.batteryRemaining < 0 ? null : message.batteryRemaining,
+        // −1 means unknown — do not wipe a valid remaining from SYS_STATUS.
+        keepBatteryRemaining: message.batteryRemaining < 0,
+        clearBatteryRemaining: false,
       ),
       GpsRawInt() => _applyGpsRaw(
         fixType: message.fixType,
@@ -362,6 +378,9 @@ class FcTelemetry {
     double? latDeg,
     double? lonDeg,
     bool clearLatLon = false,
+    bool clearBatteryRemaining = false,
+    bool keepVoltage = false,
+    bool keepBatteryRemaining = false,
     double? altMeters,
     double? groundSpeedMps,
     double? headingDeg,
@@ -376,8 +395,12 @@ class FcTelemetry {
     String? lastStatusText,
   }) {
     return FcTelemetry(
-      voltage: voltage ?? this.voltage,
-      batteryRemaining: batteryRemaining ?? this.batteryRemaining,
+      voltage: keepVoltage ? this.voltage : (voltage ?? this.voltage),
+      batteryRemaining: keepBatteryRemaining
+          ? this.batteryRemaining
+          : clearBatteryRemaining
+              ? null
+              : (batteryRemaining ?? this.batteryRemaining),
       sensorsPresent: sensorsPresent ?? this.sensorsPresent,
       sensorsHealth: sensorsHealth ?? this.sensorsHealth,
       gpsFixType: gpsFixType ?? this.gpsFixType,

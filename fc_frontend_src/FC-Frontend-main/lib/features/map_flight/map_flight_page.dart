@@ -2,6 +2,7 @@ import 'package:fc_frontend/core/map/map_gps_focus.dart';
 import 'package:fc_frontend/core/map/map_view.dart';
 import 'package:fc_frontend/core/theme/app_theme.dart';
 import 'package:fc_frontend/core/widgets/responsive.dart';
+import 'package:fc_frontend/data/models/battery_level.dart';
 import 'package:fc_frontend/data/models/battery_settings.dart';
 import 'package:fc_frontend/data/models/telemetry.dart';
 import 'package:fc_frontend/data/repositories/settings_repository.dart';
@@ -79,13 +80,17 @@ class _BatteryBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final level = _batteryAlertLevel(telemetry.battery, settings);
+    final battery = BatteryDisplay.fromFc(
+      remaining: telemetry.batteryRemainingRaw,
+      voltage: telemetry.batteryVoltage,
+    );
+    final level = batteryAlertLevel(battery, settings);
     if (level == null) {
       return const SizedBox.shrink();
     }
 
     final statusColors = Theme.of(context).extension<AppStatusColors>()!;
-    final critical = level == _BatteryAlertLevel.critical;
+    final critical = level == BatteryAlertLevel.critical;
     final color = critical
         ? statusColors.statusCritical
         : statusColors.statusWarning;
@@ -111,18 +116,6 @@ class _BatteryBanner extends StatelessWidget {
       ),
     );
   }
-}
-
-enum _BatteryAlertLevel { warning, critical }
-
-_BatteryAlertLevel? _batteryAlertLevel(double battery, BatterySettings settings) {
-  if (battery < settings.secondWarningPercent) {
-    return _BatteryAlertLevel.critical;
-  }
-  if (battery < settings.firstWarningPercent) {
-    return _BatteryAlertLevel.warning;
-  }
-  return null;
 }
 
 class _FlightMap extends ConsumerStatefulWidget {
@@ -171,7 +164,9 @@ class _FlightMapState extends ConsumerState<_FlightMap> {
               child: Padding(
                 padding: const EdgeInsets.all(4),
                 child: Text(
-                  satellite ? 'Tiles © Esri' : '© OpenStreetMap contributors',
+                  satellite
+                      ? 'Tiles © Esri (imagery + place labels)'
+                      : '© OpenStreetMap contributors',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 11, color: Colors.white),

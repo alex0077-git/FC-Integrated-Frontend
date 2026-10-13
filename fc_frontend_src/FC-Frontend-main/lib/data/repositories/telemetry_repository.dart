@@ -39,5 +39,6 @@ bool _hasUsefulFix(FcTelemetry telemetry) {
   return telemetry.latDeg != null ||
       telemetry.satellites != null ||
       telemetry.customMode != null ||
-      telemetry.batteryRemaining != null;
+      telemetry.batteryRemaining != null ||
+      telemetry.voltage != null;
 }

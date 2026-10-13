@@ -2,6 +2,7 @@ import 'package:fc_frontend/core/theme/app_theme.dart';
 import 'package:fc_frontend/core/widgets/bottom_nav_bar.dart';
 import 'package:fc_frontend/core/widgets/connect_panel.dart';
 import 'package:fc_frontend/core/widgets/settings_hub.dart';
+import 'package:fc_frontend/data/models/battery_level.dart';
 import 'package:fc_frontend/data/models/battery_settings.dart';
 import 'package:fc_frontend/data/repositories/settings_repository.dart';
 import 'package:fc_frontend/data/repositories/telemetry_repository.dart';
@@ -17,11 +18,15 @@ class FlightStatusBar extends ConsumerWidget {
     final telemetry = ref.watch(telemetryStreamProvider).asData?.value;
     final settings = ref.watch(batterySettingsProvider);
     final connected = ref.watch(telemetryConnectionProvider);
-    final statusColors = Theme.of(context).extension<AppStatusColors>()!;
-    final battery = telemetry?.battery;
+    final statusColors =
+        Theme.of(context).extension<AppStatusColors>() ?? AppStatusColors.dark;
+    final battery = telemetry == null
+        ? null
+        : BatteryDisplay.fromFc(
+            remaining: telemetry.batteryRemainingRaw,
+            voltage: telemetry.batteryVoltage,
+          );
     final batteryColor = _batteryColor(battery, settings, statusColors);
-
-    final percent = battery == null ? null : battery.clamp(0, 100) / 100;
     final location = GoRouterState.of(context).uri.path;
 
     return Material(
@@ -32,16 +37,14 @@ class FlightStatusBar extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Row(
             children: [
-              _BatteryReadout(fraction: percent, color: batteryColor),
-              const SizedBox(width: 12),
+              _BatteryReadout(battery: battery, color: batteryColor),
+              const SizedBox(width: 8),
               Expanded(
                 child: _StatusChip(
                   icon: Icons.satellite_alt,
                   label: telemetry == null
                       ? 'GPS --'
-                      : telemetry.hasGpsFix
-                          ? 'GPS ${telemetry.gpsCount}'
-                          : 'GPS ${telemetry.gpsFixLabel} · ${telemetry.gpsCount}',
+                      : 'GPS ${telemetry.gpsFixLabel} · ${telemetry.gpsCount} sats',
                 ),
               ),
               Expanded(
@@ -141,16 +144,20 @@ class _TopBarIcon extends StatelessWidget {
 }
 
 class _BatteryReadout extends StatelessWidget {
-  const _BatteryReadout({required this.fraction, required this.color});
+  const _BatteryReadout({required this.battery, required this.color});
 
-  final double? fraction;
+  final BatteryDisplay? battery;
   final Color color;
 
   @override
   Widget build(BuildContext context) {
-    final label = fraction == null
-        ? '--'
-        : '${(fraction! * 100).toStringAsFixed(1)}%';
+    // Exact FC % when present; otherwise real pack volts — never an invented %.
+    final label = battery?.percent != null
+        ? '${battery!.percent!.toStringAsFixed(0)}%'
+        : battery?.voltage != null
+            ? '${battery!.voltage!.toStringAsFixed(2)}V'
+            : '--';
+    final fraction = battery?.percent == null ? null : battery!.percent! / 100;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -206,18 +213,16 @@ class _StatusChip extends StatelessWidget {
 }
 
 Color _batteryColor(
-  double? battery,
+  BatteryDisplay? battery,
   BatterySettings settings,
   AppStatusColors statusColors,
 ) {
   if (battery == null) {
     return statusColors.statusGood;
   }
-  if (battery < settings.secondWarningPercent) {
-    return statusColors.statusCritical;
-  }
-  if (battery < settings.firstWarningPercent) {
-    return statusColors.statusWarning;
-  }
-  return statusColors.statusGood;
+  return switch (batteryAlertLevel(battery, settings)) {
+    BatteryAlertLevel.critical => statusColors.statusCritical,
+    BatteryAlertLevel.warning => statusColors.statusWarning,
+    null => statusColors.statusGood,
+  };
 }

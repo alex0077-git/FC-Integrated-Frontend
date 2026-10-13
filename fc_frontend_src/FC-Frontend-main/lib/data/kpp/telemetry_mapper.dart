@@ -13,6 +13,9 @@ Telemetry mapFcTelemetry(FcTelemetry source) {
       source.latDeg != null &&
       source.lonDeg != null;
 
+  final remaining = source.batteryRemaining;
+  final remainingOk = remaining != null && remaining >= 0 && remaining <= 100;
+
   return Telemetry(
     // Keep last known / zero only when no coordinates yet — UI hides marker if !hasFix.
     latitude: source.latDeg ?? 0,
@@ -20,7 +23,10 @@ Telemetry mapFcTelemetry(FcTelemetry source) {
     altitude: source.altMeters ?? 0,
     speed: source.groundSpeedMps ?? 0,
     heading: source.headingDeg ?? 0,
-    battery: (source.batteryRemaining ?? 0).clamp(0, 100).toDouble(),
+    // Do not map unknown (−1) or missing remaining to 0% — that falsely shows critical.
+    battery: remainingOk ? remaining.toDouble() : null,
+    batteryVoltage: source.voltage,
+    batteryRemainingRaw: remainingOk ? remaining : null,
     gpsCount: bestSats,
     gpsFixLabel: FcTelemetry.fixLabelFor(fixType),
     hasGpsFix: hasFix,

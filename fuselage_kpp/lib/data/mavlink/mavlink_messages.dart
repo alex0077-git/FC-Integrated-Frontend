@@ -42,6 +42,7 @@ final Map<int, MavMessageSpec> mavMessageSpecs = {
   for (final spec in [
     Heartbeat.messageSpec,
     SysStatus.messageSpec,
+    BatteryStatus.messageSpec,
     ParamRequestRead.messageSpec,
     ParamRequestList.messageSpec,
     ParamValue.messageSpec,
@@ -257,6 +258,93 @@ class SysStatus extends MavMessage {
       w.u16(0);
     }
     w.i8(batteryRemaining);
+  }
+}
+
+/// MAVLink BATTERY_STATUS (#147) — preferred source for pack remaining %.
+class BatteryStatus extends MavMessage {
+  const BatteryStatus({
+    required this.id,
+    required this.batteryFunction,
+    required this.type,
+    required this.temperature,
+    required this.voltagesMv,
+    required this.currentCentiamps,
+    required this.currentConsumedMah,
+    required this.energyConsumedHaj,
+    required this.batteryRemaining,
+  });
+
+  static final MavMessageSpec messageSpec = MavMessageSpec(
+    id: 147,
+    crcExtra: 154,
+    baseLength: 36,
+    fullLength: 54,
+    decode: (r) {
+      final id = r.u8();
+      final function = r.u8();
+      final type = r.u8();
+      final temperature = r.i16();
+      final voltages = [for (var i = 0; i < 10; i++) r.u16()];
+      return BatteryStatus(
+        id: id,
+        batteryFunction: function,
+        type: type,
+        temperature: temperature,
+        voltagesMv: voltages,
+        currentCentiamps: r.i16(),
+        currentConsumedMah: r.i32(),
+        energyConsumedHaj: r.i32(),
+        batteryRemaining: r.i8(),
+      );
+    },
+  );
+
+  final int id;
+  final int batteryFunction;
+  final int type;
+  final int temperature;
+  final List<int> voltagesMv;
+  final int currentCentiamps;
+  final int currentConsumedMah;
+  final int energyConsumedHaj;
+  final int batteryRemaining;
+
+  /// Sum of known cell voltages, or cell0 when used as pack voltage (mV).
+  double? get packVoltage {
+    var sum = 0;
+    var any = false;
+    for (final cell in voltagesMv) {
+      if (cell == 0 || cell >= 65535) {
+        continue;
+      }
+      sum += cell;
+      any = true;
+    }
+    if (!any) {
+      return null;
+    }
+    return sum / 1000;
+  }
+
+  @override
+  MavMessageSpec get spec => messageSpec;
+
+  @override
+  void writeFields(PayloadWriter w) {
+    w
+      ..u8(id)
+      ..u8(batteryFunction)
+      ..u8(type)
+      ..i16(temperature);
+    for (var i = 0; i < 10; i++) {
+      w.u16(i < voltagesMv.length ? voltagesMv[i] : 65535);
+    }
+    w
+      ..i16(currentCentiamps)
+      ..i32(currentConsumedMah)
+      ..i32(energyConsumedHaj)
+      ..i8(batteryRemaining);
   }
 }
 

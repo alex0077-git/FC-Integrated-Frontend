@@ -5,7 +5,9 @@ class Telemetry {
     required this.altitude,
     required this.speed,
     required this.heading,
-    required this.battery,
+    this.battery,
+    this.batteryVoltage,
+    this.batteryRemainingRaw,
     required this.gpsCount,
     required this.gpsFixLabel,
     required this.hasGpsFix,
@@ -18,7 +20,16 @@ class Telemetry {
   final double altitude;
   final double speed;
   final double heading;
-  final double battery;
+
+  /// Resolved display percent when known; prefer [resolveBatteryPercent] with settings.
+  final double? battery;
+
+  /// Pack voltage from SYS_STATUS (volts), when the FC reports it.
+  final double? batteryVoltage;
+
+  /// Raw MAVLink remaining % (0–100), or null when unknown / not estimated (−1).
+  final int? batteryRemainingRaw;
+
   final int gpsCount;
   final String gpsFixLabel;
   final bool hasGpsFix;
