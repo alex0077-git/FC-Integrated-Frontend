@@ -4,6 +4,7 @@ import 'package:fuselage_kpp/core/widgets/requires_connection.dart';
 import 'package:fuselage_kpp/data/params/param_spec.dart';
 import 'package:fuselage_kpp/features/installation/frame_select_card.dart';
 import 'package:fuselage_kpp/features/params/param_form_card.dart';
+import 'package:fuselage_kpp/l10n/app_localizations.dart';
 
 /// Frame and installation (机架 / 安装): IMU and GPS direction and position.
 class InstallationPage extends StatelessWidget {
@@ -11,16 +12,15 @@ class InstallationPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const RequiresConnection(
+    final l10n = KppLocalizations.of(context);
+    return RequiresConnection(
       child: PageScaffold(
-        title: 'Installation',
-        description:
-            'Choose directions to match how the modules are mounted, and enter their offsets '
-            'from the airframe\'s centre of gravity in centimetres (blue zone negative, yellow zone positive).',
+        title: l10n.destInstallation,
+        description: l10n.installationDescription,
         children: [
-          FrameSelectCard(),
+          const FrameSelectCard(),
           ParamFormCard(
-            title: 'IMU & GPS mounting',
+            title: l10n.cardImuGpsMounting,
             section: ParamSection.installation,
             excludeIds: {'FRAME', 'SHAPE'},
           ),

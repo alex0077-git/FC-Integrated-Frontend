@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:fuselage_kpp/data/logs/dataflash_summary.dart';
+import 'package:fuselage_kpp/l10n/app_localizations.dart';
 import 'package:latlong2/latlong.dart';
 
 /// Simple dataflash review: GPS track + altitude / voltage sparkline plots.
@@ -39,15 +40,18 @@ class _LogReviewPageState extends State<LogReviewPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = KppLocalizations.of(context);
     final summary = _summary;
     return Scaffold(
       appBar: AppBar(title: Text(widget.file.uri.pathSegments.last)),
       body: _error != null
-          ? Center(child: Text('Could not parse log: $_error\nOpen the .bin externally for full analysis.'))
+          ? Center(
+              child: Text('${l10n.logParseFailed(_error!)}\n${l10n.logParseFailedHint}'),
+            )
           : summary == null
           ? const Center(child: CircularProgressIndicator())
           : summary.track.isEmpty && summary.altitudes.isEmpty
-          ? const Center(child: Text('No GPS/ATT samples recognised in this log.'))
+          ? Center(child: Text(l10n.logNoTrackSamples))
           : Column(
               children: [
                 if (summary.track.isNotEmpty)
@@ -83,15 +87,17 @@ class _LogReviewPageState extends State<LogReviewPage> {
                       children: [
                         Expanded(
                           child: _PlotCard(
-                            title: 'Altitude',
+                            title: l10n.altitude,
                             values: [for (final s in summary.altitudes) s.$2],
+                            l10n: l10n,
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: _PlotCard(
-                            title: 'Voltage',
+                            title: l10n.batteryVoltage,
                             values: [for (final s in summary.voltages) s.$2],
+                            l10n: l10n,
                           ),
                         ),
                       ],
@@ -105,10 +111,11 @@ class _LogReviewPageState extends State<LogReviewPage> {
 }
 
 class _PlotCard extends StatelessWidget {
-  const _PlotCard({required this.title, required this.values});
+  const _PlotCard({required this.title, required this.values, required this.l10n});
 
   final String title;
   final List<double> values;
+  final KppLocalizations l10n;
 
   @override
   Widget build(BuildContext context) {
@@ -122,12 +129,15 @@ class _PlotCard extends StatelessWidget {
             const SizedBox(height: 8),
             Expanded(
               child: values.isEmpty
-                  ? const Center(child: Text('No samples'))
+                  ? Center(child: Text(l10n.plotNoSamples))
                   : CustomPaint(painter: _SparklinePainter(values, Theme.of(context).colorScheme.primary)),
             ),
             if (values.isNotEmpty)
               Text(
-                'min ${values.reduce(math.min).toStringAsFixed(1)}  ·  max ${values.reduce(math.max).toStringAsFixed(1)}',
+                l10n.plotMinMax(
+                  values.reduce(math.min).toStringAsFixed(1),
+                  values.reduce(math.max).toStringAsFixed(1),
+                ),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
           ],

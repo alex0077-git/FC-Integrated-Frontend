@@ -3,20 +3,19 @@ import 'package:fuselage_kpp/core/widgets/page_scaffold.dart';
 import 'package:fuselage_kpp/core/widgets/requires_connection.dart';
 import 'package:fuselage_kpp/data/params/param_spec.dart';
 import 'package:fuselage_kpp/features/params/param_form_card.dart';
+import 'package:fuselage_kpp/l10n/app_localizations.dart';
 
-/// Liquid level sensor and out-of-liquid protection (液位计 / 断药保护).
+/// Liquid level sensor and out-of-liquid protection.
 class LiquidPage extends StatelessWidget {
   const LiquidPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const RequiresConnection(
+    final l10n = KppLocalizations.of(context);
+    return RequiresConnection(
       child: PageScaffold(
-        title: 'Liquid level',
-        description:
-            'Switch-type level sensor connects to FC port K2. A flow meter connects to port K1 '
-            'and enables precise spraying as soon as it is plugged in.',
-        children: [ParamFormCard(title: 'Level sensor & protection', section: ParamSection.liquid)],
+        title: l10n.destLiquid,
+        children: [ParamFormCard(title: l10n.cardLevelSensorProtection, section: ParamSection.liquid)],
       ),
     );
   }

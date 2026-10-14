@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fuselage_kpp/core/widgets/app_card.dart';
+import 'package:fuselage_kpp/l10n/app_localizations.dart';
 
 /// Explains a K++ function that is disabled until its JIYI-specific
 /// command has been confirmed from a traffic recording of the original app.
@@ -12,9 +13,10 @@ class PendingFeatureCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = KppLocalizations.of(context);
     return AppCard(
       title: title,
-      subtitle: 'Waiting for protocol confirmation',
+      subtitle: l10n.waitingForProtocolConfirmation,
       trailing: const Icon(Icons.hourglass_empty),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -22,9 +24,7 @@ class PendingFeatureCard extends StatelessWidget {
           Text(description),
           const SizedBox(height: 8),
           Text(
-            'The K++ assistant uses a JIYI-specific command for this, not standard MAVLink. '
-            'It stays disabled until a recording of the original app confirms the exact message, '
-            'so nothing unverified is ever sent to the flight controller.',
+            l10n.pendingFeatureBody,
             style: Theme.of(context).textTheme.bodySmall,
           ),
           if (actionLabel != null) ...[

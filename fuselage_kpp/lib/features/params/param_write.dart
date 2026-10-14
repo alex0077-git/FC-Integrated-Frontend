@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuselage_kpp/data/repositories/connection_repository.dart';
 import 'package:fuselage_kpp/data/repositories/parameter_repository.dart';
+import 'package:fuselage_kpp/l10n/app_localizations.dart';
 
 /// Writes one parameter from the UI: asks for confirmation on real hardware,
 /// performs the write and reports the outcome in a snackbar.
@@ -14,6 +15,7 @@ Future<bool> writeParamFromUi(
   required double value,
   required String Function(double) format,
 }) async {
+  final l10n = KppLocalizations.of(context);
   final current = ref.read(paramValuesProvider)[id];
   final summary = '$id: ${current == null ? '—' : format(current)} → ${format(value)}';
   final messenger = ScaffoldMessenger.of(context);
@@ -23,10 +25,10 @@ Future<bool> writeParamFromUi(
 
   try {
     final stored = await ref.read(paramValuesProvider.notifier).write(id, value);
-    messenger.showSnackBar(SnackBar(content: Text('$id saved: ${format(stored)}')));
+    messenger.showSnackBar(SnackBar(content: Text(l10n.paramSaved(id, format(stored)))));
     return true;
   } catch (error) {
-    messenger.showSnackBar(SnackBar(content: Text('$id not saved: $error')));
+    messenger.showSnackBar(SnackBar(content: Text(l10n.paramNotSaved(id, error.toString()))));
     return false;
   }
 }
@@ -38,6 +40,7 @@ Future<List<String>> writeParamsFromUi(
   WidgetRef ref, {
   required Map<String, double> values,
 }) async {
+  final l10n = KppLocalizations.of(context);
   final current = ref.read(paramValuesProvider);
   final summary = [
     for (final entry in values.entries) '${entry.key}: ${_plain(current[entry.key])} → ${_plain(entry.value)}',
@@ -60,8 +63,8 @@ Future<List<String>> writeParamsFromUi(
     SnackBar(
       content: Text(
         failed.isEmpty
-            ? '${values.length} parameters saved'
-            : '${values.length - failed.length} saved, ${failed.length} failed: ${failed.join(', ')}',
+            ? l10n.paramsSavedCount(values.length)
+            : l10n.paramsSavedPartial(values.length - failed.length, failed.length, failed.join(', ')),
       ),
     ),
   );
@@ -72,14 +75,15 @@ Future<bool> _confirmOnHardware(BuildContext context, WidgetRef ref, String summ
   if (ref.read(fcConnectionProvider).isSimulator) {
     return true;
   }
+  final l10n = KppLocalizations.of(context);
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Write to flight controller?'),
+      title: Text(l10n.writeToFlightControllerTitle),
       content: SingleChildScrollView(child: SelectableText(summary)),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-        FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Write')),
+        TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.cancel)),
+        FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(l10n.write)),
       ],
     ),
   );

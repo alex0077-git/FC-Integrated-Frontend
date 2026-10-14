@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fuselage_kpp/core/router/app_destinations.dart';
 import 'package:fuselage_kpp/core/widgets/app_card.dart';
+import 'package:fuselage_kpp/l10n/app_localizations.dart';
+import 'package:fuselage_kpp/l10n/kpp_strings.dart';
 import 'package:go_router/go_router.dart';
 
 /// Left sidebar listing every screen under Basic / Advanced / Tools.
@@ -15,6 +17,7 @@ class SideNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = KppLocalizations.of(context);
     return SizedBox(
       width: width,
       child: Material(
@@ -44,7 +47,7 @@ class SideNav extends StatelessWidget {
                   const SizedBox(width: 10),
                   Flexible(
                     child: Text(
-                      'Fuselage-K++',
+                      l10n.appName,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
                     ),
@@ -56,7 +59,7 @@ class SideNav extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 16, 4),
                 child: Text(
-                  'FLY',
+                  l10n.groupFly.toUpperCase(),
                   style: theme.textTheme.labelSmall?.copyWith(
                     letterSpacing: 1.2,
                     color: theme.colorScheme.primary,
@@ -65,19 +68,19 @@ class SideNav extends StatelessWidget {
               ),
               _LinkTile(
                 icon: Icons.flight,
-                label: 'Map / fly',
+                label: l10n.mapFly,
                 selected: currentPath == '/map',
                 onTap: () => context.go('/map'),
               ),
               _LinkTile(
                 icon: Icons.architecture,
-                label: 'Ground plan',
+                label: l10n.groundPlan,
                 selected: currentPath == '/ground-plan',
                 onTap: () => context.go('/ground-plan'),
               ),
               _LinkTile(
                 icon: Icons.home_outlined,
-                label: 'Home',
+                label: l10n.home,
                 selected: currentPath == '/',
                 onTap: () => context.go('/'),
               ),
@@ -87,7 +90,7 @@ class SideNav extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 12, 16, 4),
                 child: Text(
-                  group.label.toUpperCase(),
+                  group.localizedLabel(l10n).toUpperCase(),
                   style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.2, color: theme.colorScheme.primary),
                 ),
               ),
@@ -109,9 +112,10 @@ class _NavTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = KppLocalizations.of(context);
     return _LinkTile(
       icon: destination.icon,
-      label: destination.label,
+      label: destination.localizedLabel(l10n),
       selected: selected,
       onTap: () => context.go(destination.path),
     );

@@ -3,6 +3,7 @@ import 'package:fuselage_kpp/core/widgets/page_scaffold.dart';
 import 'package:fuselage_kpp/core/widgets/requires_connection.dart';
 import 'package:fuselage_kpp/data/params/param_spec.dart';
 import 'package:fuselage_kpp/features/params/param_form_card.dart';
+import 'package:fuselage_kpp/l10n/app_localizations.dart';
 
 /// Gains (感度): basic, control and speed / sensitivity gains.
 class GainsPage extends StatelessWidget {
@@ -10,17 +11,15 @@ class GainsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const RequiresConnection(
+    final l10n = KppLocalizations.of(context);
+    return RequiresConnection(
       child: PageScaffold(
-        title: 'Gains',
-        description:
-            'Control gains set the pilot\'s feel: higher values respond faster but need more power. '
-            'Only move the performance tendency towards vibration suppression if the airframe visibly shakes '
-            'or the motors sound noisy.',
+        title: l10n.destGains,
+        description: l10n.gainsDescription,
         children: [
-          ParamFormCard(title: 'Basic gains', section: ParamSection.basicGains),
-          ParamFormCard(title: 'Control gains', section: ParamSection.controlGains),
-          ParamFormCard(title: 'Speed & sensitivity', section: ParamSection.speedGains),
+          ParamFormCard(title: l10n.cardBasicGains, section: ParamSection.basicGains),
+          ParamFormCard(title: l10n.cardControlGains, section: ParamSection.controlGains),
+          ParamFormCard(title: l10n.cardSpeedSensitivity, section: ParamSection.speedGains),
         ],
       ),
     );

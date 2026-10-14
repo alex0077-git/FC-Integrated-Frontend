@@ -8,6 +8,7 @@ import 'package:fuselage_kpp/core/widgets/requires_connection.dart';
 import 'package:fuselage_kpp/data/mavlink/mavlink_messages.dart';
 import 'package:fuselage_kpp/data/repositories/connection_repository.dart';
 import 'package:fuselage_kpp/features/logs/log_review_page.dart';
+import 'package:fuselage_kpp/l10n/app_localizations.dart';
 import 'package:path_provider/path_provider.dart';
 
 /// Flight log download (日志下载).
@@ -53,6 +54,7 @@ class _LogsPageState extends ConsumerState<LogsPage> {
     if (session == null) {
       return;
     }
+    final l10n = KppLocalizations.of(context);
     setState(() => _progress[entry.id] = 0);
     try {
       final bytes = await session.logs.download(
@@ -67,7 +69,7 @@ class _LogsPageState extends ConsumerState<LogsPage> {
       await file.writeAsBytes(bytes);
       setState(() {
         _savedPaths[entry.id] = file.path;
-        _message = 'Log ${entry.id} saved to ${file.path}';
+        _message = l10n.logSavedTo(entry.id, file.path);
       });
     } catch (error) {
       setState(() => _message = error.toString());
@@ -95,18 +97,19 @@ class _LogsPageState extends ConsumerState<LogsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = KppLocalizations.of(context);
     final logs = _logs;
     return RequiresConnection(
       child: PageScaffold(
-        title: 'Flight logs',
-        description: 'Downloaded logs are saved to Documents\\Fuselage-K++\\logs.',
+        title: l10n.destLogs,
+        description: l10n.flightLogsDescription,
         children: [
           Row(
             children: [
               FilledButton.icon(
                 onPressed: _listing ? null : _refresh,
                 icon: const Icon(Icons.refresh),
-                label: const Text('Refresh list'),
+                label: Text(l10n.refreshList),
               ),
               if (_listing) const Padding(padding: EdgeInsets.only(left: 12), child: CircularProgressIndicator()),
             ],
@@ -114,13 +117,13 @@ class _LogsPageState extends ConsumerState<LogsPage> {
           if (_message != null) Text(_message!),
           if (logs != null)
             AppCard(
-              title: '${logs.length} logs on the flight controller',
+              title: l10n.logsOnFlightController(logs.length),
               child: DataTable(
-                columns: const [
-                  DataColumn(label: Text('No.')),
-                  DataColumn(label: Text('Time (UTC)')),
-                  DataColumn(label: Text('Size (bytes)'), numeric: true),
-                  DataColumn(label: Text('')),
+                columns: [
+                  DataColumn(label: Text(l10n.logColumnNo)),
+                  DataColumn(label: Text(l10n.logColumnTimeUtc)),
+                  DataColumn(label: Text(l10n.logColumnSizeBytes), numeric: true),
+                  const DataColumn(label: Text('')),
                 ],
                 rows: [
                   for (final entry in logs)
@@ -144,9 +147,9 @@ class _LogsPageState extends ConsumerState<LogsPage> {
                               : Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    TextButton(onPressed: () => _download(entry), child: const Text('Download')),
+                                    TextButton(onPressed: () => _download(entry), child: Text(l10n.download)),
                                     if (_savedPaths.containsKey(entry.id))
-                                      TextButton(onPressed: () => _review(entry.id), child: const Text('Review')),
+                                      TextButton(onPressed: () => _review(entry.id), child: Text(l10n.logReview)),
                                   ],
                                 ),
                         ),

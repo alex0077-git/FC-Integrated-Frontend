@@ -16,6 +16,7 @@ import 'package:fuselage_kpp/data/repositories/parameter_repository.dart';
 import 'package:fuselage_kpp/data/repositories/telemetry_repository.dart';
 import 'package:fuselage_kpp/data/session/fc_telemetry.dart';
 import 'package:fuselage_kpp/features/params/param_write.dart';
+import 'package:fuselage_kpp/l10n/app_localizations.dart';
 import 'package:latlong2/latlong.dart';
 
 /// Mission Planner–style map GCS: HUD, waypoints, AB spray, fence circle, modes.
@@ -86,14 +87,17 @@ class _MissionPageState extends ConsumerState<MissionPage> {
       },
     );
     // Store centre as first WP if empty — visual only uses vehicle/home; radius from params.
-    setState(() => _message = 'Circle fence enabled, radius ${radius.round()} m (centred on aircraft when flying)');
+    final l10n = KppLocalizations.of(context);
+    setState(
+      () => _message = l10n.fenceCircleEnabled('${radius.round()}'),
+    );
   }
 
   Future<void> _generateAb() async {
     final a = _pointA;
     final b = _pointB;
     if (a == null || b == null) {
-      setState(() => _message = 'Set points A and B on the map first');
+      setState(() => _message = KppLocalizations.of(context).setPointsAbFirst);
       return;
     }
     final params = ref.read(paramValuesProvider);
@@ -110,7 +114,9 @@ class _MissionPageState extends ConsumerState<MissionPage> {
     );
     ref.read(missionProvider.notifier).replace(mission);
     await writeParamsFromUi(context, ref, values: {'ABPOINT_DIS': swath, 'ABPOINT_SPEED': speed});
-    setState(() => _message = 'AB spray pattern generated (${mission.length} items)');
+    setState(
+      () => _message = KppLocalizations.of(context).abSprayGenerated(mission.length),
+    );
   }
 
   Future<void> _exportWaypoints() async {
@@ -120,7 +126,7 @@ class _MissionPageState extends ConsumerState<MissionPage> {
       return;
     }
     await File(path.path).writeAsString(text);
-    setState(() => _message = 'Exported ${path.path}');
+    setState(() => _message = KppLocalizations.of(context).exportedTo(path.path));
   }
 
   Future<void> _importWaypoints() async {
@@ -130,7 +136,11 @@ class _MissionPageState extends ConsumerState<MissionPage> {
     }
     final text = await file.readAsString();
     ref.read(missionProvider.notifier).replace(WaypointFile.decode(text));
-    setState(() => _message = 'Imported ${ref.read(missionProvider).length} items');
+    setState(
+      () => _message = KppLocalizations.of(context).importedItems(
+        ref.read(missionProvider).length,
+      ),
+    );
   }
 
   @override
@@ -167,9 +177,24 @@ class _MissionPageState extends ConsumerState<MissionPage> {
           _HudBar(
             telemetry: telemetry,
             busy: _busy,
-            onRtl: () => _run(() => ref.read(fcSessionProvider)!.commands.returnToLaunch(), 'RTL accepted'),
-            onLand: () => _run(() => ref.read(fcSessionProvider)!.commands.land(), 'Land accepted'),
-            onMode: (mode) => _run(() => ref.read(fcSessionProvider)!.commands.setMode(mode), 'Mode $mode set'),
+            onRtl: () {
+              final l10n = KppLocalizations.of(context);
+              _run(
+                () => ref.read(fcSessionProvider)!.commands.returnToLaunch(),
+                l10n.rtlAccepted,
+              );
+            },
+            onLand: () {
+              final l10n = KppLocalizations.of(context);
+              _run(() => ref.read(fcSessionProvider)!.commands.land(), l10n.landAccepted);
+            },
+            onMode: (mode) {
+              final l10n = KppLocalizations.of(context);
+              _run(
+                () => ref.read(fcSessionProvider)!.commands.setMode(mode),
+                l10n.modeSet('$mode'),
+              );
+            },
           ),
           if (_message != null)
             Material(
@@ -263,9 +288,27 @@ class _MissionPageState extends ConsumerState<MissionPage> {
                       placingFence: _placingFence,
                       busy: _busy,
                       onAltChanged: (v) => setState(() => _defaultAlt = v),
-                      onDownload: () => _run(() => ref.read(missionProvider.notifier).download(), 'Mission downloaded'),
-                      onUpload: () => _run(() => ref.read(missionProvider.notifier).upload(), 'Mission uploaded'),
-                      onClear: () => _run(() => ref.read(missionProvider.notifier).clearRemote(), 'Mission cleared'),
+                      onDownload: () {
+                        final l10n = KppLocalizations.of(context);
+                        _run(
+                          () => ref.read(missionProvider.notifier).download(),
+                          l10n.missionDownloaded,
+                        );
+                      },
+                      onUpload: () {
+                        final l10n = KppLocalizations.of(context);
+                        _run(
+                          () => ref.read(missionProvider.notifier).upload(),
+                          l10n.missionUploaded,
+                        );
+                      },
+                      onClear: () {
+                        final l10n = KppLocalizations.of(context);
+                        _run(
+                          () => ref.read(missionProvider.notifier).clearRemote(),
+                          l10n.missionCleared,
+                        );
+                      },
                       onImport: _importWaypoints,
                       onExport: _exportWaypoints,
                       onSetA: () => setState(() {
@@ -310,19 +353,34 @@ class _HudBar extends StatelessWidget {
   final VoidCallback onLand;
   final void Function(int mode) onMode;
 
+  /// Prefer the stronger of GPS1 / GPS2 (agri puck is usually GPS2 on K++).
+  static String _bestGpsLabel(FcTelemetry t) {
+    final g1 = t.gpsFixType ?? 0;
+    final g2 = t.gps2FixType ?? 0;
+    return FcTelemetry.fixLabelFor(g1 >= g2 ? t.gpsFixType : t.gps2FixType);
+  }
+
+  static String _bestGpsSats(FcTelemetry t) {
+    final s1 = t.satellites ?? 0;
+    final s2 = t.gps2Satellites ?? 0;
+    final best = s1 >= s2 ? s1 : s2;
+    return best > 0 ? '$best' : '—';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = KppLocalizations.of(context);
     String modeLabel() {
       final m = telemetry.customMode;
       return switch (m) {
         null => '—',
         0 => 'Stabilize',
         2 => 'AltHold',
-        3 => 'Auto',
-        4 => 'Guided',
-        5 => 'Loiter',
-        6 => 'RTL',
-        9 => 'Land',
+        3 => l10n.flightModeAuto,
+        4 => l10n.flightModeGuided,
+        5 => l10n.flightModeLoiter,
+        6 => l10n.flightModeRtl,
+        9 => l10n.flightModeLand,
         _ => 'Mode $m',
       };
     }
@@ -335,8 +393,8 @@ class _HudBar extends StatelessWidget {
           children: [
             Flexible(
               child: Text(
-                '${telemetry.armed ? 'ARMED' : 'Disarmed'}  ·  $modeLabel()  ·  '
-                'GPS ${telemetry.gpsFixLabel} (${telemetry.satellites ?? '—'} sats)  ·  '
+                '${telemetry.armed ? l10n.armed : l10n.disarmed}  ·  $modeLabel()  ·  '
+                'GPS ${_bestGpsLabel(telemetry)} (${_bestGpsSats(telemetry)} sats)  ·  '
                 '${telemetry.voltage == null ? '— V' : '${telemetry.voltage!.toStringAsFixed(1)} V'}  ·  '
                 'Alt ${telemetry.altMeters == null ? '—' : '${telemetry.altMeters!.toStringAsFixed(1)} m'}',
                 style: Theme.of(context).textTheme.bodyMedium,
@@ -344,13 +402,13 @@ class _HudBar extends StatelessWidget {
             ),
             const Spacer(),
             DropdownButton<int>(
-              hint: const Text('Set mode'),
-              items: const [
-                DropdownMenuItem(value: 3, child: Text('Auto')),
-                DropdownMenuItem(value: 4, child: Text('Guided')),
-                DropdownMenuItem(value: 5, child: Text('Loiter')),
-                DropdownMenuItem(value: 6, child: Text('RTL')),
-                DropdownMenuItem(value: 9, child: Text('Land')),
+              hint: Text(l10n.setMode),
+              items: [
+                DropdownMenuItem(value: 3, child: Text(l10n.flightModeAuto)),
+                DropdownMenuItem(value: 4, child: Text(l10n.flightModeGuided)),
+                DropdownMenuItem(value: 5, child: Text(l10n.flightModeLoiter)),
+                DropdownMenuItem(value: 6, child: Text(l10n.flightModeRtl)),
+                DropdownMenuItem(value: 9, child: Text(l10n.flightModeLand)),
               ],
               onChanged: busy ? null : (v) {
                 if (v != null) {
@@ -359,9 +417,9 @@ class _HudBar extends StatelessWidget {
               },
             ),
             const SizedBox(width: 8),
-            FilledButton(onPressed: busy ? null : onRtl, child: const Text('RTL')),
+            FilledButton(onPressed: busy ? null : onRtl, child: Text(l10n.rtl)),
             const SizedBox(width: 8),
-            FilledButton(onPressed: busy ? null : onLand, child: const Text('Land')),
+            FilledButton(onPressed: busy ? null : onLand, child: Text(l10n.land)),
           ],
         ),
       ),
@@ -408,12 +466,13 @@ class _MissionSidePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = KppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
           padding: const EdgeInsets.all(12),
-          child: Text('Mission', style: Theme.of(context).textTheme.titleMedium),
+          child: Text(l10n.destMission, style: Theme.of(context).textTheme.titleMedium),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -421,11 +480,11 @@ class _MissionSidePanel extends StatelessWidget {
             spacing: 6,
             runSpacing: 6,
             children: [
-              FilledButton(onPressed: busy ? null : onDownload, child: const Text('Download')),
-              FilledButton(onPressed: busy ? null : onUpload, child: const Text('Upload')),
-              OutlinedButton(onPressed: busy ? null : onClear, child: const Text('Clear')),
-              OutlinedButton(onPressed: onImport, child: const Text('Import')),
-              OutlinedButton(onPressed: onExport, child: const Text('Export')),
+              FilledButton(onPressed: busy ? null : onDownload, child: Text(l10n.download)),
+              FilledButton(onPressed: busy ? null : onUpload, child: Text(l10n.upload)),
+              OutlinedButton(onPressed: busy ? null : onClear, child: Text(l10n.clear)),
+              OutlinedButton(onPressed: onImport, child: Text(l10n.import)),
+              OutlinedButton(onPressed: onExport, child: Text(l10n.export)),
             ],
           ),
         ),
@@ -434,7 +493,7 @@ class _MissionSidePanel extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Row(
             children: [
-              const Text('Default alt'),
+              Text(l10n.defaultAlt),
               Expanded(
                 child: Slider(value: defaultAlt, min: 5, max: 80, onChanged: onAltChanged),
               ),
@@ -448,12 +507,12 @@ class _MissionSidePanel extends StatelessWidget {
             spacing: 6,
             runSpacing: 6,
             children: [
-              OutlinedButton(onPressed: onSetA, child: const Text('Set A')),
-              OutlinedButton(onPressed: onSetB, child: const Text('Set B')),
-              FilledButton.tonal(onPressed: onGenerateAb, child: const Text('AB spray')),
+              OutlinedButton(onPressed: onSetA, child: Text(l10n.setA)),
+              OutlinedButton(onPressed: onSetB, child: Text(l10n.setB)),
+              FilledButton.tonal(onPressed: onGenerateAb, child: Text(l10n.abSpray)),
               OutlinedButton(
                 onPressed: onToggleFence,
-                child: Text(placingFence ? 'Tap map for fence…' : 'Enable circle fence'),
+                child: Text(placingFence ? l10n.tapMapForFence : l10n.enableCircleFence),
               ),
             ],
           ),
@@ -461,7 +520,7 @@ class _MissionSidePanel extends StatelessWidget {
         const Divider(),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Text('${mission.length} items — tap map to add waypoints'),
+          child: Text(l10n.missionItemsHint(mission.length)),
         ),
         Expanded(
           child: ListView.builder(
@@ -481,22 +540,28 @@ class _MissionSidePanel extends StatelessWidget {
                   children: [
                     IconButton(
                       icon: const Icon(Icons.height),
-                      tooltip: 'Edit altitude',
+                      tooltip: l10n.editAltitude,
                       onPressed: () async {
                         final controller = TextEditingController(text: item.alt.toStringAsFixed(1));
                         final next = await showDialog<double>(
                           context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text('Altitude (m)'),
-                            content: TextField(controller: controller, keyboardType: TextInputType.number),
-                            actions: [
-                              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-                              FilledButton(
-                                onPressed: () => Navigator.pop(context, double.tryParse(controller.text)),
-                                child: const Text('OK'),
-                              ),
-                            ],
-                          ),
+                          builder: (context) {
+                            final dialogL10n = KppLocalizations.of(context);
+                            return AlertDialog(
+                              title: Text(dialogL10n.altitudeM),
+                              content: TextField(controller: controller, keyboardType: TextInputType.number),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: Text(dialogL10n.cancel),
+                                ),
+                                FilledButton(
+                                  onPressed: () => Navigator.pop(context, double.tryParse(controller.text)),
+                                  child: Text(dialogL10n.ok),
+                                ),
+                              ],
+                            );
+                          },
                         );
                         if (next != null) {
                           onEditAlt(index, next);

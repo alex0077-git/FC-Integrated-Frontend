@@ -7,6 +7,7 @@ import 'package:fuselage_kpp/data/params/param_spec.dart';
 import 'package:fuselage_kpp/data/repositories/parameter_repository.dart';
 import 'package:fuselage_kpp/features/params/param_form_card.dart';
 import 'package:fuselage_kpp/features/remote_control/channel_monitor_card.dart';
+import 'package:fuselage_kpp/l10n/app_localizations.dart';
 
 /// Channel mapping (映射功能): function of RC channels 6-12, with the K++
 /// duplicate-channel warning (通道重复).
@@ -15,20 +16,21 @@ class ChannelsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = KppLocalizations.of(context);
     final params = ref.watch(paramValuesProvider);
     final duplicates = duplicateChannelFunctions(params);
     return RequiresConnection(
       child: PageScaffold(
-        title: 'Channel mapping',
-        description: 'Check the channel monitor to see which channels your RC uses before assigning functions.',
+        title: l10n.destChannels,
+        description: l10n.channelsDescription,
         children: [
           if (duplicates.isNotEmpty)
             MaterialBanner(
-              content: Text('Duplicate channel functions: ${duplicates.join('; ')}'),
+              content: Text(l10n.duplicateChannelFunctions(duplicates.join('; '))),
               leading: const Icon(Icons.warning_amber),
               actions: const [SizedBox.shrink()],
             ),
-          const ParamFormCard(title: 'Channel functions', section: ParamSection.channels),
+          ParamFormCard(title: l10n.cardChannelFunctions, section: ParamSection.channels),
           const ChannelMonitorCard(),
         ],
       ),

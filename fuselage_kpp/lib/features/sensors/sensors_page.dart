@@ -6,6 +6,7 @@ import 'package:fuselage_kpp/core/widgets/requires_connection.dart';
 import 'package:fuselage_kpp/data/repositories/telemetry_repository.dart';
 import 'package:fuselage_kpp/data/session/fc_telemetry.dart';
 import 'package:fuselage_kpp/features/sensors/calibration_cards.dart';
+import 'package:fuselage_kpp/l10n/app_localizations.dart';
 
 /// Sensors (传感器): live IMU 1-3, compass 1-3 and barometer readings,
 /// plus the K++ calibration procedures.
@@ -14,23 +15,26 @@ class SensorsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = KppLocalizations.of(context);
     final telemetry = ref.watch(telemetryProvider);
     return RequiresConnection(
       child: PageScaffold(
-        title: 'Sensors',
+        title: l10n.destSensors,
         children: [
           AppCard(
-            title: 'IMU & compass',
-            subtitle: 'Raw sensor values from each IMU instance.',
-            child: _ImuTable(imus: telemetry.imus),
+            title: l10n.cardImuCompass,
+            subtitle: l10n.sensorsImuCompassSubtitle,
+            child: _ImuTable(l10n: l10n, imus: telemetry.imus),
           ),
           AppCard(
-            title: 'Barometer',
+            title: l10n.cardBarometer,
             child: Text(
               telemetry.pressureHpa == null
-                  ? 'No barometer data'
-                  : 'Pressure ${telemetry.pressureHpa!.toStringAsFixed(2)} hPa   ·   '
-                        'Temperature ${telemetry.temperatureC!.toStringAsFixed(1)} °C',
+                  ? l10n.noBarometerData
+                  : l10n.barometerReading(
+                      telemetry.pressureHpa!.toStringAsFixed(2),
+                      telemetry.temperatureC!.toStringAsFixed(1),
+                    ),
             ),
           ),
           const ImuCalibrationCard(),
@@ -42,19 +46,20 @@ class SensorsPage extends ConsumerWidget {
 }
 
 class _ImuTable extends StatelessWidget {
-  const _ImuTable({required this.imus});
+  const _ImuTable({required this.l10n, required this.imus});
 
+  final KppLocalizations l10n;
   final List<ImuReading?> imus;
 
   @override
   Widget build(BuildContext context) {
     String axes(List<int>? values) => values == null ? '—' : values.join(' / ');
     return DataTable(
-      columns: const [
-        DataColumn(label: Text('Instance')),
-        DataColumn(label: Text('Accel X / Y / Z')),
-        DataColumn(label: Text('Gyro X / Y / Z')),
-        DataColumn(label: Text('Compass X / Y / Z')),
+      columns: [
+        DataColumn(label: Text(l10n.instance)),
+        DataColumn(label: Text(l10n.accelAxes)),
+        DataColumn(label: Text(l10n.gyroAxes)),
+        DataColumn(label: Text(l10n.compassAxes)),
       ],
       rows: [
         for (var i = 0; i < imus.length; i++)

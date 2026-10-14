@@ -11,6 +11,8 @@ import 'package:fuselage_kpp/data/repositories/connection_repository.dart';
 import 'package:fuselage_kpp/data/repositories/parameter_repository.dart';
 import 'package:fuselage_kpp/features/parameters/param_file.dart';
 import 'package:fuselage_kpp/features/params/param_write.dart';
+import 'package:fuselage_kpp/l10n/app_localizations.dart';
+import 'package:fuselage_kpp/l10n/param_l10n.dart';
 
 /// Full parameter list with search, export (参数导出) and import (参数导入).
 ///
@@ -23,18 +25,15 @@ class ParametersPage extends ConsumerStatefulWidget {
 }
 
 class _ParametersPageState extends ConsumerState<ParametersPage> {
-  static const _fileTypes = [
-    XTypeGroup(label: 'Parameter files', extensions: ['param', 'txt']),
-  ];
-
-  /// Parameters travel as 32-bit floats, so 44.4 comes back as 44.400001.
-  static const double _float32Tolerance = 1e-4;
-
   String _query = '';
 
   Future<void> _export() async {
+    final l10n = KppLocalizations.of(context);
+    final fileTypes = [
+      XTypeGroup(label: l10n.parameterFiles, extensions: ['param', 'txt']),
+    ];
     final location = await getSaveLocation(
-      acceptedTypeGroups: _fileTypes,
+      acceptedTypeGroups: fileTypes,
       suggestedName: 'fuselage_kpp_${DateTime.now().toIso8601String().substring(0, 10)}.param',
     );
     if (location == null) {
@@ -45,11 +44,15 @@ class _ParametersPageState extends ConsumerState<ParametersPage> {
     await File(
       location.path,
     ).writeAsString(ParamFile.encode(values, header: 'Fuselage-K++ export from $link, ${DateTime.now()}'));
-    _notify('Exported ${values.length} parameters to ${location.path}');
+    _notify(l10n.exportParametersTo(values.length, location.path));
   }
 
   Future<void> _import() async {
-    final file = await openFile(acceptedTypeGroups: _fileTypes);
+    final l10n = KppLocalizations.of(context);
+    final fileTypes = [
+      XTypeGroup(label: l10n.parameterFiles, extensions: ['param', 'txt']),
+    ];
+    final file = await openFile(acceptedTypeGroups: fileTypes);
     if (file == null) {
       return;
     }
@@ -57,19 +60,20 @@ class _ParametersPageState extends ConsumerState<ParametersPage> {
     try {
       imported = ParamFile.decode(await file.readAsString());
     } on FormatException catch (error) {
-      _notify('File format error: ${error.message}');
+      _notify(l10n.importFileFormatError(error.message));
       return;
     }
     final current = ref.read(paramValuesProvider);
+    const float32Tolerance = 1e-4;
     final changes = {
       for (final entry in imported.entries)
         if (current.containsKey(entry.key) &&
             ParamCatalog.byId(entry.key)?.readOnly != true &&
-            (current[entry.key]! - entry.value).abs() > _float32Tolerance)
+            (current[entry.key]! - entry.value).abs() > float32Tolerance)
           entry.key: entry.value,
     };
     if (changes.isEmpty) {
-      _notify('Nothing to import: every value already matches the flight controller.');
+      _notify(l10n.importNothingMatches);
       return;
     }
     if (mounted) {
@@ -88,16 +92,18 @@ class _ParametersPageState extends ConsumerState<ParametersPage> {
     final values = ref.watch(paramValuesProvider);
     final busy = ref.watch(fcConnectionProvider.select((s) => s.isBusy));
     final query = _query.toUpperCase();
+    final l10n = KppLocalizations.of(context);
     final ids =
-        values.keys
-            .where((id) => id.contains(query) || (ParamCatalog.byId(id)?.label.toUpperCase().contains(query) ?? false))
-            .toList()
-          ..sort();
+        values.keys.where((id) {
+          final spec = ParamCatalog.byId(id);
+          final label = spec == null ? '' : ParamL10n.label(l10n, spec);
+          return id.contains(query) || label.toUpperCase().contains(query);
+        }).toList()..sort();
 
     return RequiresConnection(
       child: PageScaffold(
-        title: 'All parameters',
-        description: '${values.length} parameters read from the flight controller.',
+        title: l10n.destParameters,
+        description: l10n.parametersDescription(values.length),
         children: [
           Wrap(
             spacing: 12,
@@ -106,42 +112,42 @@ class _ParametersPageState extends ConsumerState<ParametersPage> {
               FilledButton.icon(
                 onPressed: _export,
                 icon: const Icon(Icons.file_download_outlined),
-                label: const Text('Export'),
+                label: Text(l10n.export),
               ),
               FilledButton.tonalIcon(
                 onPressed: _import,
                 icon: const Icon(Icons.file_upload_outlined),
-                label: const Text('Import'),
+                label: Text(l10n.import),
               ),
               OutlinedButton.icon(
                 onPressed: busy ? null : () => ref.read(fcConnectionProvider.notifier).reloadParameters(),
                 icon: const Icon(Icons.refresh),
-                label: const Text('Reload from FC'),
+                label: Text(l10n.reloadFromFc),
               ),
             ],
           ),
           TextField(
-            decoration: const InputDecoration(
-              prefixIcon: Icon(Icons.search),
-              hintText: 'Search by id or name',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              prefixIcon: const Icon(Icons.search),
+              hintText: l10n.searchByIdOrName,
+              border: const OutlineInputBorder(),
             ),
             onChanged: (text) => setState(() => _query = text),
           ),
           AppCard(
-            title: '${ids.length} shown',
+            title: l10n.parametersShown(ids.length),
             child: DataTable(
-              columns: const [
-                DataColumn(label: Text('Id')),
-                DataColumn(label: Text('Name')),
-                DataColumn(label: Text('Value'), numeric: true),
+              columns: [
+                DataColumn(label: Text(l10n.paramColumnId)),
+                DataColumn(label: Text(l10n.paramColumnName)),
+                DataColumn(label: Text(l10n.paramColumnValue), numeric: true),
               ],
               rows: [
                 for (final id in ids)
                   DataRow(
                     cells: [
                       DataCell(SelectableText(id)),
-                      DataCell(Text(ParamCatalog.byId(id)?.label ?? '—')),
+                      DataCell(Text(ParamCatalog.byId(id) == null ? '—' : ParamL10n.label(l10n, ParamCatalog.byId(id)!))),
                       DataCell(Text(ParamCatalog.byId(id)?.formatValue(values[id]!) ?? '${values[id]}')),
                     ],
                   ),

@@ -7,6 +7,7 @@ import 'package:fuselage_kpp/core/widgets/requires_connection.dart';
 import 'package:fuselage_kpp/data/params/param_spec.dart';
 import 'package:fuselage_kpp/data/repositories/parameter_repository.dart';
 import 'package:fuselage_kpp/features/params/param_form_card.dart';
+import 'package:fuselage_kpp/l10n/app_localizations.dart';
 
 /// Firmware, versions, authorisation and maintenance (固件升级 / 配置).
 class FirmwarePage extends ConsumerWidget {
@@ -14,34 +15,31 @@ class FirmwarePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = KppLocalizations.of(context);
     final version = ref.watch(paramValuesProvider.select((p) => p['FWVERSION']));
+    final versionLabel = version?.toStringAsFixed(0) ?? '—';
     return RequiresConnection(
       child: PageScaffold(
-        title: 'Firmware & about',
+        title: l10n.destFirmware,
         children: [
           AppCard(
-            title: 'Versions',
-            child: Text(
-              'Flight controller firmware: ${version?.toStringAsFixed(0) ?? '—'}\n'
-              'Fuselage-K++ 1.0.0 — built to replace the JIYI K++ assistant (JIYI221014).',
-            ),
+            title: l10n.cardVersions,
+            child: Text('${l10n.fcFirmwareInfo(versionLabel)}\n${l10n.appAboutLine}'),
           ),
-          const ParamFormCard(title: 'Versions & authorisation', section: ParamSection.system),
-          const PendingFeatureCard(
-            title: 'Firmware upgrade',
-            description:
-                'Upload K++ V2 / KX / P3 firmware through the flight controller bootloader. '
-                'Never remove the device while upgrading.',
-            actionLabel: 'Upgrade firmware',
+          ParamFormCard(title: l10n.cardVersionsAuthorisation, section: ParamSection.system),
+          PendingFeatureCard(
+            title: l10n.firmwareUpgrade,
+            description: l10n.firmwareUpgradeDescription,
+            actionLabel: l10n.upgradeFirmware,
           ),
-          const PendingFeatureCard(
-            title: 'Factory reset',
-            description: 'Restore every parameter to the factory defaults.',
-            actionLabel: 'Restore factory settings',
+          PendingFeatureCard(
+            title: l10n.factoryReset,
+            description: l10n.factoryResetDescription,
+            actionLabel: l10n.restoreFactorySettings,
           ),
-          const PendingFeatureCard(
-            title: 'Drone registration',
-            description: 'Manufacturer name, aircraft model and aircraft number (网络备案).',
+          PendingFeatureCard(
+            title: l10n.droneRegistration,
+            description: l10n.droneRegistrationDescription,
           ),
         ],
       ),

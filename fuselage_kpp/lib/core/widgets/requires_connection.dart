@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuselage_kpp/data/repositories/connection_repository.dart';
+import 'package:fuselage_kpp/l10n/app_localizations.dart';
 
 /// Shows [child] only while a flight-controller session is open.
 class RequiresConnection extends ConsumerWidget {
@@ -14,6 +15,7 @@ class RequiresConnection extends ConsumerWidget {
     if (hasSession) {
       return child;
     }
+    final l10n = KppLocalizations.of(context);
     final theme = Theme.of(context);
     return Center(
       child: Column(
@@ -21,11 +23,12 @@ class RequiresConnection extends ConsumerWidget {
         children: [
           Icon(Icons.usb_off, size: 48, color: theme.colorScheme.primary),
           const SizedBox(height: 12),
-          Text('Not connected', style: theme.textTheme.titleLarge),
+          Text(l10n.notConnected, style: theme.textTheme.titleLarge),
           const SizedBox(height: 6),
           Text(
-            'Choose a COM port (or the simulator) in the bar above and press Connect.',
+            l10n.notConnectedHint,
             style: theme.textTheme.bodySmall,
+            textAlign: TextAlign.center,
           ),
         ],
       ),

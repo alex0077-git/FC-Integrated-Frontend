@@ -4,6 +4,7 @@ import 'package:fuselage_kpp/core/widgets/requires_connection.dart';
 import 'package:fuselage_kpp/data/params/param_spec.dart';
 import 'package:fuselage_kpp/features/flight/motor_test_card.dart';
 import 'package:fuselage_kpp/features/params/param_form_card.dart';
+import 'package:fuselage_kpp/l10n/app_localizations.dart';
 
 /// Motors and global flight parameters (动力配置 / 全局参数).
 class FlightPage extends StatelessWidget {
@@ -11,12 +12,13 @@ class FlightPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const RequiresConnection(
+    final l10n = KppLocalizations.of(context);
+    return RequiresConnection(
       child: PageScaffold(
-        title: 'Motors & flight',
+        title: l10n.destFlight,
         children: [
-          ParamFormCard(title: 'Global flight limits & motor idle', section: ParamSection.flight),
-          MotorTestCard(),
+          ParamFormCard(title: l10n.cardGlobalFlightLimits, section: ParamSection.flight),
+          const MotorTestCard(),
         ],
       ),
     );

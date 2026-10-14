@@ -6,6 +6,7 @@ import 'package:fuselage_kpp/data/params/param_spec.dart';
 import 'package:fuselage_kpp/data/repositories/telemetry_repository.dart';
 import 'package:fuselage_kpp/features/params/param_form_card.dart';
 import 'package:fuselage_kpp/features/protection/voltage_cal_card.dart';
+import 'package:fuselage_kpp/l10n/app_localizations.dart';
 
 /// Protection (保护功能): low-voltage levels, PMU fault, return-home and landing.
 class ProtectionPage extends ConsumerWidget {
@@ -13,20 +14,20 @@ class ProtectionPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = KppLocalizations.of(context);
     final voltage = ref.watch(telemetryProvider.select((t) => t.voltage));
+    final voltageLabel = voltage == null ? '—' : '${voltage.toStringAsFixed(2)} V';
     return RequiresConnection(
       child: PageScaffold(
-        title: 'Protection',
-        description:
-            'Current voltage: ${voltage == null ? '—' : '${voltage.toStringAsFixed(2)} V'}. '
-            'Level 2 must be lower than level 1; both levels also flash the lights.',
-        children: const [
+        title: l10n.destProtection,
+        description: l10n.protectionDescription(voltageLabel),
+        children: [
           ParamFormCard(
-            title: 'Voltage, return home & landing',
+            title: l10n.cardVoltageRtlLanding,
             section: ParamSection.protection,
             excludeIds: {'BATT_VOLT_MULT'},
           ),
-          VoltageCalCard(),
+          const VoltageCalCard(),
         ],
       ),
     );

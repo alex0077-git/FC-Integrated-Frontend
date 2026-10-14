@@ -5,6 +5,8 @@ import 'package:fuselage_kpp/data/params/param_catalog.dart';
 import 'package:fuselage_kpp/data/repositories/parameter_repository.dart';
 import 'package:fuselage_kpp/features/installation/frame_layout_diagram.dart';
 import 'package:fuselage_kpp/features/params/param_write.dart';
+import 'package:fuselage_kpp/l10n/app_localizations.dart';
+import 'package:fuselage_kpp/l10n/param_l10n.dart';
 
 /// Frame type picker writing FRAME + SHAPE, with motor-layout diagrams.
 class FrameSelectCard extends ConsumerWidget {
@@ -21,16 +23,15 @@ class FrameSelectCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = KppLocalizations.of(context);
     final values = ref.watch(paramValuesProvider);
     final current = values['FRAME']?.round() ?? 1;
     final shape = values['SHAPE']?.round() ?? 1;
     final shapeOptions = ParamCatalog.byId('SHAPE')!.options!;
 
     return AppCard(
-      title: 'Frame type',
-      subtitle:
-          'Select the motor layout. Diagrams show motor numbers (nose up). '
-          'Changes write FRAME and SHAPE to the flight controller.',
+      title: l10n.cardFrameType,
+      subtitle: l10n.frameTypeSubtitle,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -40,7 +41,7 @@ class FrameSelectCard extends ConsumerWidget {
             children: [
               for (final (id, label) in _frames)
                 _FrameChoiceTile(
-                  label: label,
+                  label: ParamL10n.option(l10n, label),
                   selected: current == id,
                   diagram: FrameLayoutDiagram(frameId: id, selected: current == id),
                   onTap: () => writeParamsFromUi(
@@ -52,7 +53,7 @@ class FrameSelectCard extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 20),
-          Text('Shape', style: Theme.of(context).textTheme.titleSmall),
+          Text(l10n.shape, style: Theme.of(context).textTheme.titleSmall),
           const SizedBox(height: 8),
           Wrap(
             spacing: 10,
@@ -60,7 +61,7 @@ class FrameSelectCard extends ConsumerWidget {
             children: [
               for (final entry in shapeOptions.entries)
                 _FrameChoiceTile(
-                  label: entry.value,
+                  label: ParamL10n.option(l10n, entry.value),
                   selected: shape == entry.key,
                   diagram: FrameShapeDiagram(
                     shapeId: entry.key,

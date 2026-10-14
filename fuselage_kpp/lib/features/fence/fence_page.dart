@@ -7,6 +7,7 @@ import 'package:fuselage_kpp/data/params/param_spec.dart';
 import 'package:fuselage_kpp/data/repositories/parameter_repository.dart';
 import 'package:fuselage_kpp/features/params/param_form_card.dart';
 import 'package:fuselage_kpp/features/params/param_write.dart';
+import 'package:fuselage_kpp/l10n/app_localizations.dart';
 
 /// Geofence (围栏功能): height and distance limits and the breach action.
 class FencePage extends ConsumerWidget {
@@ -14,18 +15,19 @@ class FencePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = KppLocalizations.of(context);
     final enabled = (ref.watch(paramValuesProvider.select((p) => p['FENCE_ENABLE'] ?? 0))) > 0;
     final radius = ref.watch(paramValuesProvider.select((p) => p['FENCE_RADIUS'] ?? 500));
     final alt = ref.watch(paramValuesProvider.select((p) => p['FENCE_ALT_MAX'] ?? 30));
 
     return RequiresConnection(
       child: PageScaffold(
-        title: 'Fence',
-        description: 'Circle and altitude limits. Draw/adjust the circle from the Mission map, or set values here.',
+        title: l10n.destFence,
+        description: l10n.fenceDescription,
         children: [
           AppCard(
-            title: 'Quick fence',
-            subtitle: enabled ? 'Fence is enabled' : 'Fence is off',
+            title: l10n.cardQuickFence,
+            subtitle: enabled ? l10n.fenceEnabled : l10n.fenceOff,
             child: Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -41,7 +43,7 @@ class FencePage extends ConsumerWidget {
                       'FENCE_ALT_MAX': alt,
                     },
                   ),
-                  child: const Text('Enable altitude + circle'),
+                  child: Text(l10n.enableAltitudeAndCircle),
                 ),
                 OutlinedButton(
                   onPressed: () => writeParamsFromUi(
@@ -49,12 +51,12 @@ class FencePage extends ConsumerWidget {
                     ref,
                     values: {'FENCE_ENABLE': 0, 'FENCE_TYPE': 0},
                   ),
-                  child: const Text('Disable fence'),
+                  child: Text(l10n.disableFence),
                 ),
               ],
             ),
           ),
-          const ParamFormCard(title: 'Height & distance limits', section: ParamSection.fence),
+          ParamFormCard(title: l10n.cardHeightDistanceLimits, section: ParamSection.fence),
         ],
       ),
     );

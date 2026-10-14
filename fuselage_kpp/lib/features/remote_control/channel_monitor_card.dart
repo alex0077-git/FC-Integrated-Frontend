@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuselage_kpp/core/widgets/app_card.dart';
 import 'package:fuselage_kpp/data/repositories/telemetry_repository.dart';
+import 'package:fuselage_kpp/l10n/app_localizations.dart';
 
 /// Channel monitor (通道监测): live PWM bar for every RC channel.
 class ChannelMonitorCard extends ConsumerWidget {
@@ -12,10 +13,11 @@ class ChannelMonitorCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = KppLocalizations.of(context);
     final channels = ref.watch(telemetryProvider.select((t) => t.rcChannels));
     return AppCard(
-      title: 'Channel monitor',
-      subtitle: channels.isEmpty ? 'No RC data received yet.' : 'Move the sticks and switches to see each channel.',
+      title: l10n.channelMonitor,
+      subtitle: channels.isEmpty ? l10n.channelMonitorNoData : l10n.channelMonitorHint,
       child: Column(
         children: [for (var i = 0; i < channels.length; i++) _ChannelBar(channel: i + 1, pwm: channels[i])],
       ),

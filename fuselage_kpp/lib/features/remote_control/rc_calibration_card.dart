@@ -5,6 +5,7 @@ import 'package:fuselage_kpp/data/repositories/parameter_repository.dart';
 import 'package:fuselage_kpp/data/repositories/telemetry_repository.dart';
 import 'package:fuselage_kpp/features/params/param_write.dart';
 import 'package:fuselage_kpp/features/remote_control/stick_calibration.dart';
+import 'package:fuselage_kpp/l10n/app_localizations.dart';
 
 enum _Step { idle, extremes, centre, review }
 
@@ -43,29 +44,30 @@ class _RcCalibrationCardState extends ConsumerState<RcCalibrationCard> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = KppLocalizations.of(context);
     if (_step == _Step.extremes) {
       ref.listen(telemetryProvider.select((t) => t.rcChannels), (_, channels) => _calibration.recordExtremes(channels));
     }
     final params = ref.watch(paramValuesProvider);
 
     return AppCard(
-      title: 'Stick calibration',
+      title: l10n.stickCalibration,
       subtitle: switch (_step) {
-        _Step.idle => 'Current endpoints are shown below. Start to recalibrate channels 1–4.',
-        _Step.extremes => 'Push every stick to its maximum and minimum several times, then press Next.',
-        _Step.centre => 'Release every stick to the centre, then press Capture centre.',
-        _Step.review => 'Check the results, then save them to the flight controller.',
+        _Step.idle => l10n.stickCalibrationIdle,
+        _Step.extremes => l10n.stickCalibrationExtremes,
+        _Step.centre => l10n.stickCalibrationCentre,
+        _Step.review => l10n.stickCalibrationReview,
       },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _ResultsTable(rows: _step == _Step.review ? _calibration.results() : _fromParams(params)),
+          _ResultsTable(l10n: l10n, rows: _step == _Step.review ? _calibration.results() : _fromParams(params)),
           const SizedBox(height: 12),
           if (_step == _Step.review && _calibration.invalidChannels().isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Text(
-                'Channel min/max out of range: CH${_calibration.invalidChannels().join(', CH')}. Calibration failed — try again.',
+                l10n.stickCalibrationInvalid('CH${_calibration.invalidChannels().join(', CH')}'),
                 style: TextStyle(color: Theme.of(context).colorScheme.error),
               ),
             ),
@@ -73,19 +75,19 @@ class _RcCalibrationCardState extends ConsumerState<RcCalibrationCard> {
             spacing: 12,
             children: [
               switch (_step) {
-                _Step.idle => FilledButton(onPressed: _start, child: const Text('Start calibration')),
+                _Step.idle => FilledButton(onPressed: _start, child: Text(l10n.startCalibration)),
                 _Step.extremes => FilledButton(
                   onPressed: () => setState(() => _step = _Step.centre),
-                  child: const Text('Next'),
+                  child: Text(l10n.next),
                 ),
-                _Step.centre => FilledButton(onPressed: _captureCentre, child: const Text('Capture centre')),
+                _Step.centre => FilledButton(onPressed: _captureCentre, child: Text(l10n.captureCentre)),
                 _Step.review => FilledButton(
                   onPressed: _calibration.invalidChannels().isEmpty ? _save : null,
-                  child: const Text('Save calibration'),
+                  child: Text(l10n.saveCalibration),
                 ),
               },
               if (_step != _Step.idle)
-                TextButton(onPressed: () => setState(() => _step = _Step.idle), child: const Text('Cancel')),
+                TextButton(onPressed: () => setState(() => _step = _Step.idle), child: Text(l10n.cancel)),
             ],
           ),
         ],
@@ -103,8 +105,9 @@ class _RcCalibrationCardState extends ConsumerState<RcCalibrationCard> {
 }
 
 class _ResultsTable extends StatelessWidget {
-  const _ResultsTable({required this.rows});
+  const _ResultsTable({required this.l10n, required this.rows});
 
+  final KppLocalizations l10n;
   final List<ChannelCalibration> rows;
 
   @override
@@ -113,11 +116,11 @@ class _ResultsTable extends StatelessWidget {
       headingRowHeight: 36,
       dataRowMinHeight: 32,
       dataRowMaxHeight: 36,
-      columns: const [
-        DataColumn(label: Text('Channel')),
-        DataColumn(label: Text('Min'), numeric: true),
-        DataColumn(label: Text('Centre'), numeric: true),
-        DataColumn(label: Text('Max'), numeric: true),
+      columns: [
+        DataColumn(label: Text(l10n.channel)),
+        DataColumn(label: Text(l10n.min), numeric: true),
+        DataColumn(label: Text(l10n.centre), numeric: true),
+        DataColumn(label: Text(l10n.max), numeric: true),
       ],
       rows: [
         for (final row in rows)

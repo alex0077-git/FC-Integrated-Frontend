@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuselage_kpp/core/widgets/app_card.dart';
 import 'package:fuselage_kpp/data/repositories/connection_repository.dart';
 import 'package:fuselage_kpp/data/repositories/telemetry_repository.dart';
+import 'package:fuselage_kpp/l10n/app_localizations.dart';
 
 class ImuCalibrationCard extends ConsumerStatefulWidget {
   const ImuCalibrationCard({super.key});
@@ -22,9 +23,10 @@ class _ImuCalibrationCardState extends ConsumerState<ImuCalibrationCard> {
     if (session == null) {
       return;
     }
+    final l10n = KppLocalizations.of(context);
     setState(() {
       _busy = true;
-      _status = 'Place the FC face up and level…';
+      _status = l10n.imuLevelCalibrationSubtitle;
     });
     final sub = session.commands.statusTexts.listen((t) {
       if (mounted) {
@@ -34,10 +36,10 @@ class _ImuCalibrationCardState extends ConsumerState<ImuCalibrationCard> {
     final messenger = ScaffoldMessenger.of(context);
     try {
       await session.commands.calibrateImu();
-      messenger.showSnackBar(const SnackBar(content: Text('IMU calibration accepted')));
-      setState(() => _status = 'IMU calibration finished');
+      messenger.showSnackBar(SnackBar(content: Text(l10n.imuCalibrationAccepted)));
+      setState(() => _status = l10n.imuCalibrationAccepted);
     } catch (error) {
-      messenger.showSnackBar(SnackBar(content: Text('IMU calibration failed: $error')));
+      messenger.showSnackBar(SnackBar(content: Text(l10n.imuCalibrationFailed(error.toString()))));
       setState(() => _status = error.toString());
     } finally {
       await sub.cancel();
@@ -49,15 +51,19 @@ class _ImuCalibrationCardState extends ConsumerState<ImuCalibrationCard> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = KppLocalizations.of(context);
     return AppCard(
-      title: 'IMU level calibration',
-      subtitle: 'Place the flight controller face up and level, then calibrate.',
+      title: l10n.imuLevelCalibration,
+      subtitle: l10n.imuLevelCalibrationSubtitle,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (_status != null) Text(_status!),
           const SizedBox(height: 8),
-          FilledButton(onPressed: _busy ? null : _run, child: Text(_busy ? 'Calibrating…' : 'Calibrate IMU')),
+          FilledButton(
+            onPressed: _busy ? null : _run,
+            child: Text(_busy ? l10n.calibratingImu : l10n.calibrateImu),
+          ),
         ],
       ),
     );
@@ -80,9 +86,10 @@ class _CompassCalibrationCardState extends ConsumerState<CompassCalibrationCard>
     if (session == null) {
       return;
     }
+    final l10n = KppLocalizations.of(context);
     setState(() {
       _busy = true;
-      _status = 'Rotate the aircraft level, then nose-down…';
+      _status = l10n.compassCalibrationSubtitle;
     });
     final sub = session.commands.statusTexts.listen((t) {
       if (mounted) {
@@ -92,9 +99,9 @@ class _CompassCalibrationCardState extends ConsumerState<CompassCalibrationCard>
     final messenger = ScaffoldMessenger.of(context);
     try {
       await session.commands.calibrateCompass();
-      messenger.showSnackBar(const SnackBar(content: Text('Compass calibration started')));
+      messenger.showSnackBar(SnackBar(content: Text(l10n.compassCalibrationStarted)));
     } catch (error) {
-      messenger.showSnackBar(SnackBar(content: Text('Compass calibration failed: $error')));
+      messenger.showSnackBar(SnackBar(content: Text(l10n.compassCalibrationFailed(error.toString()))));
       setState(() => _status = error.toString());
     } finally {
       await sub.cancel();
@@ -106,16 +113,20 @@ class _CompassCalibrationCardState extends ConsumerState<CompassCalibrationCard>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = KppLocalizations.of(context);
     final live = ref.watch(telemetryProvider.select((t) => t.lastStatusText));
     return AppCard(
-      title: 'Compass calibration',
-      subtitle: 'Rotate the aircraft level and clockwise, then nose-down and clockwise.',
+      title: l10n.compassCalibration,
+      subtitle: l10n.compassCalibrationSubtitle,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (_status != null || live != null) Text(_status ?? live!),
           const SizedBox(height: 8),
-          FilledButton(onPressed: _busy ? null : _run, child: Text(_busy ? 'Calibrating…' : 'Calibrate compass')),
+          FilledButton(
+            onPressed: _busy ? null : _run,
+            child: Text(_busy ? l10n.calibratingCompass : l10n.calibrateCompass),
+          ),
         ],
       ),
     );

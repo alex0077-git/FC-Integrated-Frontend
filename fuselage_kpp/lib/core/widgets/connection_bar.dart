@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuselage_kpp/core/theme/app_theme.dart';
@@ -7,6 +7,7 @@ import 'package:fuselage_kpp/data/link/serial_fc_link.dart';
 import 'package:fuselage_kpp/data/link/transmitter_devices.dart';
 import 'package:fuselage_kpp/data/repositories/connection_repository.dart';
 import 'package:fuselage_kpp/data/session/fc_session.dart';
+import 'package:fuselage_kpp/l10n/app_localizations.dart';
 
 /// Top bar: pick the USB serial port and baud rate (or the simulator),
 /// connect, and see the link status. Optional wireless MAVLink is an add-on.
@@ -94,6 +95,7 @@ class _ConnectionBarState extends ConsumerState<ConnectionBar> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = KppLocalizations.of(context);
     final connection = ref.watch(fcConnectionProvider);
     final controller = ref.read(fcConnectionProvider.notifier);
     final editable = !connection.hasSession && !connection.isBusy;
@@ -113,23 +115,23 @@ class _ConnectionBarState extends ConsumerState<ConnectionBar> {
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 _LabeledDropdown<String>(
-                  label: 'Port',
+                  label: l10n.port,
                   value: _selectedPort,
                   enabled: editable,
                   items: {
                     for (final port in _ports) port.name: '${port.name}  ${port.description}',
-                    ConnectionBar.simulatorOption: 'Simulator (no hardware)',
+                    ConnectionBar.simulatorOption: l10n.simulatorNoHardware,
                   },
                   onChanged: (value) => setState(() => _selectedPort = value),
                 ),
                 IconButton(
-                  tooltip: 'Refresh COM ports',
+                  tooltip: l10n.refreshComPorts,
                   onPressed: editable ? _refreshPorts : null,
                   icon: const Icon(Icons.refresh),
                 ),
                 if (isSerial) ...[
                   _LabeledDropdown<int>(
-                    label: 'Baud',
+                    label: l10n.baud,
                     value: _baudRate,
                     enabled: editable,
                     items: {for (final baud in ConnectionSettings.baudRates) baud: '$baud'},
@@ -140,19 +142,19 @@ class _ConnectionBarState extends ConsumerState<ConnectionBar> {
                   OutlinedButton.icon(
                     onPressed: connection.status == FcLinkStatus.connecting ? null : controller.disconnect,
                     icon: const Icon(Icons.link_off),
-                    label: const Text('Disconnect'),
+                    label: Text(l10n.disconnect),
                   )
                 else
                   FilledButton.icon(
                     onPressed: () => controller.connect(_settings),
                     icon: const Icon(Icons.link),
-                    label: const Text('Connect'),
+                    label: Text(l10n.connect),
                   ),
                 TextButton(
                   onPressed: editable
                       ? () => setState(() => _showTransmitter = !_showTransmitter)
                       : null,
-                  child: Text(_showTransmitter ? 'Hide transmitter' : 'Transmitter BT/WiFi'),
+                  child: Text(_showTransmitter ? l10n.hideTransmitter : l10n.showTransmitter),
                 ),
                 _StatusChip(state: connection),
               ],
@@ -166,7 +168,7 @@ class _ConnectionBarState extends ConsumerState<ConnectionBar> {
                 children: [
                   if (_selectedBtId != null && _btDevices.isNotEmpty)
                     _LabeledDropdown<String>(
-                      label: 'BT',
+                      label: l10n.btAbbrev,
                       value: _selectedBtId!,
                       enabled: editable,
                       items: {
@@ -176,27 +178,27 @@ class _ConnectionBarState extends ConsumerState<ConnectionBar> {
                     )
                   else
                     Text(
-                      'No BT serial port — pair TX then refresh',
+                      l10n.noBtSerialRefresh,
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   IconButton(
-                    tooltip: 'Refresh Bluetooth ports',
+                    tooltip: l10n.refreshBluetoothPorts,
                     onPressed: _refreshBluetooth,
                     icon: const Icon(Icons.refresh),
                   ),
                   OutlinedButton.icon(
                     onPressed: _selectedBtId == null ? null : _connectBluetooth,
                     icon: const Icon(Icons.bluetooth),
-                    label: const Text('Bluetooth'),
+                    label: Text(l10n.bluetooth),
                   ),
                   SizedBox(
                     width: 140,
                     child: TextField(
                       controller: _wifiHost,
-                      decoration: const InputDecoration(
-                        labelText: 'TX WiFi IP',
+                      decoration: InputDecoration(
+                        labelText: l10n.txWifiIp,
                         isDense: true,
-                        border: OutlineInputBorder(),
+                        border: const OutlineInputBorder(),
                       ),
                     ),
                   ),
@@ -206,17 +208,17 @@ class _ConnectionBarState extends ConsumerState<ConnectionBar> {
                       controller: _wifiPort,
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: const InputDecoration(
-                        labelText: 'TCP',
+                      decoration: InputDecoration(
+                        labelText: l10n.tcp,
                         isDense: true,
-                        border: OutlineInputBorder(),
+                        border: const OutlineInputBorder(),
                       ),
                     ),
                   ),
                   OutlinedButton.icon(
                     onPressed: _connectWifiTcp,
                     icon: const Icon(Icons.wifi),
-                    label: const Text('WiFi'),
+                    label: Text(l10n.wifi),
                   ),
                 ],
               ),
@@ -283,16 +285,18 @@ class _StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = KppLocalizations.of(context);
     final colors = Theme.of(context).extension<AppStatusColors>() ?? AppStatusColors.dark;
+    final link = state.session?.linkLabel ?? '—';
     final (label, color) = switch (state.status) {
-      FcLinkStatus.disconnected => ('Disconnected', Colors.grey),
-      FcLinkStatus.connecting => ('Connecting…', colors.statusWarning),
+      FcLinkStatus.disconnected => (l10n.linkDisconnected, Colors.grey),
+      FcLinkStatus.connecting => (l10n.linkConnecting, colors.statusWarning),
       FcLinkStatus.loadingParameters => (
-        'Reading parameters ${state.paramsReceived}/${state.paramsTotal}',
+        l10n.linkReadingParameters(state.paramsReceived, state.paramsTotal),
         colors.statusWarning,
       ),
-      FcLinkStatus.connected => ('Connected · ${state.session?.linkLabel}', colors.statusGood),
-      FcLinkStatus.linkLost => ('Link lost · ${state.session?.linkLabel}', colors.statusCritical),
+      FcLinkStatus.connected => (l10n.linkConnected(link), colors.statusGood),
+      FcLinkStatus.linkLost => (l10n.linkLostStatus(link), colors.statusCritical),
     };
     return Chip(
       avatar: CircleAvatar(backgroundColor: color, radius: 5),
