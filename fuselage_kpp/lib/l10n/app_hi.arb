@@ -1,0 +1,677 @@
+{
+  "@@locale": "hi",
+  "@missionItemsHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@modeSet": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "@abSprayGenerated": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@fenceCircleEnabled": {
+    "placeholders": {
+      "radius": {
+        "type": "String"
+      }
+    }
+  },
+  "@exportedTo": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "@importedItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@motorTestConfirmMessage": {
+    "placeholders": {
+      "motor": {
+        "type": "int"
+      },
+      "throttle": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "@protectionDescription": {
+    "placeholders": {
+      "voltage": {
+        "type": "String"
+      }
+    }
+  },
+  "@barometerReading": {
+    "placeholders": {
+      "pressure": {
+        "type": "String"
+      },
+      "temperature": {
+        "type": "String"
+      }
+    }
+  },
+  "@duplicateChannelFunctions": {
+    "placeholders": {
+      "details": {
+        "type": "String"
+      }
+    }
+  },
+  "@logSavedTo": {
+    "placeholders": {
+      "id": {
+        "type": "int"
+      },
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "@motorThrottlePercent": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "@motorDurationSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "@motorTestAccepted": {
+    "placeholders": {
+      "motor": {
+        "type": "int"
+      }
+    }
+  },
+  "@motorTestFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@imuCalibrationFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@compassCalibrationFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@paramSaved": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@paramNotSaved": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      },
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@paramsSavedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@paramsSavedPartial": {
+    "placeholders": {
+      "saved": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      },
+      "ids": {
+        "type": "String"
+      }
+    }
+  },
+  "@stickCalibrationInvalid": {
+    "placeholders": {
+      "channels": {
+        "type": "String"
+      }
+    }
+  },
+  "@fcReadingAndMultiplier": {
+    "placeholders": {
+      "reading": {
+        "type": "String"
+      },
+      "mult": {
+        "type": "String"
+      }
+    }
+  },
+  "@logParseFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@plotMinMax": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "@exportParametersTo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "@importFileFormatError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "@fcFirmwareInfo": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtkCurrentPositioning": {
+    "placeholders": {
+      "fix": {
+        "type": "String"
+      }
+    }
+  },
+  "@logsOnFlightController": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@parametersDescription": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@parametersShown": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@paramUnknownOption": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@validateMinimum": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@validateMaximum": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "appName": "Fuselage-K++",
+  "groupBasic": "बेसिक",
+  "groupAdvanced": "उन्नत",
+  "groupTools": "टूल्स",
+  "groupFly": "उड़ान",
+  "destOverview": "स्थिति",
+  "destInstallation": "इंस्टॉलेशन",
+  "destRemoteControl": "रिमोट कंट्रोल",
+  "destSensors": "सेंसर",
+  "destFlight": "मोटर और उड़ान",
+  "destGains": "गेन्स",
+  "destProtection": "सुरक्षा",
+  "destPump": "पंप",
+  "destLiquid": "तरल स्तर",
+  "destSpraying": "AB स्प्रेइंग",
+  "destFence": "फेंस",
+  "destExtensions": "एक्सटेंशन",
+  "destChannels": "चैनल मैपिंग",
+  "destMission": "मिशन",
+  "destLogs": "फ्लाइट लॉग",
+  "destParameters": "सभी पैरामीटर",
+  "destFirmware": "फर्मवेयर और परिचय",
+  "mapFly": "मानचित्र / उड़ान",
+  "groundPlan": "ग्राउंड प्लान",
+  "home": "होम",
+  "language": "भाषा",
+  "overviewDescription": "फ्लाइट कंट्रोलर और उसके मॉड्यूल की लाइव स्थिति (K++ असिस्टेंट लेआउट)।",
+  "sensors": "सेंसर",
+  "imu": "IMU",
+  "gps": "GPS",
+  "gps1": "GPS1",
+  "gps1Sats": "GPS1 उपग्रह",
+  "gps2": "GPS2",
+  "gps2Sats": "GPS2 उपग्रह",
+  "position": "स्थिति",
+  "altitude": "ऊँचाई",
+  "hdop": "HDOP",
+  "powerAndLink": "पावर और लिंक",
+  "batteryVoltage": "बैटरी वोल्टेज",
+  "rcSignal": "RC सिग्नल",
+  "link": "लिंक",
+  "firmwareVersion": "फर्मवेयर संस्करण",
+  "softwareRevision": "सॉफ़्टवेयर रिवीज़न",
+  "parameters": "पैरामीटर",
+  "fcMessage": "फ्लाइट कंट्रोलर संदेश",
+  "statusNormal": "सामान्य",
+  "statusFault": "फॉल्ट",
+  "statusNotConnected": "कनेक्ट नहीं",
+  "port": "पोर्ट",
+  "baud": "बॉड",
+  "connect": "कनेक्ट",
+  "disconnect": "डिस्कनेक्ट",
+  "bluetooth": "ब्लूटूथ",
+  "wifi": "WiFi",
+  "refreshComPorts": "COM पोर्ट रीफ़्रेश करें",
+  "refreshBluetoothPorts": "ब्लूटूथ पोर्ट रीफ़्रेश करें",
+  "setMode": "मोड सेट करें",
+  "flightModeAuto": "ऑटो",
+  "flightModeGuided": "Guided",
+  "flightModeLoiter": "Loiter",
+  "flightModeRtl": "RTL",
+  "flightModeLand": "लैंड",
+  "defaultAlt": "डिफ़ॉल्ट ऊँचाई",
+  "abSpray": "AB स्प्रे",
+  "download": "डाउनलोड",
+  "upload": "अपलोड",
+  "clear": "साफ़",
+  "import": "आयात",
+  "export": "निर्यात",
+  "cancel": "रद्द",
+  "ok": "ठीक",
+  "altitudeM": "ऊँचाई (m)",
+  "missionItemsHint": "{count} आइटम — वेपॉइंट जोड़ने के लिए मानचित्र टैप करें",
+  "setA": "A सेट",
+  "setB": "B सेट",
+  "tapMapForFence": "बाड़ के लिए मानचित्र टैप…",
+  "enableCircleFence": "वृत्त बाड़ सक्षम",
+  "editAltitude": "ऊँचाई संपादित",
+  "missionDownloaded": "मिशन डाउनलोड",
+  "missionUploaded": "मिशन अपलोड",
+  "missionCleared": "मिशन साफ़",
+  "rtlAccepted": "RTL स्वीकृत",
+  "landAccepted": "लैंड स्वीकृत",
+  "modeSet": "मोड {mode} सेट",
+  "setPointsAbFirst": "पहले मानचित्र पर बिंदु A और B सेट करें",
+  "abSprayGenerated": "AB स्प्रे पैटर्न ({count} आइटम)",
+  "fenceCircleEnabled": "वृत्त बाड़ सक्षम, त्रिज्या {radius} m (उड़ान में विमान पर केंद्रित)",
+  "exportedTo": "निर्यात {path}",
+  "importedItems": "{count} आइटम आयात",
+  "rtl": "RTL",
+  "land": "लैंड",
+  "armed": "ARMED",
+  "disarmed": "Disarmed",
+  "notConnected": "संबद्ध नहीं",
+  "notConnectedHint": "ऊपर और प्रेस कनेक्ट में एक COM पोर्ट (या सिम्युलेटर) चुनें।",
+  "cardFrameType": "फ्रेम प्रकार",
+  "frameTypeSubtitle": "K++ सहायक के समान: पीला हाथ = नाक, M1-M8 = FC पोर्ट, लाल CW / नीला CCW = प्रोपेलर स्पिन। FRAME और SHAPE लिखते हैं।",
+  "cardImuGpsMounting": "IMU & GPS माउंटिंग",
+  "installationDescription": "मॉड्यूल को कैसे माउंट किया जाता है, उससे मिलान करने के लिए निर्देश चुनें और सेंटीमीटर (नीले जोन नेगेटिव, येलो जोन पॉजिटिव) में ग्रेविटी के एयरफ्रेम सेंटर से अपनी ऑफसेट में प्रवेश करें।",
+  "remoteControlDescription": "यह सुनिश्चित करने के लिए कि असफल सुरक्षित सही ढंग से सेट किया गया है, इसे बदलने के बाद RC को बंद करें और चेक करें कि चैनल 1-4 केंद्र में कूदते हैं (लगभग 1500) और चैनल 5 अपनी असफल सुरक्षित स्थिति में कूदते हैं।",
+  "cardRcSettingsFailsafe": "RC सेटिंग्स",
+  "stickCalibration": "स्टिक कैलिब्रेशन",
+  "stickCalibrationIdle": "वर्तमान समापन बिंदु नीचे दिखाया गया है। चैनल 1-4 को पुनः प्राप्त करना शुरू करें।",
+  "stickCalibrationExtremes": "प्रत्येक छड़ी को अपने अधिकतम और न्यूनतम कई बार पुश करें, फिर अगला दबाएं।",
+  "stickCalibrationCentre": "प्रत्येक छड़ी को केंद्र में छोड़ दें, फिर कैप्चर सेंटर दबाएं।",
+  "stickCalibrationReview": "परिणाम की जाँच करें, फिर उन्हें उड़ान नियंत्रक को बचाएं।",
+  "startCalibration": "अंशांकन",
+  "captureCentre": "कैप्चर सेंटर",
+  "saveCalibration": "अंशांकन",
+  "next": "अगला",
+  "channel": "चैनल",
+  "min": "मिन",
+  "centre": "केंद्र",
+  "max": "मैक्स",
+  "channelMonitor": "चैनल मॉनिटर",
+  "sensorsImuCompassSubtitle": "प्रत्येक IMU उदाहरण से रॉ सेंसर मान।",
+  "cardImuCompass": "IMU & compass",
+  "cardBarometer": "बैरोमीटर",
+  "noBarometerData": "कोई बैरोमीटर डेटा नहीं",
+  "imuLevelCalibration": "IMU स्तर अंशांकन",
+  "imuLevelCalibrationSubtitle": "उड़ान नियंत्रक को ऊपर और स्तर पर रखें, फिर कैलिब्रेट करें।",
+  "compassCalibration": "कम्पास अंशांकन",
+  "compassCalibrationSubtitle": "विमान स्तर और दक्षिणावर्त घुमाएं, फिर नाक-डाउन और दक्षिणावर्त।",
+  "cardGlobalFlightLimits": "वैश्विक उड़ान सीमा और मोटर निष्क्रिय",
+  "motorTest": "मोटर परीक्षण",
+  "motorTestSubtitle": "प्रत्येक मोटर को व्यक्तिगत रूप से ऑर्डर और दिशा की जांच करने के लिए स्पिन करता है।",
+  "removePropellers": "प्रोपेलर निकालें",
+  "startTest": "प्रारंभ परीक्षण",
+  "motorTestConfirmMessage": "मोटर परीक्षण {seconds} s के लिए {throttle}% पर M{motor} स्पिन करेगा।\nप्रोपेलर की पुष्टि की जाती है और विमान सुरक्षित है।",
+  "testingMotors": "परीक्षण...",
+  "testMotors": "टेस्ट मोटर्स",
+  "calibrateImu": "Calibrate IMU",
+  "calibratingImu": "कैलिब्रेटिंग ...",
+  "calibrateCompass": "कैलिब्रेट कम्पास",
+  "calibratingCompass": "कैलिब्रेटिंग ...",
+  "gainsDescription": "नियंत्रण लाभ पायलट के अनुभव को निर्धारित करते हैं: उच्च मान तेजी से जवाब देते हैं लेकिन अधिक शक्ति की आवश्यकता होती है। केवल कंपन दमन की ओर प्रदर्शन प्रवृत्ति को स्थानांतरित करें यदि एयरफ्रेम वाइसिबली शेक्स या मोटर्स ध्वनि शोर।",
+  "protectionDescription": "वर्तमान वोल्टेज: {voltage} स्तर 2 को स्तर 1 से कम होना चाहिए; दोनों स्तरों में रोशनी भी दिखाई देती है।",
+  "barometerReading": "दबाव {pressure} . एचपीए · तापमान {temperature} °C",
+  "cardBasicGains": "बुनियादी लाभ",
+  "cardControlGains": "नियंत्रण लाभ",
+  "cardSpeedSensitivity": "गति और संवेदनशीलता",
+  "cardVoltageRtlLanding": "वोल्टेज, घर वापसी और लैंडिंग",
+  "voltageCalibration": "वोल्टेज अंशांकन",
+  "voltageCalibrationSubtitle": "एक मीटर के साथ मापा वोल्टेज दर्ज करें इसलिए एफसी रीडिंग इसे मैच करती है।",
+  "meterVoltageV": "मीटर वोल्टेज (V)",
+  "calibrateVoltage": "कैलिब्रेट वोल्टेज",
+  "cardPump": "पम्प",
+  "cardLevelSensorProtection": "लेवल सेंसर & प्रोटेक्शन",
+  "cardAbJobSettings": "AB नौकरी सेटिंग",
+  "cardAbJobProcedure": "AB नौकरी प्रक्रिया",
+  "fenceDescription": "सर्कल और ऊंचाई सीमा। मिशन मानचित्र से सर्कल को ड्रॉ / समायोजित करें, या यहां मूल्यों को निर्धारित करें।",
+  "cardQuickFence": "त्वरित बाड़",
+  "fenceEnabled": "बाड़ सक्षम है",
+  "fenceOff": "बाड़ बंद है",
+  "enableAltitudeAndCircle": "ऊंचाई + सर्कल सक्षम करें",
+  "disableFence": "बाड़ लगाना",
+  "cardHeightDistanceLimits": "ऊंचाई और दूरी सीमा",
+  "cardRtkAntenna": "RTK एंटीना",
+  "rtkCurrentPositioning": "वर्तमान स्थिति: {fix}",
+  "cardRadarVision4g": "रडार, दृष्टि और 4 जी मॉड्यूल स्थिति",
+  "extensionsRadarStatusDescription": "Terrain-following radar ऊंचाई, बाधा रडार दूरी, दृष्टि मॉड्यूल राज्य और आईओटी सिम स्थिति यहां K++ सहायक में दिखाया गया है।",
+  "channelsDescription": "यह देखने के लिए चैनल मॉनिटर की जाँच करें कि आपके RC कार्यों को सौंपने से पहले किस चैनल का उपयोग करता है।",
+  "cardChannelFunctions": "चैनल फ़ंक्शन",
+  "flightLogsDescription": "डाउनलोड किए गए लॉग दस्तावेज़ \\Fuselage-K++\\logs के लिए सहेजे जाते हैं।",
+  "refreshList": "ताज़ा सूची",
+  "logsOnFlightController": "{count} उड़ान नियंत्रक पर लॉग इन करता है",
+  "parametersDescription": "{count} पैरामीटर उड़ान नियंत्रक से पढ़ा गया।",
+  "parameterFiles": "पैरामीटर फाइलें",
+  "reloadFromFc": "FC से Reload",
+  "searchByIdOrName": "आईडी या नाम से खोजें",
+  "parametersShown": "{count} दिखाया गया",
+  "paramColumnId": "आईडी",
+  "paramColumnName": "नाम",
+  "paramColumnValue": "मूल्य",
+  "paramFormHint": "एक मान टाइप करें और प्रेस इसे फ्लाइट कंट्रोलर में लिखने के लिए एंटर करें।",
+  "paramNotReported": "इस उड़ान नियंत्रक द्वारा रिपोर्ट नहीं की गई",
+  "paramUnknownOption": "अज्ञात ({value})",
+  "enterNumber": "नंबर दर्ज करें",
+  "writeToFlightControllerTitle": "उड़ान नियंत्रक को लिखें?",
+  "write": "लिखना",
+  "cardVersions": "संस्करण",
+  "cardVersionsAuthorisation": "संस्करण और प्राधिकरण",
+  "firmwareUpgrade": "फर्मवेयर अपग्रेड",
+  "firmwareUpgradeDescription": "उड़ान नियंत्रक बूटलोडर के माध्यम से K++ V2 / KX / P3 फर्मवेयर अपलोड करें। अपग्रेड करते समय डिवाइस को कभी भी हटा दें।",
+  "upgradeFirmware": "फर्मवेयर अपग्रेड",
+  "factoryReset": "फैक्टरी रीसेट",
+  "factoryResetDescription": "प्रत्येक पैरामीटर को फैक्ट्री डिफ़ॉल्ट में पुनर्स्थापित करें।",
+  "restoreFactorySettings": "फैक्टरी सेटिंग बहाल करें",
+  "droneRegistration": "ड्रोन पंजीकरण",
+  "droneRegistrationDescription": "निर्माता का नाम, विमान मॉडल और विमान संख्या (网络备案)।",
+  "shape": "आकार",
+  "validateMinimum": "न्यूनतम {value}",
+  "validateMaximum": "अधिकतम {value}",
+  "validateChooseOption": "सूचीबद्ध विकल्पों में से एक चुनें",
+  "instance": "इंस्टेंस",
+  "accelAxes": "एक्स / वाई / जेड",
+  "gyroAxes": "Gyro X / Y / Z",
+  "compassAxes": "Compass X / Y / Z",
+  "comingSoon": "जल्द ही",
+  "channelMonitorNoData": "अभी तक कोई RC डेटा प्राप्त नहीं हुआ।",
+  "channelMonitorHint": "प्रत्येक चैनल को देखने के लिए छड़ी और स्विच ले जाएँ।",
+  "duplicateChannelFunctions": "डुप्लिकेट चैनल कार्य: {details}",
+  "logColumnNo": "नहीं",
+  "logColumnTimeUtc": "समय (UTC)",
+  "logColumnSizeBytes": "आकार (bytes)",
+  "logReview": "समीक्षा",
+  "logSavedTo": "{id} ने {path} को बचाया",
+  "motorThrottlePercent": "थ्रॉटल {percent}%",
+  "motorDurationSeconds": "अवधि {seconds}S",
+  "motorTestAccepted": "M{motor} परीक्षण स्वीकृत",
+  "motorTestFailed": "मोटर परीक्षण विफल रहा: {error}",
+  "imuCalibrationAccepted": "IMU अंशांकन स्वीकृत",
+  "imuCalibrationFailed": "IMU अंशांकन विफल: {error}",
+  "compassCalibrationStarted": "कम्पास अंशांकन शुरू",
+  "compassCalibrationFailed": "Compass calibration विफल: {error}",
+  "paramSaved": "{id} बचाया: {value}",
+  "paramNotSaved": "{id} नहीं बचाया: {error}",
+  "paramsSavedCount": "{count} मापदंडों को बचाया",
+  "paramsSavedPartial": "{saved} बचाया, {failed} विफल: {ids}",
+  "stickCalibrationInvalid": "चैनल मिनट/अधिकतम सीमा से बाहर: {channels}. अंशांकन विफल रहा - फिर से प्रयास करें।",
+  "fcReadingAndMultiplier": "FC रीडिंग: {reading} · बहुसंख्यक: {mult}",
+  "enterValidMeterVoltage": "एक मान्य मीटर वोल्टेज दर्ज करें",
+  "noBatteryVoltageYet": "उड़ान नियंत्रक से अभी तक कोई बैटरी वोल्टेज नहीं",
+  "logParseFailed": "{error}",
+  "logParseFailedHint": "संपूर्ण विश्लेषण के लिए बाहरी रूप से .bin खोलें।",
+  "logNoTrackSamples": "No GPS/ATT नमूने इस लॉग में मान्यता प्राप्त है।",
+  "plotNoSamples": "कोई नमूने नहीं",
+  "plotMinMax": "{min}",
+  "exportParametersTo": "{path} के लिए {count} मापदंडों का निर्यात किया गया",
+  "importFileFormatError": "फ़ाइल प्रारूप त्रुटि: {message}",
+  "importNothingMatches": "आयात करने के लिए कुछ नहीं: प्रत्येक मूल्य पहले से ही उड़ान नियंत्रक से मेल खाता है।",
+  "fcFirmwareInfo": "फ्लाइट कंट्रोलर फर्मवेयर: {version}",
+  "appAboutLine": "Fuselage-K++ 1.0.0 - JIYI K++ सहायक (JIYI221014) को बदलने के लिए बनाया गया।",
+  "sprayProcedure1Title": "रिकॉर्ड बिंदु A",
+  "sprayProcedure1Detail": "AB रिकॉर्ड स्विच को मध्य स्थिति में फ्लिप करें।",
+  "sprayProcedure2Title": "रिकॉर्ड प्वाइंट बी",
+  "sprayProcedure2Detail": "AB रिकॉर्ड स्विच को उच्च स्थिति में फ्लिप करें।",
+  "sprayProcedure3Title": "AB नौकरी शुरू करें",
+  "sprayProcedure3Detail": "AB स्विच को चालू करें (या AB एक उड़ान मोड के रूप में निष्पादित)।",
+  "sprayProcedure4Title": "दिशा",
+  "sprayProcedure4Detail": "रोल को काम करने के लिए पक्ष की ओर धकेलें।",
+  "sprayProcedure5Title": "A और B",
+  "sprayProcedure5Detail": "AB रिकॉर्ड को जल्दी और जल्दी से वापस घुमाएं।",
+  "sprayProcedure6Title": "फिर से भरना",
+  "sprayProcedure6Detail": "A/B समाशोधन के बिना, AB को चालू करें: काम अंतिम खाली टैंक बिंदु और दिशा से फिर से शुरू होता है।",
+  "waitingForProtocolConfirmation": "प्रोटोकॉल की पुष्टि के लिए प्रतीक्षा करना",
+  "pendingFeatureBody": "K++ सहायक इसके लिए JIYI-विशिष्ट कमांड का उपयोग करता है, मानक MAVLink नहीं। यह निष्क्रिय रहता है जब तक कि मूल ऐप की रिकॉर्डिंग सटीक संदेश की पुष्टि नहीं करती है, इसलिए असीमित उड़ान नियंत्रक को कभी नहीं भेजा जाता है।",
+  "optForward": "आगे",
+  "optRight": "अधिकार",
+  "optBackward": "पिछड़ा",
+  "optLeft": "बाएं",
+  "optOff": "बंद",
+  "optOn": "पर",
+  "optSinglePump": "एकल पंप",
+  "optDoublePump": "डबल पंप",
+  "optQuadX": "क्वाड X",
+  "optQuadPlus": "क्वाड +",
+  "optHexaX": "हेक्सा X",
+  "optHexaPlus": "हेक्सा +",
+  "optOctoX": "अक्टूबर",
+  "optOctoPlus": "ऑक्टा +",
+  "optStandard": "मानक",
+  "optCoaxial": "समाक्षीय",
+  "optY6": "Y6",
+  "optAltitude": "ऊंचाई",
+  "optAltitudeCircle": "ऊंचाई + सर्कल",
+  "optCircle": "सर्कल",
+  "pLabel_FRAME": "फ्रेम प्रकार",
+  "pLabel_SHAPE": "फ्रेम आकार",
+  "pLabel_NAV_IMU_ORIENT": "IMU दिशा",
+  "pLabel_NAV_COMP_ORIENT": "GPS दिशा",
+  "pLabel_NAV_IMU_POS_X": "IMU स्थिति X",
+  "pLabel_NAV_IMU_POS_Y": "IMU स्थिति Y",
+  "pLabel_NAV_IMU_POS_Z": "IMU स्थिति Z",
+  "pLabel_NAV_GPS3_POS_X": "GPS स्थिति X",
+  "pLabel_NAV_GPS3_POS_Y": "GPS स्थिति Y",
+  "pLabel_NAV_GPS3_POS_Z": "GPS स्थिति Z",
+  "pLabel_NAV_IMU_SOURCE": "IMU स्रोत",
+  "pLabel_RC_TYPE": "RC प्रकार",
+  "pLabel_FS_THR_ENABLE": "RC-हानि असफल सुरक्षित कार्रवाई",
+  "pLabel_RC_FS_CONTINUE": "पढ़ना जारी रखें जब RC खो गया है",
+  "pLabel_THR_DZ": "थ्रोटल मिड डेड जोन",
+  "pLabel_FLTMODE1": "उड़ान मोड 1",
+  "pLabel_FLTMODE2": "उड़ान मोड 2",
+  "pLabel_FLTMODE3": "उड़ान मोड 3",
+  "pLabel_FLTMODE4": "उड़ान मोड 4",
+  "pLabel_FLTMODE5": "उड़ान मोड 5",
+  "pLabel_FLTMODE6": "उड़ान मोड 6",
+  "pLabel_RC1_MIN": "CH1 min",
+  "pLabel_RC1_MAX": "CH1 अधिकतम",
+  "pLabel_RC1_TRIM": "CH1 ट्रिम",
+  "pLabel_RC2_MIN": "CH2 min",
+  "pLabel_RC2_MAX": "CH2 अधिकतम",
+  "pLabel_RC2_TRIM": "CH2 ट्रिम",
+  "pLabel_RC3_MIN": "CH3 min",
+  "pLabel_RC3_MAX": "CH3 अधिकतम",
+  "pLabel_RC3_TRIM": "CH3 ट्रिम",
+  "pLabel_RC4_MIN": "CH4 min",
+  "pLabel_RC4_MAX": "CH4 अधिकतम",
+  "pLabel_RC4_TRIM": "CH4 ट्रिम",
+  "pLabel_ANGLE_MAX": "अधिकतम झुकाव कोण",
+  "pLabel_WPNAV_LOIT_SPEED": "अधिकतम क्षैतिज गति",
+  "pLabel_PILOT_VELZ_UP": "अधिकतम चढ़ाई गति",
+  "pLabel_PILOT_VELZ_DOWN": "मैक्स।",
+  "pLabel_MOT_SPIN_ARMED": "मोटर निष्क्रिय गति",
+  "pLabel_GAIN_BASIC_R_PI": "रोल सुधार",
+  "pLabel_GAIN_BASIC_R_D": "रोल भिगोना",
+  "pLabel_GAIN_BASIC_P_PI": "पिच सुधार",
+  "pLabel_GAIN_BASIC_P_D": "पिच भिगोना",
+  "pLabel_GAIN_BASIC_YAW": "या",
+  "pLabel_GAIN_BASIC_THR": "शक्ति (vertical)",
+  "pLabel_GAIN_CONTROL_RP": "रोल / पिच",
+  "pLabel_GAIN_CONTROL_YAW": "या",
+  "pLabel_GAIN_CONTROL_THR": "कार्यक्षेत्र",
+  "pLabel_GAIN_CONTROL_WP": "मार्ग",
+  "pLabel_GAIN_CONTROL_MOV": "Manoeuvre",
+  "pLabel_GAIN_CONTROL_BRA": "ब्रेक",
+  "pLabel_GAIN_CONTROL_SCA": "समन्वय",
+  "pLabel_GAIN_CONTROL_TKO": "टेक-ऑफ",
+  "pLabel_GAIN_VEL_XY": "क्षैतिज गति लाभ",
+  "pLabel_GAIN_VEL_Z": "ऊर्ध्वाधर गति लाभ",
+  "pLabel_GAIN_SEN_ATT": "दृष्टिकोण संवेदनशीलता",
+  "pLabel_GAIN_PERFORMANCE": "प्रदर्शन प्रवृत्ति",
+  "pLabel_FS_BATT_ENABLE": "कम वोल्टेज संरक्षण कार्रवाई",
+  "pLabel_FS_BATT_WARNING": "स्तर 1 अलार्म वोल्टेज",
+  "pLabel_FS_BATT_VOLTAGE": "स्तर 2 अलार्म वोल्टेज",
+  "pLabel_FS_PMU_ENABLE": "PMU गलती संरक्षण",
+  "pLabel_RTL_ALT": "रिटर्न-होम ऊंचाई",
+  "pLabel_LAND_SPEED": "लैंडिंग गति",
+  "pLabel_SPRAY_PUMP_TYPE": "पम्प प्रकार",
+  "pLabel_LIQUID_TYPE": "स्तर सेंसर प्रकार",
+  "pLabel_FS_LIQ_ENABLE": "बाहरी सुरक्षा",
+  "pLabel_ABPOINT_DIS": "AB चौड़ाई",
+  "pLabel_ABPOINT_SPEED": "AB गति",
+  "pLabel_WPNAV_ENABLE_U": "यू के आकार का साइड शिफ्ट",
+  "pLabel_FENCE_ENABLE": "बाड़ सक्षम",
+  "pLabel_FENCE_TYPE": "बाड़ प्रकार",
+  "pLabel_FENCE_ALT_MAX": "ऊंचाई सीमा",
+  "pLabel_FENCE_RADIUS": "दूरी सीमा ( त्रिज्या)",
+  "pLabel_FENCE_ACTION": "बाड़ उल्लंघन कार्रवाई",
+  "pLabel_RTK_ANTI_DEG": "RTK एंटीना स्थापित कोण",
+  "pLabel_CH6_OPT": "चैनल 6 फ़ंक्शन",
+  "pLabel_CH7_OPT": "चैनल 7 समारोह",
+  "pLabel_CH8_OPT": "चैनल 8 फ़ंक्शन",
+  "pLabel_CH9_OPT": "चैनल 9 फ़ंक्शन",
+  "pLabel_CH10_OPT": "चैनल 10 समारोह",
+  "pLabel_CH11_OPT": "चैनल 11 समारोह",
+  "pLabel_CH12_OPT": "चैनल 12 समारोह",
+  "pLabel_BATT_VOLT_MULT": "बैटरी वोल्टेज गुणक",
+  "pLabel_FWVERSION": "फर्मवेयर संस्करण",
+  "pLabel_SYSID_SW_MREV": "सॉफ्टवेयर संशोधन",
+  "pLabel_INS_CAL_TYPE": "IMU अंशांकन राज्य",
+  "pLabel_COMPASS_CAL_TYPE": "कम्पास अंशांकन राज्य",
+  "pLabel_REG_ENABLE": "ऐप अनलॉक अधिकृत",
+  "helpBasicGain": "रेंज 0-200 %। नियंत्रक को एयरफ्रेम में अनुकूलित करता है।",
+  "helpControlGain": "रेंज 0-300 %। उच्च = तेज प्रतिक्रिया; एयरफ्रेम की शक्ति से सीमित।",
+  "helpMode": "K++ विकल्पों में मैनुअल जॉब, AB निष्पादित, रूट जॉब, GPS गति, साइड शिफ्ट और टेरेन फॉलो शामिल हैं। मूल्य मानचित्रण अभी तक पुष्टि नहीं हुई है।",
+  "helpChannel": "समारोह इस RC चैनल को सौंपा गया। प्रत्येक फ़ंक्शन का उपयोग एक बार किया जाना चाहिए; बदलने से पहले चैनल मॉनिटर की जांच करें।",
+  "help_0": "K++ बस पर FRAME के रूप में मोटर गिनती और लेआउट लिखा गया।",
+  "help_1": "गुरुत्वाकर्षण के केंद्र से ऑफसेट। ब्लू जोन = नकारात्मक, पीला जोन = सकारात्मक।",
+  "help_2": "रिसीवर प्रोटोकॉल। मूल्य मानचित्रण अभी तक पुष्टि नहीं हुई है।",
+  "help_3": "K++ विकल्प: घर लौटें, होवर, लैंड, होवर फिर जमीन। मूल्य मानचित्रण अभी तक पुष्टि नहीं हुई - RC के साथ परीक्षण बदलने के बाद बंद हो गया।",
+  "help_4": "AB / मार्ग नौकरियों में ड्रोन असफलता चलाने के बजाय काम करता रहता है। केवल रडार के साथ अनुशंसित।",
+  "help_5": "सेंटीडिग्री: 3000 = 30 डिग्री।",
+  "help_6": "K++ विकल्प: विकलांग, बहुत धीमी, धीमी, मध्यम, बहुत तेज। मूल्य मानचित्रण अभी तक पुष्टि नहीं हुई है।",
+  "help_7": "स्वायत्त उड़ान में त्वरण। उच्च = तेज गति परिवर्तन।",
+  "help_8": "पायलट नियंत्रण के तहत त्वरण।",
+  "help_9": "उच्च = कम, कठिन स्वचालित ब्रेकिंग।",
+  "help_10": "Manoeuvres के लिए नियंत्रण प्रतिक्रिया मैच; तेजी से शक्ति प्रणालियों को उच्च मूल्यों की आवश्यकता होती है।",
+  "help_11": "उच्च = तेज, कुरकुरा टेक-ऑफ।",
+  "help_12": "आम तौर पर समायोजित नहीं होता है।",
+  "help_13": "कितनी जल्दी एफसी स्टिक इनपुट का अनुसरण करता है।",
+  "help_14": "K++ विकल्प: संतुलित, खेल, विरोधी कंपन। यदि एयरफ्रेम वाइसिबली हिलाता है तो केवल कंपन दमन की ओर जाता है। मूल्य मानचित्रण अभी तक पुष्टि नहीं हुई है।",
+  "help_15": "K++ विकल्प: ऑफ, रिटर्न होम, लैंड (दोनों स्तरों में भी रोशनी चमकती है)। मूल्य मानचित्रण अभी तक पुष्टि नहीं हुई है।",
+  "help_16": "स्तर 1 वोल्टेज से कम होना चाहिए।",
+  "help_17": "एकल: P1 पर ESC पंप। डबल: P1 और P2 पर ESC; P1 आगे उड़ान चलाता है, P2 उड़ान पिछड़े।",
+  "help_18": "K++ विकल्प: उपयोग नहीं किया गया, स्विच सेंसर (एफसी पोर्ट K2), रीयल-टाइम स्तर। फ्लो मीटर पोर्ट K1 पर चला जाता है। मूल्य मानचित्रण अभी तक पुष्टि नहीं हुई है।",
+  "help_19": "जब टैंक सूख जाता है तो कार्रवाई। मूल्य मानचित्रण अभी तक पुष्टि नहीं हुई है।",
+  "help_20": "स्केल फैक्टर वोल्टेज अंशांकन (मीटर रीडिंग ÷ एफसी रीडिंग) के लिए उपयोग किया जाता है।",
+  "simulatorNoHardware": "सिम्युलेटर (कोई हार्डवेयर नहीं)",
+  "hideTransmitter": "ट्रांसमीटर छुपाएँ",
+  "showTransmitter": "ट्रांसमीटर BT/WiFi",
+  "btAbbrev": "BT",
+  "noBtSerialRefresh": "कोई BT सीरियल पोर्ट नहीं — TX पेयर करें फिर रीफ़्रेश",
+  "txWifiIp": "TX WiFi IP",
+  "tcp": "TCP",
+  "linkDisconnected": "डिस्कनेक्टेड",
+  "linkConnecting": "कनेक्ट हो रहा है…",
+  "linkReadingParameters": "पैरामीटर पढ़े जा रहे हैं {received}/{total}",
+  "linkConnected": "कनेक्टेड · {link}",
+  "linkLostStatus": "लिंक खो गया · {link}",
+  "sensorGyroscope": "जाइरोस्कोप",
+  "sensorAccelerometer": "एक्सेलेरोमीटर",
+  "sensorCompass": "कम्पास",
+  "sensorBarometer": "बैरोमीटर",
+  "sensorGps": "GPS"
+}

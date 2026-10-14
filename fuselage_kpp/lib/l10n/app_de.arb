@@ -1,0 +1,677 @@
+{
+  "@@locale": "de",
+  "appName": "<g id=\"1\">G0</g>",
+  "groupBasic": "Basis",
+  "groupAdvanced": "Erweitert",
+  "groupTools": "Werkzeuge",
+  "groupFly": "Flug",
+  "destOverview": "Status",
+  "destInstallation": "Installation",
+  "destRemoteControl": "Fernsteuerung",
+  "destSensors": "Sensoren",
+  "destFlight": "Motoren & Flug",
+  "destGains": "Gewinne",
+  "destProtection": "Schutz",
+  "destPump": "Pumpe",
+  "destLiquid": "Füllstand",
+  "destSpraying": "AB-Sprühen",
+  "destFence": "Zaun",
+  "destExtensions": "Erweiterungen",
+  "destChannels": "Kanalzuordnung",
+  "destMission": "Mission",
+  "destLogs": "Flugprotokolle",
+  "destParameters": "Alle Parameter",
+  "destFirmware": "Firmware & Info",
+  "mapFly": "Karte / Flug",
+  "groundPlan": "Bodenplan",
+  "home": "Startseite",
+  "language": "Sprache",
+  "overviewDescription": "Live-Gesundheit des Flugcontrollers und seiner Module (K++-Assistenten-Layout).",
+  "sensors": "Sensoren",
+  "imu": "G3 ",
+  "gps": "G2",
+  "gps1": "GPS1",
+  "gps1Sats": "GPS1 Satelliten",
+  "gps2": "GPS2",
+  "gps2Sats": "GPS2 Satelliten",
+  "position": "Position",
+  "altitude": "Höhe",
+  "hdop": "G18",
+  "powerAndLink": "Strom & Verbindung",
+  "batteryVoltage": "Batteriespannung",
+  "rcSignal": "RC-Signal",
+  "link": "Verbindung",
+  "firmwareVersion": "Firmware-Version",
+  "softwareRevision": "Software-Revision",
+  "parameters": "Parameter",
+  "fcMessage": "Flugcontroller-Meldung",
+  "statusNormal": "Normal",
+  "statusFault": "Fehler",
+  "statusNotConnected": "Nicht verbunden",
+  "port": "Port",
+  "baud": "Baud",
+  "connect": "Verbinden",
+  "disconnect": "Trennen",
+  "bluetooth": "G13.\t",
+  "wifi": "G12.\t",
+  "refreshComPorts": "COM-Ports aktualisieren",
+  "refreshBluetoothPorts": "Bluetooth-Ports aktualisieren",
+  "ok": "i.O.",
+  "cancel": "Abbrechen",
+  "abSpray": "AB-Sprühen",
+  "import": "Importieren",
+  "missionDownloaded": "Mission heruntergeladen",
+  "defaultAlt": "Standardhöhe",
+  "setMode": "Modus setzen",
+  "land": "Landen",
+  "importedItems": "{count} Einträge importiert",
+  "missionUploaded": "Mission hochgeladen",
+  "tapMapForFence": "Karte für Zaun antippen…",
+  "enableCircleFence": "Kreiszaun aktivieren",
+  "download": "Herunterladen",
+  "flightModeRtl": "G14.\t",
+  "exportedTo": "Exportiert nach {path}",
+  "rtl": "G14.\t",
+  "modeSet": "Modus {mode} gesetzt",
+  "armed": "SCHARF",
+  "missionCleared": "Mission gelöscht",
+  "setPointsAbFirst": "Setzen Sie zuerst Punkte A und B auf der Karte",
+  "export": "Exportieren",
+  "setA": "A setzen",
+  "abSprayGenerated": "AB-Sprühmuster erzeugt ({count} Einträge)",
+  "disarmed": "Entschärft",
+  "landAccepted": "Landen akzeptiert",
+  "upload": "Hochladen",
+  "rtlAccepted": "RTL akzeptiert",
+  "flightModeAuto": "Automatisch",
+  "flightModeGuided": "G15",
+  "clear": "Löschen",
+  "flightModeLand": "Landen",
+  "flightModeLoiter": "G16",
+  "setB": "B setzen",
+  "missionItemsHint": "{count} Einträge — Karte antippen für Wegpunkte",
+  "editAltitude": "Höhe bearbeiten",
+  "altitudeM": "Höhe (m)",
+  "fenceCircleEnabled": "Kreiszaun aktiv, Radius {radius} m (beim Flug um Fluggerät zentriert)",
+  "@missionItemsHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@modeSet": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "@abSprayGenerated": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@fenceCircleEnabled": {
+    "placeholders": {
+      "radius": {
+        "type": "String"
+      }
+    }
+  },
+  "@exportedTo": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "@importedItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@motorTestConfirmMessage": {
+    "placeholders": {
+      "motor": {
+        "type": "int"
+      },
+      "throttle": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "@protectionDescription": {
+    "placeholders": {
+      "voltage": {
+        "type": "String"
+      }
+    }
+  },
+  "@barometerReading": {
+    "placeholders": {
+      "pressure": {
+        "type": "String"
+      },
+      "temperature": {
+        "type": "String"
+      }
+    }
+  },
+  "@duplicateChannelFunctions": {
+    "placeholders": {
+      "details": {
+        "type": "String"
+      }
+    }
+  },
+  "@logSavedTo": {
+    "placeholders": {
+      "id": {
+        "type": "int"
+      },
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "@motorThrottlePercent": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "@motorDurationSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "@motorTestAccepted": {
+    "placeholders": {
+      "motor": {
+        "type": "int"
+      }
+    }
+  },
+  "@motorTestFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@imuCalibrationFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@compassCalibrationFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@paramSaved": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@paramNotSaved": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      },
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@paramsSavedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@paramsSavedPartial": {
+    "placeholders": {
+      "saved": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      },
+      "ids": {
+        "type": "String"
+      }
+    }
+  },
+  "@stickCalibrationInvalid": {
+    "placeholders": {
+      "channels": {
+        "type": "String"
+      }
+    }
+  },
+  "@fcReadingAndMultiplier": {
+    "placeholders": {
+      "reading": {
+        "type": "String"
+      },
+      "mult": {
+        "type": "String"
+      }
+    }
+  },
+  "@logParseFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@plotMinMax": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "@exportParametersTo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "@importFileFormatError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "@fcFirmwareInfo": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtkCurrentPositioning": {
+    "placeholders": {
+      "fix": {
+        "type": "String"
+      }
+    }
+  },
+  "@logsOnFlightController": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@parametersDescription": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@parametersShown": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@paramUnknownOption": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@validateMinimum": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@validateMaximum": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "notConnected": "Nicht verbunden",
+  "notConnectedHint": "Wählen Sie ⟦einen⟧ G6-Anschluss (oder den Simulator) in der Leiste oben und drücken Sie auf Verbinden.",
+  "cardFrameType": "Rahmentyp",
+  "frameTypeSubtitle": "Wie G1-Assistent⟦:⟧ gelber Arm = Nase, M1–M8 = FC-Anschlüsse, rot CW / blau CCW = Propellerdrehung. Schreibt FRAME und SHAPE.",
+  "cardImuGpsMounting": "⟦G3-⟧ & ⟦⟧ G2-Montage",
+  "installationDescription": "Wählen Sie die Richtungen, die der Montage der Module entsprechen, und geben Sie ihre Versätze vom Schwerpunkt der Flugzeugzelle in Zentimetern ein (blaue Zone negativ, gelbe Zone positiv).",
+  "remoteControlDescription": "Um sicherzustellen, dass die Ausfallsicherung richtig eingestellt ist, schalten Sie die ⟦G4 nach dem Wechsel⟧ aus und überprüfen Sie, ob die Kanäle 1–4 in die Mitte springen (ca. 1500) und Kanal 5 in seine ausfallsichere Position springt.",
+  "cardRcSettingsFailsafe": "⟦G4-Einstellungen⟧ & Failsafe",
+  "stickCalibration": "Stick-Kalibrierung",
+  "stickCalibrationIdle": "Die aktuellen Endpunkte sind unten dargestellt. Beginnen Sie mit der Neukalibrierung der Kanäle 1-4.",
+  "stickCalibrationExtremes": "Drücken Sie jeden Stick mehrmals auf sein Maximum und Minimum und drücken Sie dann auf Weiter.",
+  "stickCalibrationCentre": "Lassen Sie jeden Stick in der Mitte los und drücken Sie dann auf Capture Center.",
+  "stickCalibrationReview": "Überprüfen Sie die Ergebnisse und speichern Sie sie dann auf dem Flugcontroller.",
+  "startCalibration": "Kalibrierung starten",
+  "captureCentre": "Capture-Center",
+  "saveCalibration": "Kalibrierung speichern",
+  "next": "Weiter",
+  "channel": "Kanal",
+  "min": "Min.",
+  "centre": "Zentrieren",
+  "max": "Max.",
+  "channelMonitor": "Kanäle",
+  "sensorsImuCompassSubtitle": "Sensorrohwerte von jeder ⟦G3-Instanz⟧.",
+  "cardImuCompass": "IMU & Kompass",
+  "cardBarometer": "Luftdruck",
+  "noBarometerData": "Keine Barometerdaten",
+  "imuLevelCalibration": "⟦⟧ G3-Level-Kalibrierung",
+  "imuLevelCalibrationSubtitle": "Platzieren Sie den Flugregler nach oben und waagerecht, dann kalibrieren Sie ihn.",
+  "compassCalibration": "Kompasskalibrierung.",
+  "compassCalibrationSubtitle": "Drehen Sie das Flugzeug waagerecht und im Uhrzeigersinn, dann mit der Nase nach unten und im Uhrzeigersinn.",
+  "cardGlobalFlightLimits": "Globale Flugbeschränkungen & Motorstillstand",
+  "motorTest": "Motor test.",
+  "motorTestSubtitle": "Dreht jeden Motor einzeln, um die Reihenfolge und Richtung zu überprüfen.",
+  "removePropellers": "Propeller entfernen",
+  "startTest": "Test starten",
+  "motorTestConfirmMessage": "Der Motortest dreht M{motor} bei {throttle} % für {seconds} s.\nVergewissern Sie sich, dass die Propeller entfernt und das Flugzeug gesichert ist.",
+  "testingMotors": "Testverfahren",
+  "testMotors": "Testmotoren",
+  "calibrateImu": "⟦G3 kalibrieren⟧",
+  "calibratingImu": "Kalibrieren",
+  "calibrateCompass": "Kalibrieren Sie den Kompass.",
+  "calibratingCompass": "Kalibrieren",
+  "gainsDescription": "Regelverstärkungen bestimmen das Gefühl des Piloten: Höhere Werte reagieren schneller, benötigen aber mehr Leistung. Bewegen Sie die Leistungstendenz nur dann in Richtung Vibrationsunterdrückung, wenn die Zelle sichtbar wackelt oder die Motoren laut klingen.",
+  "protectionDescription": "Aktuelle Spannung: {voltage}. Stufe 2 muss niedriger als Stufe 1 sein; beide Stufen blinken auch die Lichter.",
+  "barometerReading": "Druck {pressure} hPa   ·   Temperatur {temperature} °C",
+  "cardBasicGains": "Grundgewinne",
+  "cardControlGains": "Kontrollgewinne",
+  "cardSpeedSensitivity": "2.2.2 Prüfung der Geschwindigkeitsempfindlichkeit",
+  "cardVoltageRtlLanding": "Spannung, Rückkehr nach Hause & Landung",
+  "voltageCalibration": "Spannungskalibrierung",
+  "voltageCalibrationSubtitle": "Geben Sie die mit einem Messgerät gemessene Spannung ein, damit der FC-Wert mit ihr übereinstimmt.",
+  "meterVoltageV": "Zählerspannung (V)",
+  "calibrateVoltage": "Spannung kalibrieren",
+  "cardPump": "Pumpe",
+  "cardLevelSensorProtection": "Füllstandssensor & Schutz",
+  "cardAbJobSettings": "⟦⟧ G8-Job-Einstellungen",
+  "cardAbJobProcedure": "⟦⟧ G8-JOB-VERFAHR",
+  "fenceDescription": "Kreis- und Höhenbegrenzungen. Zeichnen/passen Sie den Kreis aus der Mission-Karte an oder legen Sie hier Werte fest.",
+  "cardQuickFence": "Schnellzaun",
+  "fenceEnabled": "Zaun ist aktiviert",
+  "fenceOff": "Zaun ist aus",
+  "enableAltitudeAndCircle": "Höhe + Kreis aktivieren",
+  "disableFence": "Zaun deaktivieren",
+  "cardHeightDistanceLimits": "Höhen- und Abstandsbegrenzungen",
+  "cardRtkAntenna": "⟦G9-Antenne⟧",
+  "rtkCurrentPositioning": "Aktuelle Positionierung: {fix}",
+  "cardRadarVision4g": "Radar-, Sicht- und 4G-Modulstatus",
+  "channelsDescription": "Überprüfen Sie den Kanalmonitor, um zu sehen, welche Kanäle Ihr RC verwendet, bevor Sie Funktionen zuweisen.",
+  "cardChannelFunctions": "Kanalfunktionen",
+  "flightLogsDescription": "Heruntergeladene Protokolle werden in Dokumente\\Fuselage-K++\\Protokolle gespeichert.",
+  "refreshList": "Liste aktualisieren",
+  "logsOnFlightController": "⟦PH0-Protokolle⟧ auf dem Flugsteuergerät",
+  "parametersDescription": "⟦PH0-Parameter,⟧ die vom Flugregler gelesen werden.",
+  "parameterFiles": "===> Parameter Files",
+  "reloadFromFc": "Von FC neu laden",
+  "searchByIdOrName": "Suche nach ID oder name",
+  "parametersShown": "{count} abgebildet",
+  "paramColumnId": "ID",
+  "paramColumnName": "Name",
+  "paramColumnValue": "Wert",
+  "paramFormHint": "Geben Sie einen Wert ein und drücken Sie die Eingabetaste, um ihn in den Flugregler zu schreiben.",
+  "paramNotReported": "Nicht von diesem Fluglotsen gemeldet",
+  "paramUnknownOption": "Unbekannt ({value})",
+  "enterNumber": "Gib eine Nummer ein",
+  "writeToFlightControllerTitle": "An den Fluglotsen schreiben?",
+  "write": "Schreiben",
+  "cardVersions": "Revisionen",
+  "cardVersionsAuthorisation": "Versionen & Berechtigungen",
+  "firmwareUpgrade": "Firmware-Upgrade",
+  "firmwareUpgradeDescription": "Laden Sie die K++ V2 / KX /P3-Firmware über den Flugsteuerungs-Bootloader hoch. Entfernen Sie das Gerät während des Upgrades niemals.",
+  "upgradeFirmware": "Firmware aktualisieren",
+  "factoryReset": "Zurücksetzen auf Werkseinstellungen",
+  "factoryResetDescription": "Stellen Sie jeden Parameter auf die Werkseinstellungen zurück.",
+  "restoreFactorySettings": "Zurücksetzen auf Werkseinstellungen",
+  "droneRegistration": "Drohnenregistrierung",
+  "droneRegistrationDescription": "Herstellername, Flugzeugmodell und Flugzeugnummer (网络备案).",
+  "shape": "Form",
+  "validateMinimum": "Minimum ist {value}",
+  "validateMaximum": "Maximum ist {value}",
+  "validateChooseOption": "Wählen Sie eine der aufgeführten Optionen",
+  "instance": "Instanz",
+  "accelAxes": "Accel X / Y / Z",
+  "gyroAxes": "Gyro X / Y / Z",
+  "compassAxes": "Kompass X / Y / Z",
+  "comingSoon": "Demnächst verfügbar",
+  "channelMonitorNoData": "Noch ⟦keine G4-Daten⟧ empfangen.",
+  "channelMonitorHint": "Bewegen Sie die Sticks und Schalter, um jeden Kanal zu sehen.",
+  "duplicateChannelFunctions": "Doppelte Kanalfunktionen: {details}",
+  "logColumnNo": "Nein.",
+  "logColumnTimeUtc": "Uhrzeit (UTC)",
+  "logColumnSizeBytes": "Größe (Bytes)",
+  "logReview": "Wiederholung",
+  "logSavedTo": "Protokoll ⟦PH0 auf {path} gespeichert⟧",
+  "motorThrottlePercent": "Drossel {percent} %",
+  "motorDurationSeconds": "Dauer {seconds} s",
+  "motorTestAccepted": "Motor ⟦M⟧ PH0-Test akzeptiert",
+  "motorTestFailed": "Motortest fehlgeschlagen: {error}",
+  "imuCalibrationAccepted": "⟦G3-Kalibrierung⟧ akzeptiert",
+  "imuCalibrationFailed": "⟦G3-Kalibrierung⟧ fehlgeschlagen: {error}",
+  "compassCalibrationStarted": "Kompasskalibrierung gestartet",
+  "compassCalibrationFailed": "Kompasskalibrierung fehlgeschlagen: {error}",
+  "paramSaved": "{id} gespeichert: {value}",
+  "paramNotSaved": "{id} nicht gespeichert: {error}",
+  "paramsSavedCount": "⟦PH0-Parameter⟧ gespeichert",
+  "paramsSavedPartial": "{saved} gespeichert, {failed} fehlgeschlagen: {ids}",
+  "stickCalibrationInvalid": "Kanal min/max außerhalb des Bereichs: {channels}. Kalibrierung fehlgeschlagen — versuchen Sie es erneut.",
+  "fcReadingAndMultiplier": "FC-Messwert: {reading}   ·   Multiplikator: {mult}",
+  "enterValidMeterVoltage": "Geben Sie eine gültige Zählerspannung ein",
+  "noBatteryVoltageYet": "Noch keine Batteriespannung vom Flugregler",
+  "logParseFailed": "Protokoll konnte nicht analysiert werden: {error}",
+  "logParseFailedHint": "Öffnen Sie die .bin extern für eine vollständige Analyse.",
+  "logNoTrackSamples": "Keine GPS/ATT-Proben in diesem Protokoll erkannt.",
+  "plotNoSamples": "keine Proben",
+  "plotMinMax": "min {min}  ·  max {max}",
+  "exportParametersTo": "PH0-Parameter ⟦in⟧ ⟦PH1 exportiert⟧",
+  "importFileFormatError": "Dateiformatfehler: {message}",
+  "importNothingMatches": "Nichts zu importieren: Jeder Wert stimmt bereits mit dem Flugregler überein.",
+  "fcFirmwareInfo": "Flugsteuerungs-Firmware: {version}",
+  "appAboutLine": "Fuselage-K++ 1.0.0 — gebaut, um den ⟦G11 G1-Assistenten⟧ ⟦(⟧ JIYI221014) zu ersetzen.",
+  "sprayProcedure1Title": "Aufzeichnungspunkt A",
+  "sprayProcedure1Detail": "Drehen Sie ⟦den⟧ G8-Aufnahmeschalter in die mittlere Position.",
+  "sprayProcedure2Title": "Aufzeichnungspunkt B",
+  "sprayProcedure2Detail": "Drehen Sie ⟦den⟧ G8-Aufnahmeschalter in die obere Position.",
+  "sprayProcedure3Title": "Starten Sie ⟦⟧ den G8-Job",
+  "sprayProcedure3Detail": "Schalten Sie den ⟦⟧ G8-Ausführungsschalter ein (oder stellen ⟦⟧ Sie G8-Ausführung als Flugmodus ein).",
+  "sprayProcedure4Title": "Richtung wählen",
+  "sprayProcedure4Detail": "Drücken Sie den Rollenstab zur Seite, um zu arbeiten.",
+  "sprayProcedure5Title": "A und B löschen",
+  "sprayProcedure5Detail": "Drehen Sie ⟦den⟧ G8-Aufnahmeschalter schnell hin und her.",
+  "sprayProcedure6Title": "Fortsetzen nach dem Nachfüllen",
+  "sprayProcedure6Detail": "Ohne A/B zu löschen, schalten Sie AB Execute ein: Der Job wird vom letzten Leertankpunkt und der Richtung fortgesetzt.",
+  "waitingForProtocolConfirmation": "Warten auf Protokollbestätigung",
+  "pendingFeatureBody": "Der ⟦G1-Assistent⟧ verwendet dafür einen ⟦⟧G11-spezifischen Befehl, nicht den ⟦Standard-G10⟧. Es bleibt deaktiviert, bis eine Aufzeichnung der ursprünglichen App die genaue Nachricht bestätigt, sodass niemals etwas Unverifiziertes an den Flugcontroller gesendet wird.",
+  "optForward": "Vorwärts",
+  "optRight": "Rechts",
+  "optBackward": "Rückwärts",
+  "optLeft": "Links",
+  "optOff": "Aus",
+  "optOn": "Ein",
+  "optSinglePump": "Einzelpumpe",
+  "optDoublePump": "Dopelte pumpe",
+  "optQuadX": "Quad X",
+  "optQuadPlus": "G51",
+  "optHexaX": "Hexa X",
+  "optHexaPlus": "G53",
+  "optOctoX": "Octo X",
+  "optOctoPlus": "G55",
+  "optStandard": "Norm",
+  "optCoaxial": "Coaxial",
+  "optY6": "G56",
+  "optAltitude": "Höhe",
+  "optAltitudeCircle": "Höhe + Kreis",
+  "optCircle": "Kreis",
+  "pLabel_FRAME": "Rahmentyp",
+  "pLabel_SHAPE": "Gestellform",
+  "pLabel_NAV_IMU_ORIENT": "⟦⟧ G3-Richtung",
+  "pLabel_NAV_COMP_ORIENT": "⟦⟧ G2-Richtung",
+  "pLabel_NAV_IMU_POS_X": "IMU Position X",
+  "pLabel_NAV_IMU_POS_Y": "IMU Position Y",
+  "pLabel_NAV_IMU_POS_Z": "IMU Position Z",
+  "pLabel_NAV_GPS3_POS_X": "GPS Position X",
+  "pLabel_NAV_GPS3_POS_Y": "GPS Position Y",
+  "pLabel_NAV_GPS3_POS_Z": "GPS Position Z",
+  "pLabel_NAV_IMU_SOURCE": "⟦⟧ G3-Quelle",
+  "pLabel_RC_TYPE": "⟦⟧ G4-Typ",
+  "pLabel_FS_THR_ENABLE": "RC-Verlust fehlersichere Aktion",
+  "pLabel_RC_FS_CONTINUE": "Job fortsetzen, wenn ⟦G4 verloren⟧ geht",
+  "pLabel_THR_DZ": "Mittlere Totzone drosseln",
+  "pLabel_FLTMODE1": "Flugmodus 1",
+  "pLabel_FLTMODE2": "Flugmodus 2",
+  "pLabel_FLTMODE3": "Flugmodus 3",
+  "pLabel_FLTMODE4": "Flugmodus 4",
+  "pLabel_FLTMODE5": "Flugmodus 5",
+  "pLabel_FLTMODE6": "Flugmodus 6",
+  "pLabel_RC1_MIN": "CH1 min",
+  "pLabel_RC1_MAX": "CH1 max",
+  "pLabel_RC1_TRIM": "CH1 Verkleidung",
+  "pLabel_RC2_MIN": "CH2 min",
+  "pLabel_RC2_MAX": "CH2 max",
+  "pLabel_RC2_TRIM": "CH2 Verkleidung",
+  "pLabel_RC3_MIN": "CH3 min",
+  "pLabel_RC3_MAX": "CH3 max",
+  "pLabel_RC3_TRIM": "CH3 Verkleidung",
+  "pLabel_RC4_MIN": "CH4 min",
+  "pLabel_RC4_MAX": "CH4 max",
+  "pLabel_RC4_TRIM": "CH4 Verkleidung",
+  "pLabel_ANGLE_MAX": "Neigungswinkel",
+  "pLabel_WPNAV_LOIT_SPEED": "Maximale horizontale Geschwindigkeit",
+  "pLabel_PILOT_VELZ_UP": "steiggeschwindigkeit",
+  "pLabel_PILOT_VELZ_DOWN": "Max. Abstiegsgeschwindigkeit",
+  "pLabel_MOT_SPIN_ARMED": "Motorleerlaufdrehzahl",
+  "pLabel_GAIN_BASIC_R_PI": "Wankkorrektur",
+  "pLabel_GAIN_BASIC_R_D": "Rolldämpfung",
+  "pLabel_GAIN_BASIC_P_PI": "Tonhöhenkorrektur",
+  "pLabel_GAIN_BASIC_P_D": "Nickdämpfung",
+  "pLabel_GAIN_BASIC_YAW": "Gieren ",
+  "pLabel_GAIN_BASIC_THR": "Leistung (vertikal)",
+  "pLabel_GAIN_CONTROL_RP": "Roll / Pitch",
+  "pLabel_GAIN_CONTROL_YAW": "Gieren ",
+  "pLabel_GAIN_CONTROL_THR": "Hochkant",
+  "pLabel_GAIN_CONTROL_WP": "Weiterleiten",
+  "pLabel_GAIN_CONTROL_MOV": "Manöver",
+  "pLabel_GAIN_CONTROL_BRA": "Bremsen",
+  "pLabel_GAIN_CONTROL_SCA": "Koordination",
+  "pLabel_GAIN_CONTROL_TKO": "Start",
+  "pLabel_GAIN_VEL_XY": "Horizontaler Geschwindigkeitsgewinn",
+  "pLabel_GAIN_VEL_Z": "Vertikale Geschwindigkeitsverstärkung",
+  "pLabel_GAIN_SEN_ATT": "Haltungssensitivität",
+  "pLabel_GAIN_PERFORMANCE": "Leistungstendenz",
+  "pLabel_FS_BATT_ENABLE": "Niederspannungsschutzwirkung",
+  "pLabel_FS_BATT_WARNING": "Alarmspannung Stufe 1",
+  "pLabel_FS_BATT_VOLTAGE": "Alarmspannung Stufe 2",
+  "pLabel_FS_PMU_ENABLE": "PMU Fehlerschutz",
+  "pLabel_RTL_ALT": "Return-Home-Höhe",
+  "pLabel_LAND_SPEED": "Landegeschwindigkeit:",
+  "pLabel_SPRAY_PUMP_TYPE": "Pumpentyp",
+  "pLabel_LIQUID_TYPE": "Füllstandsensor",
+  "pLabel_FS_LIQ_ENABLE": "OUT-OF-LIQUID-SCHUTZ",
+  "pLabel_ABPOINT_DIS": "AB Schwadbreite",
+  "pLabel_ABPOINT_SPEED": "⟦⟧ G8-Geschwindigkeit",
+  "pLabel_WPNAV_ENABLE_U": "U-förmige Seitenverschiebung",
+  "pLabel_FENCE_ENABLE": "Zaun aktivieren",
+  "pLabel_FENCE_TYPE": "Zauntyp",
+  "pLabel_FENCE_ALT_MAX": "Hight limit",
+  "pLabel_FENCE_RADIUS": "Entfernungsgrenze (Radius)",
+  "pLabel_FENCE_ACTION": "Zaunbruch-Aktion",
+  "pLabel_RTK_ANTI_DEG": "⟦Einbauwinkel⟧ der G9-Antenne",
+  "pLabel_CH6_OPT": "Kanal 6 Funktion",
+  "pLabel_CH7_OPT": "Kanal 7 Funktion",
+  "pLabel_CH8_OPT": "Kanal 8 Funktion",
+  "pLabel_CH9_OPT": "Kanal 9 Funktion",
+  "pLabel_CH10_OPT": "Kanal 10 Funktion",
+  "pLabel_CH11_OPT": "Kanal-11-Funktion",
+  "pLabel_CH12_OPT": "Kanal 12 Funktion",
+  "pLabel_BATT_VOLT_MULT": "Batteriespannungsvervielfacher",
+  "pLabel_FWVERSION": "Firmware-Version",
+  "pLabel_SYSID_SW_MREV": "Software-Revision",
+  "pLabel_INS_CAL_TYPE": "⟦⟧ G3-Kalibrierungsstatus",
+  "pLabel_COMPASS_CAL_TYPE": "KOMPASS-KALIBRI",
+  "pLabel_REG_ENABLE": "App-Freischaltung autorisiert",
+  "helpBasicGain": "Bereich 0–200 %. Passt den Regler an die Flugzeugzelle an.",
+  "helpControlGain": "Bereich 0–300 %. Höher = schnelleres Ansprechen; begrenzt durch die Leistung der Flugzeugzelle.",
+  "helpMode": "⟦Zu den G1-Optionen⟧ gehören manueller ⟦Job⟧, G8-Ausführung, Routenjob⟦,⟧ G2-Geschwindigkeit, Seitenverschiebung und Geländeverfolgung. Value Mapping noch nicht bestätigt.",
+  "helpChannel": "Diesem G4-Kanal zugewiesene Funktion⟦.⟧ Jede Funktion sollte einmal verwendet werden. Überprüfen Sie den Kanalmonitor, bevor Sie ihn wechseln.",
+  "help_0": "Motoranzahl und Layout als FRAME auf⟧ dem ⟦G1-Bus geschrieben.",
+  "help_1": "Versatz zum Schwerpunkt. Blaue Zone = negativ, gelbe Zone = positiv.",
+  "help_2": "Empfängerprotokoll. Wertzuordnung noch nicht bestätigt.",
+  "help_3": "⟦G1-Optionen⟧: Zurück nach Hause, Hover, Land, Hover und dann Land. Value Mapping noch nicht bestätigt — Test mit⟧ ausgeschaltetem ⟦G4 nach Änderung.",
+  "help_4": "In ⟦G8-⟧/ Routenjobs arbeitet die Drohne weiter, anstatt den Fail-Safe zu betreiben. Nur mit Radar zu empfehlen.",
+  "help_5": "Zentidegrees: 3000 = 30°.",
+  "help_6": "⟦G1-Optionen⟧: Deaktiviert, Sehr langsam, Langsam, Mittel, Sehr schnell. Value Mapping noch nicht bestätigt.",
+  "help_7": "Beschleunigung im autonomen Flug. Höher = schnellere Geschwindigkeitsänderungen.",
+  "help_8": "Beschleunigung unter Vorsteuerung.",
+  "help_9": "Höher = kürzeres, härteres automatisches Bremsen",
+  "help_10": "Entspricht der Reaktion der Steuerung auf Manöver; schnellere Energiesysteme benötigen höhere Werte.",
+  "help_11": "Höher = schneller, schärferer Start.",
+  "help_12": "Normalerweise nicht angepasst.",
+  "help_13": "Wie schnell der FC der Stick-Eingabe folgt.",
+  "extensionsRadarStatusDescription": "Höhe des Geländefolgeradars, Hindernisradarabstand, Zustand des Visionmoduls und IoT-SIM-Status werden hier wie im K++-Assistenten angezeigt.",
+  "help_14": "K++-Optionen: Ausgewogen, Sport, Antivibration. Nur bei sichtbarem Flattern des Fluggeräts Richtung Schwingungsdämpfung gehen. Wertzuordnung noch nicht bestätigt.",
+  "help_15": "K++-Optionen: Aus, Return home, Land (beide Stufen blinken auch die Lichter). Wertzuordnung noch nicht bestätigt.",
+  "help_16": "Muss niedriger als die Spannung Stufe 1 sein.",
+  "help_17": "Einzel: Pumpen-ESC an P1. Doppel: ESCs an P1 und P2; P1 vorwärts, P2 rückwärts.",
+  "help_18": "K++-Optionen: Nicht verwendet, Schalter-Sensor (FC-Port K2), Echtzeit-Füllstand. Durchflussmesser an Port K1. Wertzuordnung noch nicht bestätigt.",
+  "help_19": "Aktion bei leerem Tank. Wertzuordnung noch nicht bestätigt.",
+  "help_20": "Skalierungsfaktor für Spannungskalibrierung (Messgerät ÷ FC-Anzeige).",
+  "simulatorNoHardware": "Simulator (keine Hardware)",
+  "hideTransmitter": "Sender ausblenden",
+  "showTransmitter": "Sender BT/WiFi",
+  "btAbbrev": "BT",
+  "noBtSerialRefresh": "Kein BT-Seriellport — TX koppeln, dann aktualisieren",
+  "txWifiIp": "TX-WiFi-IP",
+  "tcp": "TCP",
+  "linkDisconnected": "Getrennt",
+  "linkConnecting": "Verbinden…",
+  "linkReadingParameters": "Parameter lesen {received}/{total}",
+  "linkConnected": "Verbunden · {link}",
+  "linkLostStatus": "Verbindung verloren · {link}",
+  "sensorGyroscope": "Kreisel",
+  "sensorAccelerometer": "Beschleunigungssensor",
+  "sensorCompass": "Kompass",
+  "sensorBarometer": "Barometer",
+  "sensorGps": "GPS"
+}

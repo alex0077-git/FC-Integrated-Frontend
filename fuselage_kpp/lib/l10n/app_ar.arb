@@ -1,0 +1,677 @@
+{
+  "@@locale": "ar",
+  "@missionItemsHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@modeSet": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "@abSprayGenerated": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@fenceCircleEnabled": {
+    "placeholders": {
+      "radius": {
+        "type": "String"
+      }
+    }
+  },
+  "@exportedTo": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "@importedItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@motorTestConfirmMessage": {
+    "placeholders": {
+      "motor": {
+        "type": "int"
+      },
+      "throttle": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "@protectionDescription": {
+    "placeholders": {
+      "voltage": {
+        "type": "String"
+      }
+    }
+  },
+  "@barometerReading": {
+    "placeholders": {
+      "pressure": {
+        "type": "String"
+      },
+      "temperature": {
+        "type": "String"
+      }
+    }
+  },
+  "@duplicateChannelFunctions": {
+    "placeholders": {
+      "details": {
+        "type": "String"
+      }
+    }
+  },
+  "@logSavedTo": {
+    "placeholders": {
+      "id": {
+        "type": "int"
+      },
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "@motorThrottlePercent": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "@motorDurationSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "@motorTestAccepted": {
+    "placeholders": {
+      "motor": {
+        "type": "int"
+      }
+    }
+  },
+  "@motorTestFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@imuCalibrationFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@compassCalibrationFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@paramSaved": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@paramNotSaved": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      },
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@paramsSavedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@paramsSavedPartial": {
+    "placeholders": {
+      "saved": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      },
+      "ids": {
+        "type": "String"
+      }
+    }
+  },
+  "@stickCalibrationInvalid": {
+    "placeholders": {
+      "channels": {
+        "type": "String"
+      }
+    }
+  },
+  "@fcReadingAndMultiplier": {
+    "placeholders": {
+      "reading": {
+        "type": "String"
+      },
+      "mult": {
+        "type": "String"
+      }
+    }
+  },
+  "@logParseFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@plotMinMax": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "@exportParametersTo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "@importFileFormatError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "@fcFirmwareInfo": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtkCurrentPositioning": {
+    "placeholders": {
+      "fix": {
+        "type": "String"
+      }
+    }
+  },
+  "@logsOnFlightController": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@parametersDescription": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@parametersShown": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@paramUnknownOption": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@validateMinimum": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@validateMaximum": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "appName": "Fuselage-K++",
+  "groupBasic": "أساسي",
+  "groupAdvanced": "متقدم",
+  "groupTools": "أدوات",
+  "groupFly": "طيران",
+  "destOverview": "الحالة",
+  "destInstallation": "التثبيت",
+  "destRemoteControl": "التحكم عن بعد",
+  "destSensors": "المستشعرات",
+  "destFlight": "المحركات والطيران",
+  "destGains": "المكاسب",
+  "destProtection": "الحماية",
+  "destPump": "المضخة",
+  "destLiquid": "مستوى السائل",
+  "destSpraying": "رش AB",
+  "destFence": "السياج",
+  "destExtensions": "الإضافات",
+  "destChannels": "تعيين القنوات",
+  "destMission": "المهمة",
+  "destLogs": "سجلات الطيران",
+  "destParameters": "كل المعلمات",
+  "destFirmware": "البرنامج الثابت وحول",
+  "mapFly": "خريطة / طيران",
+  "groundPlan": "خطة الأرض",
+  "home": "الرئيسية",
+  "language": "اللغة",
+  "overviewDescription": "الصحة المباشرة لوحدة الطيران ووحداتها (تخطيط مساعد K++).",
+  "sensors": "المستشعرات",
+  "imu": "ZZG3ZZZZ",
+  "gps": "ZZG2ZZZZ",
+  "gps1": "ZZG2ZZZ1",
+  "gps1Sats": "أقمار GPS1",
+  "gps2": "ZZG2ZZZ2",
+  "gps2Sats": "أقمار GPS2",
+  "position": "الموقع",
+  "altitude": "الارتفاع",
+  "hdop": "ZZG18ZZZZZ",
+  "powerAndLink": "الطاقة والرابط",
+  "batteryVoltage": "جهد البطارية",
+  "rcSignal": "إشارة RC",
+  "link": "الرابط",
+  "firmwareVersion": "إصدار البرنامج الثابت",
+  "softwareRevision": "مراجعة البرنامج",
+  "parameters": "المعلمات",
+  "fcMessage": "رسالة وحدة الطيران",
+  "statusNormal": "طبيعي",
+  "statusFault": "عطل",
+  "statusNotConnected": "غير متصل",
+  "port": "المنفذ",
+  "baud": "الباود",
+  "connect": "اتصال",
+  "disconnect": "قطع الاتصال",
+  "bluetooth": "بلوتوث",
+  "wifi": "ZZG12ZZZZ",
+  "refreshComPorts": "تحديث منافذ COM",
+  "refreshBluetoothPorts": "تحديث منافذ Bluetooth",
+  "setMode": "تعيين الوضع",
+  "flightModeAuto": "Auto",
+  "flightModeGuided": "ZZG15ZZZZ",
+  "flightModeLoiter": "ZZG16ZZZZ",
+  "flightModeRtl": "ZZG14ZZZZ",
+  "flightModeLand": "هبوط",
+  "defaultAlt": "الارتفاع الافتراضي",
+  "abSpray": "رش AB",
+  "download": "تنزيل",
+  "upload": "رفع",
+  "clear": "مسح",
+  "import": "استيراد",
+  "export": "تصدير",
+  "cancel": "إلغاء",
+  "ok": "موافق",
+  "altitudeM": "الارتفاع (م)",
+  "missionItemsHint": "{count} عناصر — اضغط الخريطة لإضافة waypoints",
+  "setA": "تعيين A",
+  "setB": "تعيين B",
+  "tapMapForFence": "اضغط الخريطة للسياج…",
+  "enableCircleFence": "تفعيل سياج دائري",
+  "editAltitude": "تعديل الارتفاع",
+  "missionDownloaded": "تم تنزيل المهمة",
+  "missionUploaded": "تم رفع المهمة",
+  "missionCleared": "تم مسح المهمة",
+  "rtlAccepted": "تم قبول RTL",
+  "landAccepted": "تم قبول الهبوط",
+  "modeSet": "تم تعيين الوضع {mode}",
+  "setPointsAbFirst": "عيّن النقطتين A و B على الخريطة أولاً",
+  "abSprayGenerated": "تم إنشاء نمط رش AB ({count} عناصر)",
+  "fenceCircleEnabled": "سياج دائري مفعّل، نصف القطر {radius} م (متمركز على الطائرة أثناء الطيران)",
+  "exportedTo": "تم التصدير إلى {path}",
+  "importedItems": "تم استيراد {count} عناصر",
+  "rtl": "ZZG14ZZZZ",
+  "land": "هبوط",
+  "armed": "مسلّح",
+  "disarmed": "غير مسلّح",
+  "notConnected": "غير متصل",
+  "notConnectedHint": "اختر ميناء ZZG6ZZZZZZZ (أو المحاكاة) في البار أعلاه وصحافة Connect.",
+  "cardFrameType": "نوع الغش",
+  "frameTypeSubtitle": "نفس مساعدة ZZG1ZZZZZZZZ: الذراع الأصفر = الأنف، M1-M8 = موانئ FC، حمراء CW/ازرق CCW = العمود الفقري. أكتب ZZG21ZZZZ و ZZG22ZZZZZ.",
+  "cardImuGpsMounting": "ZZG3ZZZZZZZZZGPS",
+  "installationDescription": "اختر الإتجاهات لمطابقة الطريقة التي يتم بها تركيب الوحدات وتدخل مقابضها من مركز الجاذبية للإطار الجوي في سنتيمترات",
+  "remoteControlDescription": "وللتأكيــد مــن أنــه قد حُــدد الأمانــة علــى نحــو صــحيح، فــإنقــل الــززدزــة الزائيــة الــذي يغيــرها، وتحقق من أن القنوات من ١ إلى ٤ تقفز إلى المركز )حوالي ١٥٠٠( وتوجــه ٥ قفزات إلى موقعها الآمن.",
+  "cardRcSettingsFailsafe": "ZZG4ZZZZ settings &quot; failsafe",
+  "stickCalibration": "معيار",
+  "stickCalibrationIdle": "وترد أدناه النقاط النهائية الحالية. ابدأوا بتجديد القنوات من 1 إلى 4",
+  "stickCalibrationExtremes": "ادفع كل عصا إلى الحد الأقصى والحد الأدنى عدة مرات ثم اضغط على التالي",
+  "stickCalibrationCentre": "أطلقوا كل عصا إلى المركز ثم اضغطوا على مركز التقاط الصور",
+  "stickCalibrationReview": "تحقق من النتائج، ثم حفظها إلى متحكم الطيران.",
+  "startCalibration": "بدء المعايرة",
+  "captureCentre": "مركز التقاط",
+  "saveCalibration": "الحفاظ على المعايرة",
+  "next": "التالي",
+  "channel": "القناة",
+  "min": "مين",
+  "centre": "المركز",
+  "max": "ماكس",
+  "channelMonitor": "مراقب القناة",
+  "sensorsImuCompassSubtitle": "قيم أجهزة الاستشعار الراو من كل زدزغ 3ZZZ.",
+  "cardImuCompass": "IMUZZZZBass",
+  "cardBarometer": "البارومتر",
+  "noBarometerData": "No barometer data",
+  "imuLevelCalibration": "مقياس IMUZZ",
+  "imuLevelCalibrationSubtitle": "ضعوا جهاز التحكم في الطيران على مستوى و أعلى، ثم أعيرة.",
+  "compassCalibration": "معايرة المركبات",
+  "compassCalibrationSubtitle": "قم بحساب مستوى الطائرة ودقّة الساعة، ثمّ أنف أسفل وساعة.",
+  "cardGlobalFlightLimits": "الحدود العالمية للرحلات",
+  "motorTest": "اختبار الطوابق",
+  "motorTestSubtitle": "يقطع كل محرك على حدة للتحقق من النظام والاتجاه.",
+  "removePropellers": "أجهزة الدفع",
+  "startTest": "اختبار البدء",
+  "motorTestConfirmMessage": "اختبار الطوابق سيدور (MZZPH0ZZZZZZ) في ({throttle}ZZ)% في (ZZPH2ZZZZZZZS)\nتُزال متعهدو المُؤنقين وتُؤمن الطائرة.",
+  "testingMotors": "اختبار...",
+  "testMotors": "محركات الاختبار",
+  "calibrateImu": "Calibrate ZZG3ZZZZ",
+  "calibratingImu": "معايرة...",
+  "calibrateCompass": "البوصلة المعايرة",
+  "calibratingCompass": "معايرة...",
+  "gainsDescription": "مكاسب التحكم جعلت الطيار يشعر أن القيم الأعلى تستجيب بسرعة ولكن تحتاج إلى المزيد من القوة فقط تحرك اتجاه الأداء نحو قمع الاهتزازات إذا كان الحاسوب يهتز بشكل واضح أو المحركات تبدو مزعجة",
+  "protectionDescription": "التطاير الحالي: ZZPH0ZZZZ. ويجب أن يكون المستوى 2 أدنى من المستوى 1؛ كما أن كلا المستويين يضيء الأضواء.",
+  "barometerReading": "الضغط ZZPH0ZZZZZHPa ; Temperature ZZPH1ZZZZZ",
+  "cardBasicGains": "المكاسب الأساسية",
+  "cardControlGains": "مكاسب الرقابة",
+  "cardSpeedSensitivity": "حساسية السرعة",
+  "cardVoltageRtlLanding": "Voltage, return home &apos; landing",
+  "voltageCalibration": "معايرة التبريد",
+  "voltageCalibrationSubtitle": "أدخل الفولطية المقيسة بمتر حتى يطابقه الـ إف سي",
+  "meterVoltageV": "مركب متري (خامسا)",
+  "calibrateVoltage": "فولطية معايرة",
+  "cardPump": "Pump",
+  "cardLevelSensorProtection": "جهاز الاستشعار من المستوى &quot; الحماية &quot;",
+  "cardAbJobSettings": "ZZG8ZZZZZZ",
+  "cardAbJobProcedure": "ZZG8ZZZ",
+  "fenceDescription": "حدود الدائرة والارتفاع رسم/إصلاح الدائرة من خريطة البعثة أو وضع القيم هنا",
+  "cardQuickFence": "سياج سريع",
+  "fenceEnabled": "(فلينس)",
+  "fenceOff": "(فينس) متوقف",
+  "enableAltitudeAndCircle": "الارتفاع الميسر + الدائرة",
+  "disableFence": "السياج المهجور",
+  "cardHeightDistanceLimits": "الحدود المرتفعة",
+  "cardRtkAntenna": "ZZG9ZZZA antenna",
+  "rtkCurrentPositioning": "الموقع الحالي: ZZPH0ZZ",
+  "cardRadarVision4g": "Radar, vision &quot; 4G module status",
+  "extensionsRadarStatusDescription": "ويظهر هنا في مساعد ZZG1ZZZ، ارتفاع الرادار الرافض، المسافة الرادارية العقبية، ونموذج الرؤية، ومركز IoT SIM.",
+  "channelsDescription": "تحقق من جهاز مراقبة القناة لترى أي قنوات تستخدمها زي زي جي 4 زيز قبل تعيين المهام",
+  "cardChannelFunctions": "مهام القناة",
+  "flightLogsDescription": "يتم حفظ السجلات المحملة إلى الوثائق/ZZG0ZZZ/logs.",
+  "refreshList": "قائمة التجديد",
+  "logsOnFlightController": "{count}ZZ على متحكم الطيران",
+  "parametersDescription": "(زززفززز) قراءته من متحكم الطيران",
+  "parameterFiles": "ملفات البارامترات",
+  "reloadFromFc": "Reload from FC",
+  "searchByIdOrName": "البحث بالاسم",
+  "parametersShown": "{count}",
+  "paramColumnId": "Id",
+  "paramColumnName": "الاسم",
+  "paramColumnValue": "القيمة",
+  "paramFormHint": "اصنعي قيمة و اضغطي ليكتبها الى متحكم الطيران",
+  "paramNotReported": "لم يبلغ عن ذلك من قبل متحكم الطيران",
+  "paramUnknownOption": "غير معروف (ZZPH0ZZZZZ)",
+  "enterNumber": "أدخل رقم",
+  "writeToFlightControllerTitle": "أكتب إلى متحكم الطيران؟",
+  "write": "الكتابة",
+  "cardVersions": "الركائز",
+  "cardVersionsAuthorisation": "الإذن بالعروض",
+  "firmwareUpgrade": "رفع مستوى البرمجيات",
+  "firmwareUpgradeDescription": "Upload ZZG1ZZZV2 / KX / P3 firmware through the flight controller bootloader. لا تزيل الجهاز أبداً أثناء ترقيته",
+  "upgradeFirmware": "شركة أعلى درجة",
+  "factoryReset": "إعادة تحديد العوامل",
+  "factoryResetDescription": "أعد كل بارامتر إلى قبو المصنع",
+  "restoreFactorySettings": "منشآت مصنع ريسور",
+  "droneRegistration": "تسجيل الطائرات العمودية",
+  "droneRegistrationDescription": "Manufacturer name, aircraft model and aircraft number (ZZG25ZZZZZZ).",
+  "shape": "Shape",
+  "validateMinimum": "الحد الأدنى هو ZZPH0ZZZ",
+  "validateMaximum": "(ماكسيموم) (زززفزززز)",
+  "validateChooseOption": "اختيار أحد الخيارات المدرجة",
+  "instance": "Instance",
+  "accelAxes": "Accel X / Y / Z",
+  "gyroAxes": "Gyro X / Y / Z",
+  "compassAxes": "Compass X / Y / Z",
+  "comingSoon": "قريبا",
+  "channelMonitorNoData": "No ZZG4ZZZz data received yet.",
+  "channelMonitorHint": "حرك العصي والمفاتيح لترى كل قناة",
+  "duplicateChannelFunctions": "وظائف القناة المزدوجة: ZZPH0ZZZ",
+  "logColumnNo": "لا",
+  "logColumnTimeUtc": "الوقت (UTC)",
+  "logColumnSizeBytes": "Size (bytes)",
+  "logReview": "الاستعراض",
+  "logSavedTo": "Lg {id}ZZZZ انقذت ZZPH1ZZZZZ",
+  "motorThrottlePercent": "Throttle {percent} %",
+  "motorDurationSeconds": "Duration ZZPH0ZZZZZ",
+  "motorTestAccepted": "Motor M{motor}",
+  "motorTestFailed": "فشل اختبار المحركات: ZZPH0ZZZZ",
+  "imuCalibrationAccepted": "IMUZZZ معايرة مقبولة",
+  "imuCalibrationFailed": "IMUZZZZZ عيار فشل: ZZPH0ZZZZZ",
+  "compassCalibrationStarted": "بدء معايرة المركبات",
+  "compassCalibrationFailed": "فشل معايرة البوصلة: ZZPH0ZZZ",
+  "paramSaved": "{id}ZZ",
+  "paramNotSaved": "{id}ZZZ لم تنقذ: ZZPH1ZZZZZZ",
+  "paramsSavedCount": "انقذت البارامترات ZZPH0ZZZZZZ",
+  "paramsSavedPartial": "{saved}ZAF, ZZPH1ZZ failed: Z{ids}ZZ",
+  "stickCalibrationInvalid": "Channel min/max out of range: ZZPH0ZZZZ. وقد فشلت المعايرة - حاول مرة أخرى.",
+  "fcReadingAndMultiplier": "FC reading: ZZPH0ZZZZZZZZ · multiplier: {mult}ZZ",
+  "enterValidMeterVoltage": "أدخل مركباً صالحاً",
+  "noBatteryVoltageYet": "لا تطاير بطارية من متحكم الطيران بعد",
+  "logParseFailed": "لا يمكن أن يقطع لوج: ZZPH0ZZZ",
+  "logParseFailedHint": "افتح المركب الخارجي للتحليل الكامل",
+  "logNoTrackSamples": "No ZZG2ZZZZZZZ/ATT samples recognised in this log.",
+  "plotNoSamples": "لا عينات",
+  "plotMinMax": "min ZZPH0ZZZZZZZZZZZH1ZZ",
+  "exportParametersTo": "Exported ZZPH0ZZZZ parameters to ZZPH1ZZZ",
+  "importFileFormatError": "خطأ في الشكل: ZZPH0ZZZ",
+  "importNothingMatches": "لا شيء للاستيراد: كل قيمة تضاهي بالفعل متحكم الطيران.",
+  "fcFirmwareInfo": "شركة مراقبة الرحلات الجوية",
+  "appAboutLine": "ZZG0ZZZ 1.0.0 - built to replace the ZZG11ZZZK++ZZA Assistant (JIYIZ221014).",
+  "sprayProcedure1Title": "نقطة التسجيل ألف",
+  "sprayProcedure1Detail": "اضغط على زر ZZG8ZZ",
+  "sprayProcedure2Title": "النقطة باء",
+  "sprayProcedure2Detail": "اضغط على زر ZZG8ZZ",
+  "sprayProcedure3Title": "ابدأ عمل زيز زدز",
+  "sprayProcedure3Detail": "تشغيل زر ZZG8ZZZZ",
+  "sprayProcedure4Title": "اتجاه الاختيار",
+  "sprayProcedure4Detail": "ادفعي العجلة باتجاه الجانب للعمل",
+  "sprayProcedure5Title": "نظيفان ألف وباء",
+  "sprayProcedure5Detail": "اضغط على زر زي زدز الرقمي للخلف والخلف بسرعة",
+  "sprayProcedure6Title": "الاستهلاك بعد إعادة ملء",
+  "sprayProcedure6Detail": "بدون إزالة A/B، تشغيل ZZG8ZZZZعدم: تستأنف الوظيفة من آخر نقطة وتوجه فارغين.",
+  "waitingForProtocolConfirmation": "تنتظر تأكيد البروتوكول",
+  "pendingFeatureBody": "The ZZG1ZZ Assistant uses a ZZG11ZZZZZZZZ-specific command for this, not standard ZZG10ZZZZ. يبقى معاقاً حتى يُثبت تسجيل التطبيق الأصلي الرسالة بالضبط، لذا لم يُرسل أي شيء غير مؤكد إلى مُراقب الطيران.",
+  "optForward": "إلى الأمام",
+  "optRight": "الحق",
+  "optBackward": "إلى الخلف",
+  "optLeft": "يسار",
+  "optOff": "قبالة",
+  "optOn": "على",
+  "optSinglePump": "مضخة واحدة",
+  "optDoublePump": "مضخة مزدوجة",
+  "optQuadX": "Quad X",
+  "optQuadPlus": "Quad +",
+  "optHexaX": "Hexa X",
+  "optHexaPlus": "Hexa +",
+  "optOctoX": "Octo X",
+  "optOctoPlus": "Octo +",
+  "optStandard": "المعيار",
+  "optCoaxial": "Coaxial",
+  "optY6": "Y6",
+  "optAltitude": "Altitude",
+  "optAltitudeCircle": "Altitude +Circ",
+  "optCircle": "الدائرة",
+  "pLabel_FRAME": "نوع الغش",
+  "pLabel_SHAPE": "شكل الصدمة",
+  "pLabel_NAV_IMU_ORIENT": "ZZZG3ZZ",
+  "pLabel_NAV_COMP_ORIENT": "ZZZG2ZZ",
+  "pLabel_NAV_IMU_POS_X": "ZZG3ZZZZ",
+  "pLabel_NAV_IMU_POS_Y": "ZZG3ZZZZ",
+  "pLabel_NAV_IMU_POS_Z": "IMU",
+  "pLabel_NAV_GPS3_POS_X": "ZZG2ZZZZ",
+  "pLabel_NAV_GPS3_POS_Y": "ZZG2ZZZZZ",
+  "pLabel_NAV_GPS3_POS_Z": "GPS",
+  "pLabel_NAV_IMU_SOURCE": "ZZZG3ZZ",
+  "pLabel_RC_TYPE": "ZZG4ZZZ",
+  "pLabel_FS_THR_ENABLE": "ZZG4ZZZZZ-loss failsafe action",
+  "pLabel_RC_FS_CONTINUE": "الاستمرار في العمل عندما ZZG4ZZZZ",
+  "pLabel_THR_DZ": "منطقة \"ثوراتل\" الوسطى الميتة",
+  "pLabel_FLTMODE1": "أسلوب الرحلة 1",
+  "pLabel_FLTMODE2": "أسلوب الرحلة 2",
+  "pLabel_FLTMODE3": "أسلوب الرحلة 3",
+  "pLabel_FLTMODE4": "أسلوب الرحلة 4",
+  "pLabel_FLTMODE5": "أسلوب الرحلة 5",
+  "pLabel_FLTMODE6": "أسلوب الرحلة 6",
+  "pLabel_RC1_MIN": "CH1 min",
+  "pLabel_RC1_MAX": "CH1 max",
+  "pLabel_RC1_TRIM": "CH1 trim",
+  "pLabel_RC2_MIN": "CH2 min",
+  "pLabel_RC2_MAX": "CH2 max",
+  "pLabel_RC2_TRIM": "CH2 trim",
+  "pLabel_RC3_MIN": "CH3 min",
+  "pLabel_RC3_MAX": "CH3 max",
+  "pLabel_RC3_TRIM": "CH3 trim",
+  "pLabel_RC4_MIN": "CH4 min",
+  "pLabel_RC4_MAX": "CH4 max",
+  "pLabel_RC4_TRIM": "CH4 trim",
+  "pLabel_ANGLE_MAX": "زاوية (ماكس تيت)",
+  "pLabel_WPNAV_LOIT_SPEED": "السرعة الأفقية",
+  "pLabel_PILOT_VELZ_UP": "السرعة القصوى",
+  "pLabel_PILOT_VELZ_DOWN": "السرعة القصوى",
+  "pLabel_MOT_SPIN_ARMED": "سرعة العمود",
+  "pLabel_GAIN_BASIC_R_PI": "تصويب",
+  "pLabel_GAIN_BASIC_R_D": "التدحرج",
+  "pLabel_GAIN_BASIC_P_PI": "تصويب",
+  "pLabel_GAIN_BASIC_P_D": "رطبة",
+  "pLabel_GAIN_BASIC_YAW": "Yaw",
+  "pLabel_GAIN_BASIC_THR": "السلطة (الحرفية)",
+  "pLabel_GAIN_CONTROL_RP": "/ ملعب",
+  "pLabel_GAIN_CONTROL_YAW": "Yaw",
+  "pLabel_GAIN_CONTROL_THR": "كتابي",
+  "pLabel_GAIN_CONTROL_WP": "الطريق",
+  "pLabel_GAIN_CONTROL_MOV": "Manoeuvre",
+  "pLabel_GAIN_CONTROL_BRA": "Brake",
+  "pLabel_GAIN_CONTROL_SCA": "التنسيق",
+  "pLabel_GAIN_CONTROL_TKO": "المقذوفات",
+  "pLabel_GAIN_VEL_XY": "كسب السرعة الأفقية",
+  "pLabel_GAIN_VEL_Z": "زيادة السرعة الرأسية",
+  "pLabel_GAIN_SEN_ATT": "حساسية الاستعداد",
+  "pLabel_GAIN_PERFORMANCE": "اتجاه الأداء",
+  "pLabel_FS_BATT_ENABLE": "إجراءات الحماية ذات التأثير المنخفض",
+  "pLabel_FS_BATT_WARNING": "المستوى 1",
+  "pLabel_FS_BATT_VOLTAGE": "المستوى 2",
+  "pLabel_FS_PMU_ENABLE": "ZZG19ZZZZ",
+  "pLabel_RTL_ALT": "ارتفاع العودة إلى البيت",
+  "pLabel_LAND_SPEED": "سرعة الهبوط",
+  "pLabel_SPRAY_PUMP_TYPE": "نوع المضخة",
+  "pLabel_LIQUID_TYPE": "نوع الاستشعار من المستوى",
+  "pLabel_FS_LIQ_ENABLE": "الحماية من السائل",
+  "pLabel_ABPOINT_DIS": "ZZG8ZZZZSwath width",
+  "pLabel_ABPOINT_SPEED": "ZZZG8Z",
+  "pLabel_WPNAV_ENABLE_U": "نوبة جانبية على شكل واحد",
+  "pLabel_FENCE_ENABLE": "Fence enable",
+  "pLabel_FENCE_TYPE": "نوع الجنس",
+  "pLabel_FENCE_ALT_MAX": "الحد الأقصى للطول",
+  "pLabel_FENCE_RADIUS": "الحد الأقصى للبعد (الدرجة)",
+  "pLabel_FENCE_ACTION": "عمل خرق",
+  "pLabel_RTK_ANTI_DEG": "RTKZA antenna install angle",
+  "pLabel_CH6_OPT": "وظيفة القناة 6",
+  "pLabel_CH7_OPT": "وظيفة القناة 7",
+  "pLabel_CH8_OPT": "وظيفة القناة 8",
+  "pLabel_CH9_OPT": "وظيفة القناة 9",
+  "pLabel_CH10_OPT": "وظيفة القناة 10",
+  "pLabel_CH11_OPT": "وظيفة القناة 11",
+  "pLabel_CH12_OPT": "وظيفة القناة 12",
+  "pLabel_BATT_VOLT_MULT": "مضاعفات البطارية",
+  "pLabel_FWVERSION": "نسخة برمجية",
+  "pLabel_SYSID_SW_MREV": "تنقيح البرمجيات",
+  "pLabel_INS_CAL_TYPE": "IMUZZZ معايرة الدولة",
+  "pLabel_COMPASS_CAL_TYPE": "حالة معايرة المركبات",
+  "pLabel_REG_ENABLE": "مرخص",
+  "helpBasicGain": "0-200٪. يَصْدقُ المراقبَ إلى الحاسوبِ الجويِ.",
+  "helpControlGain": "0-300٪. أعلى = سرعة الاستجابة، محدودة من قبل قوة الحاسوب الجوي.",
+  "helpMode": "وتشمل خيارات ZZG1ZZZZ، العمل الدليلي، وتنفيذ ZZG8ZZZZZZZZ، والعمل على الطريق، وسرعة ZZG2ZZZZ، والنوبات الجانبية، ومتابعة التضاريس. لم يتم تأكيد رسم خرائط القيمة بعد.",
+  "helpChannel": "المهمة الموكلة إلى قناة ZZG4ZZZZZ. وينبغي استخدام كل وظيفة مرة واحدة؛ والتحقق من رصد القنوات قبل تغييرها.",
+  "help_0": "Motor count and layout written as ZZG21ZZZZZZZ على حافلة ZZG1ZZZZZ.",
+  "help_1": "خارج من مركز الجاذبية المنطقة الزرقاء = منطقة سالبة صفراء = إيجابية.",
+  "help_2": "إستلام بروتوكول. لم يتم تأكيد رسم خرائط القيمة بعد.",
+  "help_3": "خيارات ZZG1ZZZ: Return home, Hover, Land, Hover then land. ولم تتأكد بعد عملية مسح القيمة - تحول الاختبار مع ZZG4ZZZZZZ بعد تغييره.",
+  "help_4": "In ZZG8ZZZZZZZZZZ/ route jobs the drone keeps working instead of running the failuresafe. لا يوصى به إلا بالرادار",
+  "help_5": "Centidegrees: 3000 = 30°.",
+  "help_6": "خيارات ZZG1ZZZ: معوق، بطيئة جدا، بطيئة، متوسطة، سريعة جدا. لم يتم تأكيد رسم خرائط القيمة بعد.",
+  "help_7": "التعجيل في الطيران المستقل. أعلى = سرعة التغييرات.",
+  "help_8": "التسارع تحت السيطرة التجريبية",
+  "help_9": "أعلى = أقصر وأقوى أوتوماتيكية",
+  "help_10": ":: مراقبة المناورات؛ وتحتاج نظم الطاقة السريعة إلى قيم أعلى.",
+  "help_11": "أعلى \"أسرع\" ، \"كيسبر\"",
+  "help_12": "في العادة لم يعدل",
+  "help_13": "ما مدى سرعة إتباع مدخل العصي",
+  "help_14": "خيارات ZZG1ZZZ: متوازنة، رياضية، مضادة للبيئة. فقط التحرك نحو قمع الاهتزازات إذا كان الجهاز يهتز بشكل واضح. لم يتم تأكيد رسم خرائط القيمة بعد.",
+  "help_15": "خيارات ZZG1ZZZ: Off, Return home, Land (both levels also flash the lights). لم يتم تأكيد رسم خرائط القيمة بعد.",
+  "help_16": "يجب أن يكون أقل من المستوى الأول",
+  "help_17": "One: pump ZZG20ZZZZZZZ on P1. Double: ZZG20ZZZZs on P1 and P2; P1 runs forward, P2 fl backward.",
+  "help_18": "خيارات ZZG1ZZZ: غير مستخدمة، جهاز استشعار (FC port K2)، مستوى التفرغ الحقيقي. المتر المتدفق يذهب إلى الميناء K1. لم يتم تأكيد رسم خرائط القيمة بعد.",
+  "help_19": "ابدأ عندما يجف الدبابة لم يتم تأكيد رسم خرائط القيمة بعد.",
+  "help_20": "Scale factor used for voltage calibration (meter reading quot; FC reading).",
+  "simulatorNoHardware": "محاكي (بدون عتاد)",
+  "hideTransmitter": "إخفاء المرسل",
+  "showTransmitter": "مرسل BT/WiFi",
+  "btAbbrev": "BT",
+  "noBtSerialRefresh": "لا منفذ تسلسلي BT — اقترن المرسل ثم حدّث",
+  "txWifiIp": "IP واي فاي المرسل",
+  "tcp": "TCP",
+  "linkDisconnected": "غير متصل",
+  "linkConnecting": "جارٍ الاتصال…",
+  "linkReadingParameters": "قراءة المعلمات {received}/{total}",
+  "linkConnected": "متصل · {link}",
+  "linkLostStatus": "فُقد الرابط · {link}",
+  "sensorGyroscope": "جيروسكوب",
+  "sensorAccelerometer": "مقياس تسارع",
+  "sensorCompass": "بوصلة",
+  "sensorBarometer": "بارومتر",
+  "sensorGps": "GPS"
+}

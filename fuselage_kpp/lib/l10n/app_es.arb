@@ -1,0 +1,677 @@
+{
+  "@@locale": "es",
+  "@missionItemsHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@modeSet": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "@abSprayGenerated": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@fenceCircleEnabled": {
+    "placeholders": {
+      "radius": {
+        "type": "String"
+      }
+    }
+  },
+  "@exportedTo": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "@importedItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@motorTestConfirmMessage": {
+    "placeholders": {
+      "motor": {
+        "type": "int"
+      },
+      "throttle": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "@protectionDescription": {
+    "placeholders": {
+      "voltage": {
+        "type": "String"
+      }
+    }
+  },
+  "@barometerReading": {
+    "placeholders": {
+      "pressure": {
+        "type": "String"
+      },
+      "temperature": {
+        "type": "String"
+      }
+    }
+  },
+  "@duplicateChannelFunctions": {
+    "placeholders": {
+      "details": {
+        "type": "String"
+      }
+    }
+  },
+  "@logSavedTo": {
+    "placeholders": {
+      "id": {
+        "type": "int"
+      },
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "@motorThrottlePercent": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "@motorDurationSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "@motorTestAccepted": {
+    "placeholders": {
+      "motor": {
+        "type": "int"
+      }
+    }
+  },
+  "@motorTestFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@imuCalibrationFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@compassCalibrationFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@paramSaved": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@paramNotSaved": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      },
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@paramsSavedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@paramsSavedPartial": {
+    "placeholders": {
+      "saved": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      },
+      "ids": {
+        "type": "String"
+      }
+    }
+  },
+  "@stickCalibrationInvalid": {
+    "placeholders": {
+      "channels": {
+        "type": "String"
+      }
+    }
+  },
+  "@fcReadingAndMultiplier": {
+    "placeholders": {
+      "reading": {
+        "type": "String"
+      },
+      "mult": {
+        "type": "String"
+      }
+    }
+  },
+  "@logParseFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@plotMinMax": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "@exportParametersTo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "@importFileFormatError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "@fcFirmwareInfo": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "@rtkCurrentPositioning": {
+    "placeholders": {
+      "fix": {
+        "type": "String"
+      }
+    }
+  },
+  "@logsOnFlightController": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@parametersDescription": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@parametersShown": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@paramUnknownOption": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@validateMinimum": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@validateMaximum": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "appName": "Fuselage-K++",
+  "groupBasic": "Básico",
+  "groupAdvanced": "Avanzado",
+  "groupTools": "Herramientas",
+  "groupFly": "Vuelo",
+  "destOverview": "Estado",
+  "destInstallation": "Instalación",
+  "destRemoteControl": "Control remoto",
+  "destSensors": "Sensores",
+  "destFlight": "Motores y vuelo",
+  "destGains": "Ganancias",
+  "destProtection": "Protección",
+  "destPump": "Bomba",
+  "destLiquid": "Nivel de líquido",
+  "destSpraying": "Pulverización AB",
+  "destFence": "Cerca",
+  "destExtensions": "Extensiones",
+  "destChannels": "Mapeo de canales",
+  "destMission": "Misión",
+  "destLogs": "Registros de vuelo",
+  "destParameters": "Todos los parámetros",
+  "destFirmware": "Firmware y acerca de",
+  "mapFly": "Mapa / vuelo",
+  "groundPlan": "Plan de tierra",
+  "home": "Inicio",
+  "language": "Idioma",
+  "overviewDescription": "Estado en vivo del controlador de vuelo y sus módulos (diseño del asistente K++).",
+  "sensors": "Sensores",
+  "imu": "ZIMU",
+  "gps": "ZGPS",
+  "gps1": "ZZZZG2ZZ1",
+  "gps1Sats": "Satélites GPS1",
+  "gps2": "ZZZZG2ZZ2",
+  "gps2Sats": "Satélites GPS2",
+  "position": "Posición",
+  "altitude": "Altitud",
+  "hdop": "ZHDOP",
+  "powerAndLink": "Energía y enlace",
+  "batteryVoltage": "Voltaje de batería",
+  "rcSignal": "Señal RC",
+  "link": "Enlace",
+  "firmwareVersion": "Versión de firmware",
+  "softwareRevision": "Revisión de software",
+  "parameters": "Parámetros",
+  "fcMessage": "Mensaje del controlador de vuelo",
+  "statusNormal": "Normal",
+  "statusFault": "Fallo",
+  "statusNotConnected": "No conectado",
+  "port": "Puerto",
+  "baud": "Baudios",
+  "connect": "Conectar",
+  "disconnect": "Desconectar",
+  "bluetooth": "Bluetooth",
+  "wifi": "ZZZZG12ZZ",
+  "refreshComPorts": "Actualizar puertos COM",
+  "refreshBluetoothPorts": "Actualizar puertos Bluetooth",
+  "setMode": "Establecer modo",
+  "flightModeAuto": "Auto",
+  "flightModeGuided": "ZZZZG15ZZ",
+  "flightModeLoiter": "Loiter",
+  "flightModeRtl": "RTL",
+  "flightModeLand": "Aterrizar",
+  "defaultAlt": "Altitud predeterminada",
+  "abSpray": "Pulverización AB",
+  "download": "Descargar",
+  "upload": "Subir",
+  "clear": "Borrar",
+  "import": "Importar",
+  "export": "Exportar",
+  "cancel": "Cancelar",
+  "ok": "OK",
+  "altitudeM": "Altitud (m)",
+  "missionItemsHint": "{count} elementos — toque el mapa para añadir waypoints",
+  "setA": "Establecer A",
+  "setB": "Establecer B",
+  "tapMapForFence": "Toque el mapa para la cerca…",
+  "enableCircleFence": "Activar cerca circular",
+  "editAltitude": "Editar altitud",
+  "missionDownloaded": "Misión descargada",
+  "missionUploaded": "Misión subida",
+  "missionCleared": "Misión borrada",
+  "rtlAccepted": "RTL aceptado",
+  "landAccepted": "Aterrizaje aceptado",
+  "modeSet": "Modo {mode} establecido",
+  "setPointsAbFirst": "Establezca primero los puntos A y B en el mapa",
+  "abSprayGenerated": "Patrón AB generado ({count} elementos)",
+  "fenceCircleEnabled": "Cerca circular activada, radio {radius} m (centrada en la aeronave en vuelo)",
+  "exportedTo": "Exportado a {path}",
+  "importedItems": "Importados {count} elementos",
+  "rtl": "RTL",
+  "land": "Aterrizar",
+  "armed": "ARMADO",
+  "disarmed": "Desarmado",
+  "notConnected": "No conectado",
+  "notConnectedHint": "Elija un puerto ZZG6ZZZZ (o el simulador) en la barra de arriba y pulse Connect.",
+  "cardFrameType": "Tipo de marco",
+  "frameTypeSubtitle": "Igual que ZZZG1ZZ asistente: brazo amarillo = nariz, M1–M8 = puertos FC, rojo CW / azul CCW = giro hélice. Escribe FRAME y ZZG22ZZZZ.",
+  "cardImuGpsMounting": "IMUZ &amp; ZZG2ZZZ",
+  "installationDescription": "Elija direcciones para que coincidan cómo se montan los módulos, e ingrese sus compensaciones desde el centro de gravedad de la estructura aérea en centímetros (zona azul negativa, zona amarilla positiva).",
+  "remoteControlDescription": "Para asegurarse de que el seguro de fallo está ajustado correctamente, cambie el RC después de cambiarlo y compruebe que los canales 1–4 saltan al centro (unos 1500) y el canal 5 salta a su posición insegura.",
+  "cardRcSettingsFailsafe": "Ajustes RCZ &quot; failsafe",
+  "stickCalibration": "Calibración de palos",
+  "stickCalibrationIdle": "Los puntos finales actuales se muestran a continuación. Empieza a recalibrar los canales 1-4.",
+  "stickCalibrationExtremes": "Empuja cada palo a su máximo y mínimo varias veces, luego presiona Siguiente.",
+  "stickCalibrationCentre": "Libere cada palo al centro, luego presione el centro de Captura.",
+  "stickCalibrationReview": "Compruebe los resultados, a continuación, guardarlos al controlador de vuelo.",
+  "startCalibration": "Calibración inicial",
+  "captureCentre": "Centro de captura",
+  "saveCalibration": "Guardar calibración",
+  "next": "Siguiente",
+  "channel": "Canal",
+  "min": "Min",
+  "centre": "Centre",
+  "max": "Max",
+  "channelMonitor": "Monitor de canal",
+  "sensorsImuCompassSubtitle": "Valores de sensores brutos de cada instancia ZZG3ZZZZ.",
+  "cardImuCompass": "IMU",
+  "cardBarometer": "Barómetro",
+  "noBarometerData": "No hay datos del barómetro",
+  "imuLevelCalibration": "Calibración de nivel ZZZZZZ",
+  "imuLevelCalibrationSubtitle": "Coloque el controlador de vuelo hacia arriba y nivel, luego calibrar.",
+  "compassCalibration": "Calibración de compás",
+  "compassCalibrationSubtitle": "Girar el nivel de los aviones y el reloj, luego la nariz y el reloj.",
+  "cardGlobalFlightLimits": "Límites globales de vuelo",
+  "motorTest": "Prueba de motor",
+  "motorTestSubtitle": "Gire cada motor individualmente para comprobar el orden y la dirección.",
+  "removePropellers": "Quitar hélices",
+  "startTest": "Prueba de inicio",
+  "motorTestConfirmMessage": "Prueba de motor girará M{motor}Z en ZZPH1ZZ% para ZZZPH2ZZS.\nConfirmar hélices son removidas y el avión está asegurado.",
+  "testingMotors": "Probando...",
+  "testMotors": "Motores de ensayo",
+  "calibrateImu": "Calibrar IMU",
+  "calibratingImu": "Calibrando...",
+  "calibrateCompass": "Calibrar la brújula",
+  "calibratingCompass": "Calibrando...",
+  "gainsDescription": "Las ganancias de control establecen la sensación del piloto: los valores superiores responden más rápido pero necesitan más energía. Sólo mueve la tendencia de rendimiento hacia la supresión de vibraciones si el marco de aire sacude visiblemente o los motores son ruidosos.",
+  "protectionDescription": "Tensión actual: {voltage}. El nivel 2 debe ser inferior al nivel 1; ambos niveles también flashean las luces.",
+  "barometerReading": "Presión ZZPH0ZZZZ hPa · Temperatura ZZPH1ZZ °C",
+  "cardBasicGains": "Ganancias básicas",
+  "cardControlGains": "Ganancias de control",
+  "cardSpeedSensitivity": "Sensibilidad de velocidad",
+  "cardVoltageRtlLanding": "Voltaje, regreso a casa &quot; aterrizaje",
+  "voltageCalibration": "Calibración de tensión",
+  "voltageCalibrationSubtitle": "Introduzca el voltaje medido con un metro para que la lectura del FC coincida con él.",
+  "meterVoltageV": "Tensión de medición (V)",
+  "calibrateVoltage": "Tensión calibrada",
+  "cardPump": "Bomba",
+  "cardLevelSensorProtection": "Sensor de nivel y protección",
+  "cardAbJobSettings": "Ajustes de empleo de AB",
+  "cardAbJobProcedure": "Procedimiento de trabajo ABZZZ",
+  "fenceDescription": "Círculo y límites de altitud. Dibuja/ajusta el círculo del mapa de la Misión, o establece valores aquí.",
+  "cardQuickFence": "Cierre rápido",
+  "fenceEnabled": "Fence está habilitado",
+  "fenceOff": "Fence está fuera",
+  "enableAltitudeAndCircle": "Capacidad de altitud + círculo",
+  "disableFence": "Cierre deshabilitable",
+  "cardHeightDistanceLimits": "Altura y límites de distancia",
+  "cardRtkAntenna": "RTK antena",
+  "rtkCurrentPositioning": "Posición actual: ZZZPH0ZZ",
+  "cardRadarVision4g": "Radar, visión y estado del módulo 4G",
+  "extensionsRadarStatusDescription": "La altura del radar, la distancia por radar de obstáculos, el estado del módulo de visión y el estado de IoT SIM se muestran aquí en el asistente ZZG1ZZZ.",
+  "channelsDescription": "Compruebe el monitor del canal para ver qué canales utiliza su RC antes de asignar funciones.",
+  "cardChannelFunctions": "Funciones del canal",
+  "flightLogsDescription": "Los registros descargados se guardan en Documentos\\ZZG0ZZ\\logs.",
+  "refreshList": "Lista de referencia",
+  "logsOnFlightController": "Registros {count} en el controlador de vuelo",
+  "parametersDescription": "Parámetros {count} leídos desde el controlador de vuelo.",
+  "parameterFiles": "Archivo de parámetros",
+  "reloadFromFc": "Reload from FC",
+  "searchByIdOrName": "Búsqueda por id o nombre",
+  "parametersShown": "Z{count} mostrado",
+  "paramColumnId": "Id",
+  "paramColumnName": "Nombre",
+  "paramColumnValue": "Valor",
+  "paramFormHint": "Escriba un valor y pulse Enter para escribirlo al controlador de vuelo.",
+  "paramNotReported": "No reportado por este controlador de vuelo",
+  "paramUnknownOption": "Unknown ({value})",
+  "enterNumber": "Introduzca un número",
+  "writeToFlightControllerTitle": "¿Escribir al controlador de vuelo?",
+  "write": "Escriba",
+  "cardVersions": "Versiones",
+  "cardVersionsAuthorisation": "Versiones &quot; autorización &quot;",
+  "firmwareUpgrade": "Actualización de firmware",
+  "firmwareUpgradeDescription": "Cargue el firmware ZZG1ZZ V2 / KX / P3 a través del arranque del controlador de vuelo. Nunca quite el dispositivo mientras se actualiza.",
+  "upgradeFirmware": "Firmware de actualización",
+  "factoryReset": "restablecimiento de fábrica",
+  "factoryResetDescription": "Restaurar cada parámetro a los defectos de fábrica.",
+  "restoreFactorySettings": "Restaurar la configuración de fábrica",
+  "droneRegistration": "Registro de secano",
+  "droneRegistrationDescription": "Nombre del fabricante, modelo de avión y número de aeronaves (ZZG25ZZZ).",
+  "shape": "Forma",
+  "validateMinimum": "Mínimo ZZPH0ZZZ",
+  "validateMaximum": "Máximo es ZZZPH0ZZ",
+  "validateChooseOption": "Elija una de las opciones enumeradas",
+  "instance": "Instance",
+  "accelAxes": "Accel X / Y / Z",
+  "gyroAxes": "Gyro X / Y / Z",
+  "compassAxes": "Compass X / Y / Z",
+  "comingSoon": "Pronto.",
+  "channelMonitorNoData": "Aún no se han recibido datos RC.",
+  "channelMonitorHint": "Mueva los palos y los interruptores para ver cada canal.",
+  "duplicateChannelFunctions": "Funciones de canal duplicadas: ZZZPH0ZZ",
+  "logColumnNo": "No.",
+  "logColumnTimeUtc": "Hora (UTC)",
+  "logColumnSizeBytes": "Tamaño (bytes)",
+  "logReview": "Examen",
+  "logSavedTo": "Log ZZPH0ZZZ salvado a {path}",
+  "motorThrottlePercent": "Throttle ZZZPH0ZZ %",
+  "motorDurationSeconds": "Duración ZZZPH0ZZ",
+  "motorTestAccepted": "Prueba M{motor}Z aceptado",
+  "motorTestFailed": "Prueba de motor falló: {error}",
+  "imuCalibrationAccepted": "Calibración IMU aceptada",
+  "imuCalibrationFailed": "Calibración IMUZ falló: {error}",
+  "compassCalibrationStarted": "Calibración de la brújula comenzó",
+  "compassCalibrationFailed": "Falló la calibración de la brújula: ZZPH0ZZ",
+  "paramSaved": "Z{id} salvó: {value}",
+  "paramNotSaved": "{id}Z no se salvó: {error}",
+  "paramsSavedCount": "Parámetros ZZZPH0ZZ",
+  "paramsSavedPartial": "{saved} salvado, {failed} falló: {ids}Z",
+  "stickCalibrationInvalid": "Canal min/max fuera de rango: {channels}. Falló la calibración — inténtelo de nuevo.",
+  "fcReadingAndMultiplier": "lectura del FC: ZZZPH0ZZ · multiplicador: {mult}",
+  "enterValidMeterVoltage": "Introduzca un voltaje medidor válido",
+  "noBatteryVoltageYet": "No hay tensión de batería del controlador de vuelo todavía",
+  "logParseFailed": "No podía analizar el registro: {error}",
+  "logParseFailedHint": "Abra el .bin externamente para el análisis completo.",
+  "logNoTrackSamples": "No se han reconocido muestras ZZG2ZZ/ATT en este registro.",
+  "plotNoSamples": "No hay muestras",
+  "plotMinMax": "min ZZPH0ZZZ · max {max}Z",
+  "exportParametersTo": "Parámetros ZZPH0ZZZ exportados a ZZZPH1ZZ",
+  "importFileFormatError": "Error del formato de archivo: {message}",
+  "importNothingMatches": "Nada que importar: todo valor ya coincide con el controlador de vuelo.",
+  "fcFirmwareInfo": "Firme de controlador de vuelo: {version}",
+  "appAboutLine": "ZZZZG0ZZ 1.0.0 — built to replace the JIYIZZZG1ZZ Assistant (ZZZG11ZZ221014).",
+  "sprayProcedure1Title": "Punto de grabación A",
+  "sprayProcedure1Detail": "Flip el interruptor de registro ZZG8ZZZZ a la posición media.",
+  "sprayProcedure2Title": "Punto de grabación B",
+  "sprayProcedure2Detail": "Flip el interruptor de registro ABZ a la posición alta.",
+  "sprayProcedure3Title": "Iniciar el trabajo AB",
+  "sprayProcedure3Detail": "Enciende el interruptor de ejecución AB (o establece ZZG8ZZZ ejecutar como modo de vuelo).",
+  "sprayProcedure4Title": "Elija la dirección",
+  "sprayProcedure4Detail": "Empuja el palo de rodillo hacia el lado para trabajar.",
+  "sprayProcedure5Title": "Clear A and B",
+  "sprayProcedure5Detail": "Flip el interruptor de registro AB de ida y vuelta rápidamente.",
+  "sprayProcedure6Title": "Resumir después de recargar",
+  "sprayProcedure6Detail": "Sin aclarar A/B, gire en ZZG8ZZZZ ejecutar: el trabajo se reanudará desde el último punto y dirección vacío.",
+  "waitingForProtocolConfirmation": "Esperando confirmación del protocolo",
+  "pendingFeatureBody": "El asistente K++Z utiliza un comando JIYIZ específico para esto, no estándar MAVLink. Se mantiene deshabilitado hasta que una grabación de la aplicación original confirma el mensaje exacto, por lo que nada no verificado se envía al controlador de vuelo.",
+  "optForward": "Adelante.",
+  "optRight": "Bien.",
+  "optBackward": "Atrás",
+  "optLeft": "Izquierda",
+  "optOff": "Fuera.",
+  "optOn": "On",
+  "optSinglePump": "Bomba individual",
+  "optDoublePump": "Bomba doble",
+  "optQuadX": "Quad X",
+  "optQuadPlus": "Quad +",
+  "optHexaX": "Hexa X",
+  "optHexaPlus": "Hexa +",
+  "optOctoX": "Octo X",
+  "optOctoPlus": "Octo +",
+  "optStandard": "Estándar",
+  "optCoaxial": "Coaxial",
+  "optY6": "Y6",
+  "optAltitude": "Altitud",
+  "optAltitudeCircle": "Altitud + círculo",
+  "optCircle": "Circle",
+  "pLabel_FRAME": "Tipo de marco",
+  "pLabel_SHAPE": "Forma de marco",
+  "pLabel_NAV_IMU_ORIENT": "IMUdirección",
+  "pLabel_NAV_COMP_ORIENT": "Dirección GPSZZ",
+  "pLabel_NAV_IMU_POS_X": "IMU posición X",
+  "pLabel_NAV_IMU_POS_Y": "IMU posición Y",
+  "pLabel_NAV_IMU_POS_Z": "IMU Posición Z",
+  "pLabel_NAV_GPS3_POS_X": "GPS posición X",
+  "pLabel_NAV_GPS3_POS_Y": "GPS posición Y",
+  "pLabel_NAV_GPS3_POS_Z": "GPS Posición Z",
+  "pLabel_NAV_IMU_SOURCE": "Fuente IMU",
+  "pLabel_RC_TYPE": "Tipo RC",
+  "pLabel_FS_THR_ENABLE": "RCZ-loss failsafe action",
+  "pLabel_RC_FS_CONTINUE": "Continuar el trabajo cuando ZZG4ZZZ se pierde",
+  "pLabel_THR_DZ": "Umbral de la zona muerta",
+  "pLabel_FLTMODE1": "Modo de vuelo 1",
+  "pLabel_FLTMODE2": "Modo de vuelo 2",
+  "pLabel_FLTMODE3": "Modo de vuelo 3",
+  "pLabel_FLTMODE4": "Modo de vuelo 4",
+  "pLabel_FLTMODE5": "Modo de vuelo 5",
+  "pLabel_FLTMODE6": "Modo de vuelo 6",
+  "pLabel_RC1_MIN": "CH1 min",
+  "pLabel_RC1_MAX": "CH1 max",
+  "pLabel_RC1_TRIM": "CH1 trim",
+  "pLabel_RC2_MIN": "CH2 min",
+  "pLabel_RC2_MAX": "CH2 max",
+  "pLabel_RC2_TRIM": "CH2 trim",
+  "pLabel_RC3_MIN": "CH3 min",
+  "pLabel_RC3_MAX": "CH3 max",
+  "pLabel_RC3_TRIM": "CH3 trim",
+  "pLabel_RC4_MIN": "CH4 min",
+  "pLabel_RC4_MAX": "CH4 max",
+  "pLabel_RC4_TRIM": "CH4 trim",
+  "pLabel_ANGLE_MAX": "Ángulo de inclinación",
+  "pLabel_WPNAV_LOIT_SPEED": "Velocidad horizontal",
+  "pLabel_PILOT_VELZ_UP": "Velocidad de escalada",
+  "pLabel_PILOT_VELZ_DOWN": "Velocidad máxima de descenso",
+  "pLabel_MOT_SPIN_ARMED": "Velocidad de vela motorizada",
+  "pLabel_GAIN_BASIC_R_PI": "Corrección",
+  "pLabel_GAIN_BASIC_R_D": "Roll damping",
+  "pLabel_GAIN_BASIC_P_PI": "Corrección de Pitch",
+  "pLabel_GAIN_BASIC_P_D": "Pitch damping",
+  "pLabel_GAIN_BASIC_YAW": "Yaw.",
+  "pLabel_GAIN_BASIC_THR": "Potencia (vertical)",
+  "pLabel_GAIN_CONTROL_RP": "Roll / pitch",
+  "pLabel_GAIN_CONTROL_YAW": "Yaw.",
+  "pLabel_GAIN_CONTROL_THR": "Vertical",
+  "pLabel_GAIN_CONTROL_WP": "Ruta",
+  "pLabel_GAIN_CONTROL_MOV": "Manoeuvre",
+  "pLabel_GAIN_CONTROL_BRA": "Brake",
+  "pLabel_GAIN_CONTROL_SCA": "Coordinación",
+  "pLabel_GAIN_CONTROL_TKO": "Despegue",
+  "pLabel_GAIN_VEL_XY": "Ganancia de velocidad horizontal",
+  "pLabel_GAIN_VEL_Z": "Ganancia de velocidad vertical",
+  "pLabel_GAIN_SEN_ATT": "Sensibilidad de actitud",
+  "pLabel_GAIN_PERFORMANCE": "Tendencia de rendimiento",
+  "pLabel_FS_BATT_ENABLE": "Medidas de protección de baja tensión",
+  "pLabel_FS_BATT_WARNING": "Tensión de alarma de nivel 1",
+  "pLabel_FS_BATT_VOLTAGE": "Tensión de alarma de nivel 2",
+  "pLabel_FS_PMU_ENABLE": "PMU protección de la falla",
+  "pLabel_RTL_ALT": "Altura de regreso a casa",
+  "pLabel_LAND_SPEED": "Velocidad de aterrizaje",
+  "pLabel_SPRAY_PUMP_TYPE": "Tipo de bomba",
+  "pLabel_LIQUID_TYPE": "Tipo de sensor de nivel",
+  "pLabel_FS_LIQ_ENABLE": "Protección anticuada",
+  "pLabel_ABPOINT_DIS": "AB ancho de swath",
+  "pLabel_ABPOINT_SPEED": "Velocidad AB",
+  "pLabel_WPNAV_ENABLE_U": "Cambio lateral en forma de U",
+  "pLabel_FENCE_ENABLE": "Fence enable",
+  "pLabel_FENCE_TYPE": "Tipo Fence",
+  "pLabel_FENCE_ALT_MAX": "Límite de altura",
+  "pLabel_FENCE_RADIUS": "Límite de distancia (radius)",
+  "pLabel_FENCE_ACTION": "Fence breach action",
+  "pLabel_RTK_ANTI_DEG": "RTKZ antena de instalación ángulo",
+  "pLabel_CH6_OPT": "Función del Canal 6",
+  "pLabel_CH7_OPT": "Función del canal 7",
+  "pLabel_CH8_OPT": "Función del Canal 8",
+  "pLabel_CH9_OPT": "Función del canal 9",
+  "pLabel_CH10_OPT": "Canal 10 función",
+  "pLabel_CH11_OPT": "Función del Canal 11",
+  "pLabel_CH12_OPT": "Función del Canal 12",
+  "pLabel_BATT_VOLT_MULT": "Multiplicador de tensión de batería",
+  "pLabel_FWVERSION": "Versión de firmware",
+  "pLabel_SYSID_SW_MREV": "Revisión del software",
+  "pLabel_INS_CAL_TYPE": "IMU estado de calibración",
+  "pLabel_COMPASS_CAL_TYPE": "Compass calibration state",
+  "pLabel_REG_ENABLE": "Desbloqueo autorizado",
+  "helpBasicGain": "Rango 0–200 %. Adapta el controlador al marco de aire.",
+  "helpControlGain": "Rango 0–300 %. Mayor = respuesta más rápida; limitada por el poder de la estructura aérea.",
+  "helpMode": "Las opciones K++Z incluyen trabajo manual, ZZG8ZZZ ejecutar, Trabajo de ruta, velocidad ZZG2ZZZZ, Cambio lateral y Terrain seguir. La asignación de valor aún no está confirmada.",
+  "helpChannel": "Función asignada a este canal ZZG4ZZZ. Cada función debe usarse una vez; revise el monitor del canal antes de cambiar.",
+  "help_0": "Conteo y diseño de motor escrito como ZZG21ZZZZ en el autobús ZZG1ZZZ.",
+  "help_1": "Inaugurado desde el centro de gravedad. Zona azul = zona amarilla negativa = positiva.",
+  "help_2": "Protocolo de receptor. La asignación de valor aún no está confirmada.",
+  "help_3": "K++Z opciones: Volver a casa, Hover, Land, Hover luego aterrizar. El mapeo de valor aún no confirmado — prueba con el ZZZG4ZZ apagado después de cambiar.",
+  "help_4": "En AB / trabajo de ruta el drone sigue trabajando en lugar de ejecutar el seguro de fallo. Recomendado sólo con radar.",
+  "help_5": "Centidegrees: 3000 = 30°.",
+  "help_6": "K++ opciones: Discapacitados, Muy lento, Lenta, Mediana, Muy rápido. La asignación de valor aún no está confirmada.",
+  "help_7": "Aceleración en vuelo autónomo. Más alto = cambios rápidos de velocidad.",
+  "help_8": "Aceleración bajo control piloto.",
+  "help_9": "Más alto = más corto, más duro freno automático.",
+  "help_10": "Coincide la respuesta de control a las maniobras; los sistemas de energía más rápidos necesitan valores más altos.",
+  "help_11": "Más alto = despegue más rápido y crujiente.",
+  "help_12": "Normalmente no ajustado.",
+  "help_13": "Cuán rápido el FC sigue la entrada de palo.",
+  "help_14": "K++ opciones: Equilibrado, Deporte, Anti-vibración. Sólo avanzar hacia la supresión de vibraciones si el marco aéreo se sacude visiblemente. La asignación de valor aún no está confirmada.",
+  "help_15": "K++ opciones: Off, Return home, Land (ambos niveles también flash las luces). La asignación de valor aún no está confirmada.",
+  "help_16": "Debe ser inferior al nivel 1 tensión.",
+  "help_17": "Individual: bomba ESC en P1. Doble: ESCs en P1 y P2; P1 corre volando hacia adelante, P2 volando hacia atrás.",
+  "help_18": "Opciones K++: No utilizado, Sensor de conmutación (puerto K2), nivel en tiempo real. El medidor de flujo va en el puerto K1. La asignación de valor aún no está confirmada.",
+  "help_19": "Acción cuando el tanque corre seco. La asignación de valor aún no está confirmada.",
+  "help_20": "Factor de escala utilizado para calibración de tensión (metro lectura ÷ lectura del FC).",
+  "simulatorNoHardware": "Simulador (sin hardware)",
+  "hideTransmitter": "Ocultar transmisor",
+  "showTransmitter": "Transmisor BT/WiFi",
+  "btAbbrev": "BT",
+  "noBtSerialRefresh": "Sin puerto serie BT — empareje el TX y actualice",
+  "txWifiIp": "IP WiFi del TX",
+  "tcp": "TCP",
+  "linkDisconnected": "Desconectado",
+  "linkConnecting": "Conectando…",
+  "linkReadingParameters": "Leyendo parámetros {received}/{total}",
+  "linkConnected": "Conectado · {link}",
+  "linkLostStatus": "Enlace perdido · {link}",
+  "sensorGyroscope": "Giróscopo",
+  "sensorAccelerometer": "Acelerómetro",
+  "sensorCompass": "Brújula",
+  "sensorBarometer": "Barómetro",
+  "sensorGps": "GPS"
+}

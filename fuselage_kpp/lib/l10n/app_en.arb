@@ -1,0 +1,701 @@
+{
+  "@@locale": "en",
+  "appName": "Fuselage-K++",
+  "groupBasic": "Basic",
+  "groupAdvanced": "Advanced",
+  "groupTools": "Tools",
+  "groupFly": "Fly",
+  "destOverview": "Status",
+  "destInstallation": "Installation",
+  "destRemoteControl": "Remote control",
+  "destSensors": "Sensors",
+  "destFlight": "Motors & flight",
+  "destGains": "Gains",
+  "destProtection": "Protection",
+  "destPump": "Pump",
+  "destLiquid": "Liquid level",
+  "destSpraying": "AB spraying",
+  "destFence": "Fence",
+  "destExtensions": "Extensions",
+  "destChannels": "Channel mapping",
+  "destMission": "Mission",
+  "destLogs": "Flight logs",
+  "destParameters": "All parameters",
+  "destFirmware": "Firmware & about",
+  "mapFly": "Map / fly",
+  "groundPlan": "Ground plan",
+  "home": "Home",
+  "language": "Language",
+  "overviewDescription": "Live health of the flight controller and its modules (K++ assistant layout).",
+  "sensors": "Sensors",
+  "imu": "IMU",
+  "gps": "GPS",
+  "gps1": "GPS1",
+  "gps1Sats": "GPS1 sats",
+  "gps2": "GPS2",
+  "gps2Sats": "GPS2 sats",
+  "position": "Position",
+  "altitude": "Altitude",
+  "hdop": "HDOP",
+  "powerAndLink": "Power & link",
+  "batteryVoltage": "Battery voltage",
+  "rcSignal": "RC signal",
+  "link": "Link",
+  "firmwareVersion": "Firmware version",
+  "softwareRevision": "Software revision",
+  "parameters": "Parameters",
+  "fcMessage": "Flight controller message",
+  "statusNormal": "Normal",
+  "statusFault": "Fault",
+  "statusNotConnected": "Not connected",
+  "port": "Port",
+  "baud": "Baud",
+  "connect": "Connect",
+  "disconnect": "Disconnect",
+  "bluetooth": "Bluetooth",
+  "wifi": "WiFi",
+  "refreshComPorts": "Refresh COM ports",
+  "refreshBluetoothPorts": "Refresh Bluetooth ports",
+  "setMode": "Set mode",
+  "flightModeAuto": "Auto",
+  "flightModeGuided": "Guided",
+  "flightModeLoiter": "Loiter",
+  "flightModeRtl": "RTL",
+  "flightModeLand": "Land",
+  "defaultAlt": "Default alt",
+  "abSpray": "AB spray",
+  "download": "Download",
+  "upload": "Upload",
+  "clear": "Clear",
+  "import": "Import",
+  "export": "Export",
+  "cancel": "Cancel",
+  "ok": "OK",
+  "altitudeM": "Altitude (m)",
+  "missionItemsHint": "{count} items — tap map to add waypoints",
+  "@missionItemsHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setA": "Set A",
+  "setB": "Set B",
+  "tapMapForFence": "Tap map for fence…",
+  "enableCircleFence": "Enable circle fence",
+  "editAltitude": "Edit altitude",
+  "missionDownloaded": "Mission downloaded",
+  "missionUploaded": "Mission uploaded",
+  "missionCleared": "Mission cleared",
+  "rtlAccepted": "RTL accepted",
+  "landAccepted": "Land accepted",
+  "modeSet": "Mode {mode} set",
+  "@modeSet": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "setPointsAbFirst": "Set points A and B on the map first",
+  "abSprayGenerated": "AB spray pattern generated ({count} items)",
+  "@abSprayGenerated": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fenceCircleEnabled": "Circle fence enabled, radius {radius} m (centred on aircraft when flying)",
+  "@fenceCircleEnabled": {
+    "placeholders": {
+      "radius": {
+        "type": "String"
+      }
+    }
+  },
+  "exportedTo": "Exported {path}",
+  "@exportedTo": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "importedItems": "Imported {count} items",
+  "@importedItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rtl": "RTL",
+  "land": "Land",
+  "armed": "ARMED",
+  "disarmed": "Disarmed",
+  "notConnected": "Not connected",
+  "notConnectedHint": "Choose a COM port (or the simulator) in the bar above and press Connect.",
+  "cardFrameType": "Frame type",
+  "frameTypeSubtitle": "Same as K++ assistant: yellow arm = nose, M1–M8 = FC ports, red CW / blue CCW = propeller spin. Writes FRAME and SHAPE.",
+  "cardImuGpsMounting": "IMU & GPS mounting",
+  "installationDescription": "Choose directions to match how the modules are mounted, and enter their offsets from the airframe's centre of gravity in centimetres (blue zone negative, yellow zone positive).",
+  "remoteControlDescription": "To make sure the failsafe is set correctly, switch the RC off after changing it and check that channels 1–4 jump to centre (about 1500) and channel 5 jumps to its failsafe position.",
+  "cardRcSettingsFailsafe": "RC settings & failsafe",
+  "stickCalibration": "Stick calibration",
+  "stickCalibrationIdle": "Current endpoints are shown below. Start to recalibrate channels 1–4.",
+  "stickCalibrationExtremes": "Push every stick to its maximum and minimum several times, then press Next.",
+  "stickCalibrationCentre": "Release every stick to the centre, then press Capture centre.",
+  "stickCalibrationReview": "Check the results, then save them to the flight controller.",
+  "startCalibration": "Start calibration",
+  "captureCentre": "Capture centre",
+  "saveCalibration": "Save calibration",
+  "next": "Next",
+  "channel": "Channel",
+  "min": "Min",
+  "centre": "Centre",
+  "max": "Max",
+  "channelMonitor": "Channel monitor",
+  "sensorsImuCompassSubtitle": "Raw sensor values from each IMU instance.",
+  "cardImuCompass": "IMU & compass",
+  "cardBarometer": "Barometer",
+  "noBarometerData": "No barometer data",
+  "imuLevelCalibration": "IMU level calibration",
+  "imuLevelCalibrationSubtitle": "Place the flight controller face up and level, then calibrate.",
+  "compassCalibration": "Compass calibration",
+  "compassCalibrationSubtitle": "Rotate the aircraft level and clockwise, then nose-down and clockwise.",
+  "cardGlobalFlightLimits": "Global flight limits & motor idle",
+  "motorTest": "Motor test",
+  "motorTestSubtitle": "Spins each motor individually to check order and direction.",
+  "removePropellers": "Remove propellers",
+  "startTest": "Start test",
+  "motorTestConfirmMessage": "Motor test will spin M{motor} at {throttle}% for {seconds} s.\nConfirm propellers are removed and the aircraft is secured.",
+  "@motorTestConfirmMessage": {
+    "placeholders": {
+      "motor": {
+        "type": "int"
+      },
+      "throttle": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "testingMotors": "Testing…",
+  "testMotors": "Test motors",
+  "calibrateImu": "Calibrate IMU",
+  "calibratingImu": "Calibrating…",
+  "calibrateCompass": "Calibrate compass",
+  "calibratingCompass": "Calibrating…",
+  "gainsDescription": "Control gains set the pilot's feel: higher values respond faster but need more power. Only move the performance tendency towards vibration suppression if the airframe visibly shakes or the motors sound noisy.",
+  "protectionDescription": "Current voltage: {voltage}. Level 2 must be lower than level 1; both levels also flash the lights.",
+  "@protectionDescription": {
+    "placeholders": {
+      "voltage": {
+        "type": "String"
+      }
+    }
+  },
+  "barometerReading": "Pressure {pressure} hPa   ·   Temperature {temperature} °C",
+  "@barometerReading": {
+    "placeholders": {
+      "pressure": {
+        "type": "String"
+      },
+      "temperature": {
+        "type": "String"
+      }
+    }
+  },
+  "cardBasicGains": "Basic gains",
+  "cardControlGains": "Control gains",
+  "cardSpeedSensitivity": "Speed & sensitivity",
+  "cardVoltageRtlLanding": "Voltage, return home & landing",
+  "voltageCalibration": "Voltage calibration",
+  "voltageCalibrationSubtitle": "Enter the voltage measured with a meter so the FC reading matches it.",
+  "meterVoltageV": "Meter voltage (V)",
+  "calibrateVoltage": "Calibrate voltage",
+  "cardPump": "Pump",
+  "cardLevelSensorProtection": "Level sensor & protection",
+  "cardAbJobSettings": "AB job settings",
+  "cardAbJobProcedure": "AB job procedure",
+  "fenceDescription": "Circle and altitude limits. Draw/adjust the circle from the Mission map, or set values here.",
+  "cardQuickFence": "Quick fence",
+  "fenceEnabled": "Fence is enabled",
+  "fenceOff": "Fence is off",
+  "enableAltitudeAndCircle": "Enable altitude + circle",
+  "disableFence": "Disable fence",
+  "cardHeightDistanceLimits": "Height & distance limits",
+  "cardRtkAntenna": "RTK antenna",
+  "rtkCurrentPositioning": "Current positioning: {fix}",
+  "cardRadarVision4g": "Radar, vision & 4G module status",
+  "extensionsRadarStatusDescription": "Terrain-following radar height, obstacle radar distance, vision module state and the IoT SIM status are shown here in the K++ assistant.",
+  "channelsDescription": "Check the channel monitor to see which channels your RC uses before assigning functions.",
+  "cardChannelFunctions": "Channel functions",
+  "flightLogsDescription": "Downloaded logs are saved to Documents\\Fuselage-K++\\logs.",
+  "refreshList": "Refresh list",
+  "logsOnFlightController": "{count} logs on the flight controller",
+  "parametersDescription": "{count} parameters read from the flight controller.",
+  "parameterFiles": "Parameter files",
+  "reloadFromFc": "Reload from FC",
+  "searchByIdOrName": "Search by id or name",
+  "parametersShown": "{count} shown",
+  "paramColumnId": "Id",
+  "paramColumnName": "Name",
+  "paramColumnValue": "Value",
+  "paramFormHint": "Type a value and press Enter to write it to the flight controller.",
+  "paramNotReported": "Not reported by this flight controller",
+  "paramUnknownOption": "Unknown ({value})",
+  "enterNumber": "Enter a number",
+  "writeToFlightControllerTitle": "Write to flight controller?",
+  "write": "Write",
+  "cardVersions": "Versions",
+  "cardVersionsAuthorisation": "Versions & authorisation",
+  "firmwareUpgrade": "Firmware upgrade",
+  "firmwareUpgradeDescription": "Upload K++ V2 / KX / P3 firmware through the flight controller bootloader. Never remove the device while upgrading.",
+  "upgradeFirmware": "Upgrade firmware",
+  "factoryReset": "Factory reset",
+  "factoryResetDescription": "Restore every parameter to the factory defaults.",
+  "restoreFactorySettings": "Restore factory settings",
+  "droneRegistration": "Drone registration",
+  "droneRegistrationDescription": "Manufacturer name, aircraft model and aircraft number (网络备案).",
+  "shape": "Shape",
+  "validateMinimum": "Minimum is {value}",
+  "validateMaximum": "Maximum is {value}",
+  "validateChooseOption": "Choose one of the listed options",
+  "instance": "Instance",
+  "accelAxes": "Accel X / Y / Z",
+  "gyroAxes": "Gyro X / Y / Z",
+  "compassAxes": "Compass X / Y / Z",
+  "comingSoon": "Coming soon",
+  "channelMonitorNoData": "No RC data received yet.",
+  "channelMonitorHint": "Move the sticks and switches to see each channel.",
+  "duplicateChannelFunctions": "Duplicate channel functions: {details}",
+  "@duplicateChannelFunctions": {
+    "placeholders": {
+      "details": {
+        "type": "String"
+      }
+    }
+  },
+  "logColumnNo": "No.",
+  "logColumnTimeUtc": "Time (UTC)",
+  "logColumnSizeBytes": "Size (bytes)",
+  "logReview": "Review",
+  "logSavedTo": "Log {id} saved to {path}",
+  "@logSavedTo": {
+    "placeholders": {
+      "id": {
+        "type": "int"
+      },
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "motorThrottlePercent": "Throttle {percent} %",
+  "@motorThrottlePercent": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "motorDurationSeconds": "Duration {seconds} s",
+  "@motorDurationSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "motorTestAccepted": "Motor M{motor} test accepted",
+  "@motorTestAccepted": {
+    "placeholders": {
+      "motor": {
+        "type": "int"
+      }
+    }
+  },
+  "motorTestFailed": "Motor test failed: {error}",
+  "@motorTestFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "imuCalibrationAccepted": "IMU calibration accepted",
+  "imuCalibrationFailed": "IMU calibration failed: {error}",
+  "@imuCalibrationFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "compassCalibrationStarted": "Compass calibration started",
+  "compassCalibrationFailed": "Compass calibration failed: {error}",
+  "@compassCalibrationFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "paramSaved": "{id} saved: {value}",
+  "@paramSaved": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "paramNotSaved": "{id} not saved: {error}",
+  "@paramNotSaved": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      },
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "paramsSavedCount": "{count} parameters saved",
+  "@paramsSavedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "paramsSavedPartial": "{saved} saved, {failed} failed: {ids}",
+  "@paramsSavedPartial": {
+    "placeholders": {
+      "saved": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      },
+      "ids": {
+        "type": "String"
+      }
+    }
+  },
+  "stickCalibrationInvalid": "Channel min/max out of range: {channels}. Calibration failed — try again.",
+  "@stickCalibrationInvalid": {
+    "placeholders": {
+      "channels": {
+        "type": "String"
+      }
+    }
+  },
+  "fcReadingAndMultiplier": "FC reading: {reading}   ·   multiplier: {mult}",
+  "@fcReadingAndMultiplier": {
+    "placeholders": {
+      "reading": {
+        "type": "String"
+      },
+      "mult": {
+        "type": "String"
+      }
+    }
+  },
+  "enterValidMeterVoltage": "Enter a valid meter voltage",
+  "noBatteryVoltageYet": "No battery voltage from the flight controller yet",
+  "logParseFailed": "Could not parse log: {error}",
+  "@logParseFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "logParseFailedHint": "Open the .bin externally for full analysis.",
+  "logNoTrackSamples": "No GPS/ATT samples recognised in this log.",
+  "plotNoSamples": "No samples",
+  "plotMinMax": "min {min}  ·  max {max}",
+  "@plotMinMax": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "exportParametersTo": "Exported {count} parameters to {path}",
+  "@exportParametersTo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "importFileFormatError": "File format error: {message}",
+  "@importFileFormatError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "importNothingMatches": "Nothing to import: every value already matches the flight controller.",
+  "fcFirmwareInfo": "Flight controller firmware: {version}",
+  "@fcFirmwareInfo": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "appAboutLine": "Fuselage-K++ 1.0.0 — built to replace the JIYI K++ assistant (JIYI221014).",
+  "sprayProcedure1Title": "Record point A",
+  "sprayProcedure1Detail": "Flip the AB record switch to the middle position.",
+  "sprayProcedure2Title": "Record point B",
+  "sprayProcedure2Detail": "Flip the AB record switch to the high position.",
+  "sprayProcedure3Title": "Start the AB job",
+  "sprayProcedure3Detail": "Turn on the AB execute switch (or set AB execute as a flight mode).",
+  "sprayProcedure4Title": "Choose direction",
+  "sprayProcedure4Detail": "Push the roll stick towards the side to work.",
+  "sprayProcedure5Title": "Clear A and B",
+  "sprayProcedure5Detail": "Flip the AB record switch back and forth quickly.",
+  "sprayProcedure6Title": "Resume after refill",
+  "sprayProcedure6Detail": "Without clearing A/B, turn on AB execute: the job resumes from the last empty-tank point and direction.",
+  "waitingForProtocolConfirmation": "Waiting for protocol confirmation",
+  "pendingFeatureBody": "The K++ assistant uses a JIYI-specific command for this, not standard MAVLink. It stays disabled until a recording of the original app confirms the exact message, so nothing unverified is ever sent to the flight controller.",
+  "optForward": "Forward",
+  "optRight": "Right",
+  "optBackward": "Backward",
+  "optLeft": "Left",
+  "optOff": "Off",
+  "optOn": "On",
+  "optSinglePump": "Single pump",
+  "optDoublePump": "Double pump",
+  "optQuadX": "Quad X",
+  "optQuadPlus": "Quad +",
+  "optHexaX": "Hexa X",
+  "optHexaPlus": "Hexa +",
+  "optOctoX": "Octo X",
+  "optOctoPlus": "Octo +",
+  "optStandard": "Standard",
+  "optCoaxial": "Coaxial",
+  "optY6": "Y6",
+  "optAltitude": "Altitude",
+  "optAltitudeCircle": "Altitude + circle",
+  "optCircle": "Circle",
+  "pLabel_FRAME": "Frame type",
+  "pLabel_SHAPE": "Frame shape",
+  "pLabel_NAV_IMU_ORIENT": "IMU direction",
+  "pLabel_NAV_COMP_ORIENT": "GPS direction",
+  "pLabel_NAV_IMU_POS_X": "IMU position X",
+  "pLabel_NAV_IMU_POS_Y": "IMU position Y",
+  "pLabel_NAV_IMU_POS_Z": "IMU position Z",
+  "pLabel_NAV_GPS3_POS_X": "GPS position X",
+  "pLabel_NAV_GPS3_POS_Y": "GPS position Y",
+  "pLabel_NAV_GPS3_POS_Z": "GPS position Z",
+  "pLabel_NAV_IMU_SOURCE": "IMU source",
+  "pLabel_RC_TYPE": "RC type",
+  "pLabel_FS_THR_ENABLE": "RC-loss failsafe action",
+  "pLabel_RC_FS_CONTINUE": "Continue job when RC is lost",
+  "pLabel_THR_DZ": "Throttle mid dead zone",
+  "pLabel_FLTMODE1": "Flight mode 1",
+  "pLabel_FLTMODE2": "Flight mode 2",
+  "pLabel_FLTMODE3": "Flight mode 3",
+  "pLabel_FLTMODE4": "Flight mode 4",
+  "pLabel_FLTMODE5": "Flight mode 5",
+  "pLabel_FLTMODE6": "Flight mode 6",
+  "pLabel_RC1_MIN": "CH1 min",
+  "pLabel_RC1_MAX": "CH1 max",
+  "pLabel_RC1_TRIM": "CH1 trim",
+  "pLabel_RC2_MIN": "CH2 min",
+  "pLabel_RC2_MAX": "CH2 max",
+  "pLabel_RC2_TRIM": "CH2 trim",
+  "pLabel_RC3_MIN": "CH3 min",
+  "pLabel_RC3_MAX": "CH3 max",
+  "pLabel_RC3_TRIM": "CH3 trim",
+  "pLabel_RC4_MIN": "CH4 min",
+  "pLabel_RC4_MAX": "CH4 max",
+  "pLabel_RC4_TRIM": "CH4 trim",
+  "pLabel_ANGLE_MAX": "Max tilt angle",
+  "pLabel_WPNAV_LOIT_SPEED": "Max horizontal speed",
+  "pLabel_PILOT_VELZ_UP": "Max climb speed",
+  "pLabel_PILOT_VELZ_DOWN": "Max descent speed",
+  "pLabel_MOT_SPIN_ARMED": "Motor idle speed",
+  "pLabel_GAIN_BASIC_R_PI": "Roll correction",
+  "pLabel_GAIN_BASIC_R_D": "Roll damping",
+  "pLabel_GAIN_BASIC_P_PI": "Pitch correction",
+  "pLabel_GAIN_BASIC_P_D": "Pitch damping",
+  "pLabel_GAIN_BASIC_YAW": "Yaw",
+  "pLabel_GAIN_BASIC_THR": "Power (vertical)",
+  "pLabel_GAIN_CONTROL_RP": "Roll / pitch",
+  "pLabel_GAIN_CONTROL_YAW": "Yaw",
+  "pLabel_GAIN_CONTROL_THR": "Vertical",
+  "pLabel_GAIN_CONTROL_WP": "Route",
+  "pLabel_GAIN_CONTROL_MOV": "Manoeuvre",
+  "pLabel_GAIN_CONTROL_BRA": "Brake",
+  "pLabel_GAIN_CONTROL_SCA": "Coordination",
+  "pLabel_GAIN_CONTROL_TKO": "Take-off",
+  "pLabel_GAIN_VEL_XY": "Horizontal speed gain",
+  "pLabel_GAIN_VEL_Z": "Vertical speed gain",
+  "pLabel_GAIN_SEN_ATT": "Attitude sensitivity",
+  "pLabel_GAIN_PERFORMANCE": "Performance tendency",
+  "pLabel_FS_BATT_ENABLE": "Low-voltage protection action",
+  "pLabel_FS_BATT_WARNING": "Level 1 alarm voltage",
+  "pLabel_FS_BATT_VOLTAGE": "Level 2 alarm voltage",
+  "pLabel_FS_PMU_ENABLE": "PMU fault protection",
+  "pLabel_RTL_ALT": "Return-home height",
+  "pLabel_LAND_SPEED": "Landing speed",
+  "pLabel_SPRAY_PUMP_TYPE": "Pump type",
+  "pLabel_LIQUID_TYPE": "Level sensor type",
+  "pLabel_FS_LIQ_ENABLE": "Out-of-liquid protection",
+  "pLabel_ABPOINT_DIS": "AB swath width",
+  "pLabel_ABPOINT_SPEED": "AB speed",
+  "pLabel_WPNAV_ENABLE_U": "U-shaped side shift",
+  "pLabel_FENCE_ENABLE": "Fence enable",
+  "pLabel_FENCE_TYPE": "Fence type",
+  "pLabel_FENCE_ALT_MAX": "Height limit",
+  "pLabel_FENCE_RADIUS": "Distance limit (radius)",
+  "pLabel_FENCE_ACTION": "Fence breach action",
+  "pLabel_RTK_ANTI_DEG": "RTK antenna install angle",
+  "pLabel_CH6_OPT": "Channel 6 function",
+  "pLabel_CH7_OPT": "Channel 7 function",
+  "pLabel_CH8_OPT": "Channel 8 function",
+  "pLabel_CH9_OPT": "Channel 9 function",
+  "pLabel_CH10_OPT": "Channel 10 function",
+  "pLabel_CH11_OPT": "Channel 11 function",
+  "pLabel_CH12_OPT": "Channel 12 function",
+  "pLabel_BATT_VOLT_MULT": "Battery voltage multiplier",
+  "pLabel_FWVERSION": "Firmware version",
+  "pLabel_SYSID_SW_MREV": "Software revision",
+  "pLabel_INS_CAL_TYPE": "IMU calibration state",
+  "pLabel_COMPASS_CAL_TYPE": "Compass calibration state",
+  "pLabel_REG_ENABLE": "App unlock authorised",
+  "helpBasicGain": "Range 0–200 %. Adapts the controller to the airframe.",
+  "helpControlGain": "Range 0–300 %. Higher = faster response; limited by the airframe's power.",
+  "helpMode": "K++ options include Manual job, AB execute, Route job, GPS speed, Side shift and Terrain follow. Value mapping not yet confirmed.",
+  "helpChannel": "Function assigned to this RC channel. Each function should be used once; check the channel monitor before changing.",
+  "help_0": "Motor count and layout written as FRAME on the K++ bus.",
+  "help_1": "Offset from the centre of gravity. Blue zone = negative, yellow zone = positive.",
+  "help_2": "Receiver protocol. Value mapping not yet confirmed.",
+  "help_3": "K++ options: Return home, Hover, Land, Hover then land. Value mapping not yet confirmed — test with the RC switched off after changing.",
+  "help_4": "In AB / route jobs the drone keeps working instead of running the failsafe. Recommended only with radar.",
+  "help_5": "Centidegrees: 3000 = 30°.",
+  "help_6": "K++ options: Disabled, Very slow, Slow, Medium, Very fast. Value mapping not yet confirmed.",
+  "help_7": "Acceleration in autonomous flight. Higher = faster speed changes.",
+  "help_8": "Acceleration under pilot control.",
+  "help_9": "Higher = shorter, harder automatic braking.",
+  "help_10": "Matches control response to manoeuvres; faster power systems need higher values.",
+  "help_11": "Higher = quicker, crisper take-off.",
+  "help_12": "Normally not adjusted.",
+  "help_13": "How quickly the FC follows stick input.",
+  "help_14": "K++ options: Balanced, Sport, Anti-vibration. Only move towards vibration suppression if the airframe visibly shakes. Value mapping not yet confirmed.",
+  "help_15": "K++ options: Off, Return home, Land (both levels also flash the lights). Value mapping not yet confirmed.",
+  "help_16": "Must be lower than the level 1 voltage.",
+  "help_17": "Single: pump ESC on P1. Double: ESCs on P1 and P2; P1 runs flying forward, P2 flying backward.",
+  "help_18": "K++ options: Not used, Switch sensor (FC port K2), Real-time level. Flow meter goes on port K1. Value mapping not yet confirmed.",
+  "help_19": "Action when the tank runs dry. Value mapping not yet confirmed.",
+  "help_20": "Scale factor used for voltage calibration (meter reading ÷ FC reading).",
+  "@rtkCurrentPositioning": {
+    "placeholders": {
+      "fix": {
+        "type": "String"
+      }
+    }
+  },
+  "@logsOnFlightController": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@parametersDescription": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@parametersShown": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@paramUnknownOption": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@validateMinimum": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@validateMaximum": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "simulatorNoHardware": "Simulator (no hardware)",
+  "hideTransmitter": "Hide transmitter",
+  "showTransmitter": "Transmitter BT/WiFi",
+  "btAbbrev": "BT",
+  "noBtSerialRefresh": "No BT serial port — pair TX then refresh",
+  "txWifiIp": "TX WiFi IP",
+  "tcp": "TCP",
+  "linkDisconnected": "Disconnected",
+  "linkConnecting": "Connecting…",
+  "linkReadingParameters": "Reading parameters {received}/{total}",
+  "@linkReadingParameters": {
+    "placeholders": {
+      "received": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "linkConnected": "Connected · {link}",
+  "@linkConnected": {
+    "placeholders": {
+      "link": {
+        "type": "String"
+      }
+    }
+  },
+  "linkLostStatus": "Link lost · {link}",
+  "@linkLostStatus": {
+    "placeholders": {
+      "link": {
+        "type": "String"
+      }
+    }
+  },
+  "sensorGyroscope": "Gyroscope",
+  "sensorAccelerometer": "Accelerometer",
+  "sensorCompass": "Compass",
+  "sensorBarometer": "Barometer",
+  "sensorGps": "GPS"
+}
