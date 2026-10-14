@@ -1,4 +1,6 @@
 import 'package:fc_frontend/core/theme/app_theme.dart';
+import 'package:fc_frontend/core/widgets/language_selector.dart';
+import 'package:fc_frontend/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -12,6 +14,7 @@ class LandingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: DecoratedBox(
         decoration: const BoxDecoration(
@@ -24,9 +27,9 @@ class LandingPage extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            const _FuselageImage(
+            _FuselageImage(
               asset: _heroAsset,
-              label: 'Fuselage Hero Image',
+              label: l10n.heroImageLabel,
               fit: BoxFit.cover,
             ),
             const DecoratedBox(
@@ -42,22 +45,31 @@ class LandingPage extends StatelessWidget {
                 ),
               ),
             ),
+            const SafeArea(
+              child: Align(
+                alignment: AlignmentDirectional.topEnd,
+                child: Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(16, 12, 16, 0),
+                  child: LanguageSelector(),
+                ),
+              ),
+            ),
             Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const _FuselageImage(
+                    _FuselageImage(
                       asset: _logoAsset,
-                      label: 'Fuselage Logo',
+                      label: l10n.logoImageLabel,
                       width: 96,
                       height: 96,
                       fit: BoxFit.contain,
                     ),
                     const SizedBox(height: 28),
                     Text(
-                      'Fuselage',
+                      l10n.appTitle,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         letterSpacing: 1.4,
@@ -66,7 +78,7 @@ class LandingPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Connect to your drone to begin',
+                      l10n.connectTagline,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
@@ -82,7 +94,7 @@ class LandingPage extends StatelessWidget {
                             minimumSize: _buttonSize,
                             textStyle: _buttonTextStyle,
                           ),
-                          child: const Text('Start'),
+                          child: Text(l10n.start),
                         ),
                         OutlinedButton(
                           onPressed: () => context.go('/ground-plan'),
@@ -92,7 +104,7 @@ class LandingPage extends StatelessWidget {
                             side: const BorderSide(color: AppTheme.primary),
                             textStyle: _buttonTextStyle,
                           ),
-                          child: const Text('Ground Plan'),
+                          child: Text(l10n.groundPlan),
                         ),
                         OutlinedButton(
                           onPressed: () => context.go('/overview'),
@@ -102,7 +114,7 @@ class LandingPage extends StatelessWidget {
                             side: const BorderSide(color: AppTheme.primary),
                             textStyle: _buttonTextStyle,
                           ),
-                          child: const Text('K++ Tuning'),
+                          child: Text(l10n.kppTuning),
                         ),
                       ],
                     ),

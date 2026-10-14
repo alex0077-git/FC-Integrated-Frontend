@@ -1,3 +1,4 @@
+import 'package:fc_frontend/core/l10n/app_locale.dart';
 import 'package:fc_frontend/core/router/app_router.dart';
 import 'package:fc_frontend/core/theme/app_theme.dart' as host_theme;
 import 'package:fc_frontend/core/theme/theme_mode_provider.dart';
@@ -5,11 +6,14 @@ import 'package:fc_frontend/core/widgets/phone_landscape_gate.dart';
 import 'package:fc_frontend/data/database/mission_database.dart';
 import 'package:fc_frontend/data/repositories/mission_repository.dart';
 import 'package:fc_frontend/data/repositories/settings_repository.dart';
+import 'package:fc_frontend/l10n/app_localizations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuselage_kpp/core/theme/app_theme.dart' as kpp_theme;
+import 'package:fuselage_kpp/l10n/app_localizations.dart' as kpp_l10n;
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
@@ -34,9 +38,19 @@ class FcApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
+    final locale = ref.watch(localeProvider);
     return MaterialApp.router(
       title: 'Fuselage',
       debugShowCheckedModeBanner: false,
+      locale: locale,
+      supportedLocales: AppLocales.supported,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        kpp_l10n.KppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       // Register both host and K++ AppStatusColors — they are different Dart types.
       theme: host_theme.AppTheme.light.copyWith(
         extensions: <ThemeExtension<dynamic>>[

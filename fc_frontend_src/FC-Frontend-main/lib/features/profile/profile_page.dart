@@ -1,6 +1,8 @@
 import 'package:fc_frontend/core/map/map_view.dart';
 import 'package:fc_frontend/core/theme/theme_mode_provider.dart';
+import 'package:fc_frontend/core/widgets/language_selector.dart';
 import 'package:fc_frontend/core/widgets/responsive.dart';
+import 'package:fc_frontend/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -29,6 +31,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final themeMode = ref.watch(themeModeProvider);
     final mapView = ref.watch(mapViewModeProvider);
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
 
     final phone = Responsive.isPhone(context);
     return ListView(
@@ -49,19 +52,26 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         const SizedBox(height: 24),
         TextField(
           controller: _usernameController,
-          decoration: const InputDecoration(
-            labelText: 'Username',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: l10n.username,
+            border: const OutlineInputBorder(),
           ),
         ),
         const SizedBox(height: 24),
-        Text('Theme', style: Theme.of(context).textTheme.titleMedium),
+        Text(l10n.language, style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 8),
+        const Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: LanguageSelector(compact: false),
+        ),
+        const SizedBox(height: 24),
+        Text(l10n.theme, style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
         Row(
           children: [
             Expanded(
               child: _ThemeChoice(
-                label: 'Light',
+                label: l10n.themeLight,
                 selected: themeMode == ThemeMode.light,
                 onPressed: () => ref
                     .read(themeModeProvider.notifier)
@@ -71,7 +81,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             const SizedBox(width: 8),
             Expanded(
               child: _ThemeChoice(
-                label: 'Dark',
+                label: l10n.themeDark,
                 selected: themeMode == ThemeMode.dark,
                 onPressed: () => ref
                     .read(themeModeProvider.notifier)
@@ -83,13 +93,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         const SizedBox(height: 24),
         DropdownButtonFormField<String>(
           initialValue: _units,
-          decoration: const InputDecoration(
-            labelText: 'Units',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: l10n.units,
+            border: const OutlineInputBorder(),
           ),
-          items: const [
-            DropdownMenuItem(value: 'Metric', child: Text('Metric')),
-            DropdownMenuItem(value: 'Imperial', child: Text('Imperial')),
+          items: [
+            DropdownMenuItem(value: 'Metric', child: Text(l10n.unitsMetric)),
+            DropdownMenuItem(value: 'Imperial', child: Text(l10n.unitsImperial)),
           ],
           onChanged: (value) {
             if (value == null) {
@@ -102,19 +112,19 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         DropdownButtonFormField<MapViewMode>(
           key: ValueKey(mapView),
           initialValue: mapView,
-          decoration: const InputDecoration(
-            labelText: 'Map style',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: l10n.mapStyle,
+            border: const OutlineInputBorder(),
           ),
-          items: const [
-            DropdownMenuItem(value: MapViewMode.street, child: Text('Street')),
+          items: [
+            DropdownMenuItem(value: MapViewMode.street, child: Text(l10n.mapStreet)),
             DropdownMenuItem(
               value: MapViewMode.satellite,
-              child: Text('Satellite'),
+              child: Text(l10n.mapSatellite),
             ),
             DropdownMenuItem(
               value: MapViewMode.digitalSky,
-              child: Text('Digital Sky'),
+              child: Text(l10n.mapDigitalSky),
             ),
           ],
           onChanged: (value) {
@@ -128,19 +138,19 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         ListTile(
           contentPadding: EdgeInsets.zero,
           leading: const Icon(Icons.tune),
-          title: const Text('K++ tuning'),
-          subtitle: const Text('Full flight-controller assistant'),
+          title: Text(l10n.kppTuningTitle),
+          subtitle: Text(l10n.kppTuningSubtitle),
           trailing: const Icon(Icons.chevron_right),
           onTap: () => context.go('/overview'),
         ),
         const SizedBox(height: 16),
-        Text('About', style: Theme.of(context).textTheme.titleMedium),
+        Text(l10n.about, style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
-        const Text('Fuselage'),
-        const Text('Version $appVersion'),
+        Text(l10n.appTitle),
+        Text(l10n.versionLabel(appVersion)),
         const SizedBox(height: 4),
         Text(
-          'Fly, plan missions, and tune K++ — one app.',
+          l10n.appTagline,
           style: Theme.of(context).textTheme.bodySmall,
         ),
       ],
@@ -161,16 +171,13 @@ class _ThemeChoice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (selected) {
-      return FilledButton(
-        style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-        onPressed: onPressed,
-        child: Text(label),
-      );
-    }
+    final scheme = Theme.of(context).colorScheme;
     return OutlinedButton(
-      style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
       onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        foregroundColor: selected ? scheme.primary : scheme.onSurface,
+        side: BorderSide(color: selected ? scheme.primary : scheme.outline),
+      ),
       child: Text(label),
     );
   }

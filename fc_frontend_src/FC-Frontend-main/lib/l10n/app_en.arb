@@ -1,0 +1,344 @@
+{
+  "@@locale": "en",
+  "appTitle": "Fuselage",
+  "connectTagline": "Connect to your drone to begin",
+  "start": "Start",
+  "groundPlan": "Ground Plan",
+  "kppTuning": "K++ Tuning",
+  "language": "Language",
+  "currentLanguage": "Current language: {name}",
+  "@currentLanguage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "langEnglish": "English",
+  "langArabic": "العربية",
+  "langGerman": "Deutsch",
+  "langSpanish": "Español",
+  "langHindi": "हिन्दी",
+  "home": "Home",
+  "takeoff": "Takeoff",
+  "arm": "Arm",
+  "disarm": "Disarm",
+  "rtl": "RTL",
+  "land": "Land",
+  "landConfirmTitle": "Land",
+  "landConfirmMessage": "Land the drone now?",
+  "takeoffConfirmMessage": "Arm (if needed) and take off to {meters} m on the live aircraft?",
+  "@takeoffConfirmMessage": {
+    "placeholders": {
+      "meters": {
+        "type": "String"
+      }
+    }
+  },
+  "armConfirmMessage": "Arm the live drone?",
+  "disarmConfirmMessage": "Disarm the live drone?",
+  "rtlConfirmMessage": "Return to launch now?",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "boundaries": "Boundaries",
+  "split": "Split",
+  "obstacles": "Obstacles",
+  "waypoints": "Waypoints",
+  "history": "History",
+  "username": "Username",
+  "theme": "Theme",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "units": "Units",
+  "unitsMetric": "Metric",
+  "unitsImperial": "Imperial",
+  "mapStyle": "Map style",
+  "mapStreet": "Street",
+  "mapSatellite": "Satellite",
+  "mapDigitalSky": "Digital Sky",
+  "kppTuningTitle": "K++ tuning",
+  "kppTuningSubtitle": "Full flight-controller assistant",
+  "about": "About",
+  "appTagline": "Fly, plan missions, and tune K++ — one app.",
+  "versionLabel": "Version {version}",
+  "@versionLabel": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "battery": "Battery",
+  "flightParameters": "Flight Parameters",
+  "firstWarningThreshold": "First Warning Threshold (%)",
+  "secondWarningThreshold": "Second Warning Threshold (%)",
+  "criticalBatteryLevel": "Critical Battery Level (%)",
+  "maxVoltage": "Max Voltage",
+  "minVoltage": "Min Voltage",
+  "lowVoltageThreshold": "Low-Voltage Threshold",
+  "criticalVoltageThreshold": "Critical-Voltage Threshold",
+  "cellCount": "Cell Count",
+  "calibrateBatteryOnKpp": "Calibrate Battery on K++",
+  "maxYawRate": "Max Yaw Rate",
+  "maxRollAngle": "Max Roll Angle",
+  "maxPitchAngle": "Max Pitch Angle",
+  "maxSpeed": "Max Speed",
+  "cruiseSpeed": "Cruise Speed",
+  "saveMission": "Save Mission",
+  "loadMission": "Load Mission",
+  "uploadMission": "Upload Mission",
+  "callForJob": "Call for Job",
+  "uploadAndFly": "Upload & fly",
+  "uploadAndStart": "Upload & start",
+  "undo": "Undo",
+  "redo": "Redo",
+  "reset": "Reset",
+  "save": "Save",
+  "heroImageLabel": "Fuselage Hero Image",
+  "logoImageLabel": "Fuselage Logo",
+  "profile": "Profile",
+  "settings": "Settings",
+  "connect": "Connect",
+  "connected": "Connected",
+  "disconnected": "Disconnected",
+  "gpsStatus": "GPS {fix} · {sats} sats",
+  "@gpsStatus": {
+    "placeholders": {
+      "fix": {
+        "type": "String"
+      },
+      "sats": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsUnknown": "GPS --",
+  "modeUnknown": "Mode --",
+  "calibration": "Calibration",
+  "kppTuningFull": "K++ tuning (full assistant)",
+  "kppTuningFullSubtitle": "Status, sensors, gains, logs, firmware…",
+  "batteryCritical": "Battery critical",
+  "batteryLow": "Battery low",
+  "altitude": "Altitude",
+  "distanceToDrone": "Distance to Drone",
+  "distanceToLanding": "Distance to Landing Point",
+  "speed": "Speed",
+  "drawBoundaryBeforeSplit": "Draw at least three boundary points before splitting.",
+  "firstPoint": "First Point",
+  "endPoint": "End Point",
+  "undoSplit": "Undo split",
+  "selectSplitA": "Select Split A",
+  "selectSplitB": "Select Split B",
+  "setA": "Set A",
+  "setB": "Set B",
+  "missionSpray": "Spray",
+  "missionSurvey": "Survey",
+  "missionManual": "Manual",
+  "waypointsCount": "Waypoints ({count})",
+  "@waypointsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noWaypointsYet": "No waypoints yet",
+  "waypointDetail": "Waypoint detail",
+  "selectWaypoint": "Select a waypoint",
+  "waypoint": "Waypoint",
+  "loiter": "Loiter",
+  "cropRice": "Rice",
+  "cropWheat": "Wheat",
+  "cropOther": "Other",
+  "connectLiveKpp": "Connect live K++",
+  "usbGround": "USB (ground)",
+  "comPort": "COM port",
+  "noComPort": "No COM port",
+  "refreshComPorts": "Refresh COM ports",
+  "baud": "Baud",
+  "disconnect": "Disconnect",
+  "connectUsbToKpp": "Connect USB to K++",
+  "transmitterBtWifi": "Transmitter (Bluetooth / WiFi)",
+  "airbornePath": "Airborne path — App → transmitter → aircraft",
+  "bluetooth": "Bluetooth",
+  "wifi": "WiFi",
+  "bluetoothTransmitter": "Bluetooth transmitter",
+  "noBluetoothPort": "No Bluetooth port",
+  "refreshBluetoothPorts": "Refresh Bluetooth ports",
+  "showAllComPorts": "Show all COM ports",
+  "showAllComPortsHint": "Use if your TX paired but is not listed as Bluetooth",
+  "connectTransmitterBt": "Connect transmitter (Bluetooth)",
+  "disconnectTransmitter": "Disconnect transmitter",
+  "g20Preset": "G20 preset",
+  "useGatewayIp": "Use gateway IP",
+  "refreshNetwork": "Refresh network",
+  "wifiMode": "WiFi mode",
+  "wifiModeTcp": "TCP to transmitter AP",
+  "wifiModeUdp": "UDP to transmitter",
+  "wifiModeUdpListen": "UDP listen (GCS port)",
+  "hostIp": "Host / IP",
+  "remotePort": "Remote port",
+  "localPort": "Local port",
+  "connectTransmitterWifi": "Connect transmitter (WiFi)",
+  "autoTryWifi": "Auto-try WiFi",
+  "phoneLandscapeTitle": "Rotate to landscape",
+  "phoneLandscapeBody": "This app is designed for landscape orientation.",
+  "returnToLaunch": "Return to launch",
+  "lineSpacing": "Line spacing",
+  "coverageAdjust": "Coverage adjust",
+  "obstacleCircle": "Circle",
+  "obstaclePolygon": "Polygon",
+  "addObstacle": "Add obstacle",
+  "deleteObstacle": "Delete obstacle",
+  "planHistory": "Plan history",
+  "imuCalibration": "IMU Calibration",
+  "compassCalibration": "Compass Calibration",
+  "accelCalibration": "Accelerometer Calibration",
+  "levelHorizon": "Level Horizon",
+  "startCalibration": "Start",
+  "stopCalibration": "Stop",
+  "close": "Close",
+  "delete": "Delete",
+  "ok": "OK",
+  "retry": "Retry",
+  "mapAttributionEsri": "Tiles © Esri (imagery + place labels)",
+  "mapAttributionOsm": "© OpenStreetMap contributors",
+  "digitalSkyEmbedBlocked": "Digital Sky will not open inside this app. Their site blocks other websites from showing the map.",
+  "digitalSkyDidNotLoad": "Digital Sky did not load",
+  "openDigitalSky": "Open Digital Sky",
+  "openDigitalSkyInBrowser": "Open Digital Sky in browser",
+  "calibrationRadio": "Radio",
+  "calibrationImu": "IMU",
+  "calibrationCompass": "Compass",
+  "calibrationStatusCalibrating": "Calibrating...",
+  "calibrationStatusCalibrated": "Calibrated",
+  "calibrationStatusNotCalibrated": "Not calibrated",
+  "startCalibrationFull": "Start Calibration",
+  "connectLiveLink": "Live link: {link}",
+  "@connectLiveLink": {
+    "placeholders": {
+      "link": {
+        "type": "String"
+      }
+    }
+  },
+  "connectUsbIntro": "USB for ground setup. For flying, connect the app to the transmitter over Bluetooth or WiFi — commands go App → TX → aircraft.",
+  "connectWebUnsupported": "This web build cannot open USB, Bluetooth, or WiFi sockets. Run the Windows or Android app.",
+  "transmitterPickHint": "Pick Bluetooth or WiFi depending on your transmitter. USB above is unchanged for ground setup.",
+  "btAbbrev": "BT",
+  "transmitterIpHost": "Transmitter IP / host",
+  "tcpPort": "TCP port",
+  "remoteUdpPort": "Remote UDP port",
+  "localUdpPort": "Local UDP port",
+  "tryingWifiPorts": "Trying ports…",
+  "autoTryWifiPorts": "Auto-try WiFi ports",
+  "loadingParameters": "Loading parameters {received}/{total}",
+  "@loadingParameters": {
+    "placeholders": {
+      "received": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "linkLostTransmitter": "Link lost — check transmitter power, Bluetooth/WiFi, and range.",
+  "linkLostUsb": "Link lost — check the USB cable and FC power.",
+  "connectLiveHint": "USB: plug into the FC on the ground. Flying: connect this app to the transmitter (Bluetooth or WiFi); commands and telemetry go through the TX to the aircraft. Keep the RC sticks for manual override.",
+  "connectErrorUsbNeedsNative": "Live K++ USB needs the Windows or Android build — web cannot open serial ports.",
+  "connectErrorNoComPort": "No COM port found. Plug the K++ USB data cable in and refresh.",
+  "connectErrorInvalidPort": "Enter a valid {label} (1–65535).",
+  "@connectErrorInvalidPort": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "connectErrorBluetoothNeedsNative": "Bluetooth needs the Windows or Android desktop/mobile build.",
+  "connectErrorNoBluetoothSerial": "No Bluetooth serial port found. Pair the transmitter in system Bluetooth settings, then tap Refresh. If it still missing, enable “Show all COM ports”.",
+  "connectErrorWifiNeedsNative": "Transmitter WiFi needs the Windows or Android build.",
+  "connectErrorEnterTxHost": "Enter the transmitter WiFi IP / hostname.",
+  "connectErrorNoWifiGateway": "No WiFi gateway found. Join the transmitter WiFi first.",
+  "connectUsingGateway": "Using gateway {gateway} — tap Connect transmitter (WiFi).",
+  "@connectUsingGateway": {
+    "placeholders": {
+      "gateway": {
+        "type": "String"
+      }
+    }
+  },
+  "connectWifiJoinFirst": "Join transmitter WiFi first, then try again.",
+  "connectWifiTcpSuccess": "Connected over TX WiFi TCP {host}:{port}",
+  "@connectWifiTcpSuccess": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      },
+      "port": {
+        "type": "String"
+      }
+    }
+  },
+  "connectWifiG20Success": "Connected to Skydroid G20 TCP 192.168.43.1:5760",
+  "connectWifiUdpListenSuccess": "Listening UDP 14550 — power the TX/aircraft so it sends telemetry.",
+  "connectWifiAutoTryFailed": "WiFi auto-try failed.\n{detail}\n\nFor Skydroid G20: WiFi mode = TCP, IP 192.168.43.1, port 5760. On the G20 turn on WLAN hotspot and data-transmission sharing; aircraft + GR01 must be linked (baud match on FC telem port).",
+  "@connectWifiAutoTryFailed": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "rtlCommandConfirm": "Command the live drone to return to launch?",
+  "connectUsbToKppFirst": "Connect USB to K++ first",
+  "noFlyZone": "No-Fly Zone",
+  "orientation": "Orientation",
+  "autoAlign": "Auto-align",
+  "edgeMargin": "Edge margin",
+  "operationMode": "Operation Mode",
+  "sprayOn": "Spray on",
+  "sprayOff": "Spray off",
+  "latitude": "Latitude",
+  "longitude": "Longitude",
+  "action": "Action",
+  "selectCrop": "Select Crop",
+  "sprayRate": "Spray Rate",
+  "notes": "Notes",
+  "name": "Name",
+  "defaultMissionName": "Mission",
+  "uploadFlyConfirmMessage": "Upload {count} waypoints to the live K++, arm if needed, and start Auto (takeoff {meters} m)?",
+  "@uploadFlyConfirmMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "meters": {
+        "type": "String"
+      }
+    }
+  },
+  "missionUploadedSuccess": "Mission uploaded — saved locally and Auto started on live K++",
+  "missionSavedToDatabase": "Mission saved to database",
+  "noSavedMissions": "No saved missions",
+  "connectKppUsbFirst": "Connect a live K++ over USB first",
+  "enterMeterVoltageInMaxVoltage": "Enter a meter voltage in Max Voltage",
+  "battVoltMultWritten": "BATT_VOLT_MULT written to live K++",
+  "savedLocallyFcSyncFailed": "Saved locally; FC sync failed: {error}",
+  "@savedLocallyFcSyncFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "mapHintTapPlacePointA": "Tap the map to place point A",
+  "mapHintTapPlacePointB": "Tap the map to place point B",
+  "mapHintTapBoundaryForSplit": "Tap the boundary for the selected point",
+  "mapHintTapAddBoundaryPoint": "Tap the map to add a boundary point",
+  "splitChoosePointsHint": "Choose First Point or End Point, then tap a boundary point or anywhere along the boundary.",
+  "chooseCircleOrPolygon": "Choose Circle or Polygon",
+  "tapInsideFieldPlaceCircle": "Tap inside the field to place the circle.",
+  "tapMapPlaceCornersInOrder": "Tap the map to place each corner, in order."
+}
