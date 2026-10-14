@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:fc_frontend/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class LineSpacingControl extends StatefulWidget {
@@ -54,13 +55,15 @@ class _LineSpacingControlState extends State<LineSpacingControl> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final title = widget.title == 'Line Spacing' ? l10n.lineSpacing : widget.title;
     final value = _value;
     final atMin = value <= widget.lowerMeters + 0.001;
     final atMax = value >= widget.upperMeters - 0.001;
     return Row(
       children: [
-        if (widget.title.isNotEmpty)
-          Expanded(child: Text(widget.title))
+        if (title.isNotEmpty)
+          Expanded(child: Text(title))
         else
           const Spacer(),
         _stepButton(

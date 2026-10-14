@@ -1,3 +1,4 @@
+import 'package:fc_frontend/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -7,8 +8,9 @@ class HomeButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme.onSurface;
+    final home = AppLocalizations.of(context).home;
     return Tooltip(
-      message: 'Home',
+      message: home,
       child: InkWell(
         onTap: () => context.go('/'),
         child: Column(
@@ -17,7 +19,7 @@ class HomeButton extends StatelessWidget {
             Icon(Icons.home_outlined, size: 22, color: color),
             const SizedBox(height: 2),
             Text(
-              'Home',
+              home,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(fontSize: 11, height: 1.1, color: color),

@@ -3,6 +3,7 @@ import 'package:fc_frontend/data/models/battery_settings.dart';
 import 'package:fc_frontend/data/repositories/settings_repository.dart';
 import 'package:fc_frontend/data/repositories/telemetry_repository.dart';
 import 'package:fc_frontend/features/settings/settings_number_field.dart';
+import 'package:fc_frontend/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuselage_kpp/data/repositories/connection_repository.dart';
@@ -58,58 +59,59 @@ class _BatterySettingsPageState extends ConsumerState<BatterySettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Text('Battery', style: Theme.of(context).textTheme.titleLarge),
+        Text(l10n.battery, style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 16),
         SettingsNumberField(
-          label: 'First Warning Threshold (%)',
+          label: l10n.firstWarningThreshold,
           controller: _firstWarning,
           errorText: _errors['first'],
           decimal: false,
           onChanged: (_) => _save(),
         ),
         SettingsNumberField(
-          label: 'Second Warning Threshold (%)',
+          label: l10n.secondWarningThreshold,
           controller: _secondWarning,
           errorText: _errors['second'],
           decimal: false,
           onChanged: (_) => _save(),
         ),
         SettingsNumberField(
-          label: 'Critical Battery Level (%)',
+          label: l10n.criticalBatteryLevel,
           controller: _criticalPercent,
           errorText: _errors['criticalPercent'],
           decimal: false,
           onChanged: (_) => _save(),
         ),
         SettingsNumberField(
-          label: 'Max Voltage',
+          label: l10n.maxVoltage,
           controller: _maxVoltage,
           errorText: _errors['maxVoltage'],
           onChanged: (_) => _save(),
         ),
         SettingsNumberField(
-          label: 'Min Voltage',
+          label: l10n.minVoltage,
           controller: _minVoltage,
           errorText: _errors['minVoltage'],
           onChanged: (_) => _save(),
         ),
         SettingsNumberField(
-          label: 'Low-Voltage Threshold',
+          label: l10n.lowVoltageThreshold,
           controller: _lowVoltage,
           errorText: _errors['lowVoltage'],
           onChanged: (_) => _save(),
         ),
         SettingsNumberField(
-          label: 'Critical-Voltage Threshold',
+          label: l10n.criticalVoltageThreshold,
           controller: _criticalVoltage,
           errorText: _errors['criticalVoltage'],
           onChanged: (_) => _save(),
         ),
         SettingsNumberField(
-          label: 'Cell Count',
+          label: l10n.cellCount,
           controller: _cellCount,
           errorText: _errors['cellCount'],
           decimal: false,
@@ -118,7 +120,7 @@ class _BatterySettingsPageState extends ConsumerState<BatterySettingsPage> {
         const SizedBox(height: 8),
         FilledButton(
           onPressed: ref.watch(telemetryConnectionProvider) ? _calibrateLive : null,
-          child: const Text('Calibrate Battery on K++'),
+          child: Text(l10n.calibrateBatteryOnKpp),
         ),
         if (!ref.watch(telemetryConnectionProvider)) ...[
           const SizedBox(height: 8),
@@ -132,17 +134,18 @@ class _BatterySettingsPageState extends ConsumerState<BatterySettingsPage> {
   }
 
   Future<void> _calibrateLive() async {
+    final l10n = AppLocalizations.of(context);
     final session = ref.read(fcSessionProvider);
     if (session == null || session.isSimulated) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Connect a live K++ over USB first')),
+        SnackBar(content: Text(l10n.connectKppUsbFirst)),
       );
       return;
     }
     final meter = double.tryParse(_maxVoltage.text.trim());
     if (meter == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter a meter voltage in Max Voltage')),
+        SnackBar(content: Text(l10n.enterMeterVoltageInMaxVoltage)),
       );
       return;
     }
@@ -152,7 +155,7 @@ class _BatterySettingsPageState extends ConsumerState<BatterySettingsPage> {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('BATT_VOLT_MULT written to live K++')),
+        SnackBar(content: Text(l10n.battVoltMultWritten)),
       );
     } catch (error) {
       if (!mounted) {

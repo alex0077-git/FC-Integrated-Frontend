@@ -1,4 +1,5 @@
 import 'package:fc_frontend/core/theme/app_theme.dart';
+import 'package:fc_frontend/l10n/app_localizations.dart';
 import 'package:fc_frontend/core/widgets/command_result.dart';
 import 'package:fc_frontend/data/repositories/flight_command_repository.dart';
 import 'package:fc_frontend/data/repositories/telemetry_repository.dart';
@@ -50,6 +51,7 @@ class _MapRtlButtonState extends ConsumerState<MapRtlButton> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final connected = ref.watch(telemetryConnectionProvider);
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -64,7 +66,7 @@ class _MapRtlButtonState extends ConsumerState<MapRtlButton> {
           shape: const CircleBorder(),
           elevation: 2,
           child: IconButton(
-            tooltip: connected ? 'Return to launch' : 'Connect USB to K++ first',
+            tooltip: connected ? l10n.returnToLaunch : l10n.connectUsbToKpp,
             onPressed: !connected || _busy ? null : _toggle,
             style: IconButton.styleFrom(foregroundColor: Colors.white),
             icon: const Icon(Icons.flight_land),
@@ -83,6 +85,7 @@ class _RtlConfirmCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 280),
       child: Material(
@@ -95,7 +98,7 @@ class _RtlConfirmCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Command the live drone to return to launch?'),
+              Text(l10n.returnToLaunch),
               const SizedBox(height: 4),
               Row(
                 mainAxisSize: MainAxisSize.min,
@@ -107,7 +110,7 @@ class _RtlConfirmCard extends StatelessWidget {
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                     onPressed: onCancel,
-                    child: const Text('Cancel'),
+                    child: Text(l10n.cancel),
                   ),
                   const SizedBox(width: 4),
                   FilledButton(
@@ -117,7 +120,7 @@ class _RtlConfirmCard extends StatelessWidget {
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                     onPressed: onConfirm,
-                    child: const Text('Confirm'),
+                    child: Text(l10n.confirm),
                   ),
                 ],
               ),

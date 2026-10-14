@@ -1,4 +1,5 @@
 import 'package:fc_frontend/core/widgets/bottom_nav_bar.dart';
+import 'package:fc_frontend/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -28,26 +29,27 @@ class _SettingsHub extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         ListTile(
-          title: const Text('Calibration'),
+          title: Text(l10n.calibration),
           onTap: () => onSelect('/settings/calibration'),
         ),
         ListTile(
-          title: const Text('Battery'),
+          title: Text(l10n.battery),
           onTap: () => onSelect('/settings/battery'),
         ),
         ListTile(
-          title: const Text('Flight Parameters'),
+          title: Text(l10n.flightParameters),
           onTap: () => onSelect('/settings/flight-parameters'),
         ),
         const Divider(),
         ListTile(
           leading: const Icon(Icons.tune),
-          title: const Text('K++ tuning (full assistant)'),
-          subtitle: const Text('Status, sensors, gains, logs, firmware…'),
+          title: Text(l10n.kppTuningFull),
+          subtitle: Text(l10n.kppTuningFullSubtitle),
           onTap: () => onSelect('/overview'),
         ),
         const SizedBox(height: 12),

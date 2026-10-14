@@ -27,6 +27,7 @@ import 'package:fc_frontend/features/ground_plan/boundary_point_marker.dart';
 import 'package:fc_frontend/features/ground_plan/obstacle_mapping_section.dart';
 import 'package:fc_frontend/features/ground_plan/plan_history_button.dart';
 import 'package:fc_frontend/features/ground_plan/waypoint_path.dart';
+import 'package:fc_frontend/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -122,6 +123,7 @@ class _GroundPlanPageState extends ConsumerState<GroundPlanPage> {
         ),
       ),
     );
+    final l10n = AppLocalizations.of(context);
     final mission = ref.read(missionRepositoryProvider);
     final areaUnit = ref.watch(areaUnitProvider);
     final openSection = ref.watch(groundPlanSectionProvider).section;
@@ -284,7 +286,7 @@ class _GroundPlanPageState extends ConsumerState<GroundPlanPage> {
                       bottom: 0,
                       child: _SectionPanel(
                         key: ValueKey(openSection),
-                        title: _sectionTitle(openSection!),
+                        title: _sectionTitle(openSection!, l10n),
                         maxHeight: sheetMax,
                         onClose: () {
                           ref.read(groundPlanSectionProvider.notifier).close();
@@ -336,7 +338,7 @@ class _GroundPlanPageState extends ConsumerState<GroundPlanPage> {
                               mission.boundaryPoints.length >= 3
                           ? _callForJob
                           : null,
-                      child: const Text('Call for Job'),
+                      child: Text(AppLocalizations.of(context).callForJob),
                     ),
                   ),
                 ],
@@ -440,13 +442,13 @@ class _GroundPlanPageState extends ConsumerState<GroundPlanPage> {
     );
   }
 
-  String _sectionTitle(GroundPlanSection section) {
+  String _sectionTitle(GroundPlanSection section, AppLocalizations l10n) {
     return switch (section) {
-      GroundPlanSection.boundary => 'Boundaries',
-      GroundPlanSection.split => 'Split',
-      GroundPlanSection.obstacles => 'Obstacles',
-      GroundPlanSection.waypoints => 'Waypoints',
-      GroundPlanSection.history => 'History',
+      GroundPlanSection.boundary => l10n.boundaries,
+      GroundPlanSection.split => l10n.split,
+      GroundPlanSection.obstacles => l10n.obstacles,
+      GroundPlanSection.waypoints => l10n.waypoints,
+      GroundPlanSection.history => l10n.history,
     };
   }
 
@@ -1125,13 +1127,13 @@ class _GroundPlanPageState extends ConsumerState<GroundPlanPage> {
     if (!mounted) {
       return;
     }
-    _showMessage('Mission saved to database');
+    _showMessage(AppLocalizations.of(context).missionSavedToDatabase);
   }
 
   Future<void> _loadMission() async {
     final missions = ref.read(missionRepositoryProvider).savedMissions;
     if (missions.isEmpty) {
-      _showMessage('No saved missions');
+      _showMessage(AppLocalizations.of(context).noSavedMissions);
       return;
     }
 
@@ -1156,20 +1158,23 @@ class _GroundPlanPageState extends ConsumerState<GroundPlanPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) {
+        final l10n = AppLocalizations.of(context);
         return AlertDialog(
-          title: const Text('Upload & fly'),
+          title: Text(l10n.uploadAndFly),
           content: Text(
-            'Upload ${waypoints.length} waypoints to the live K++, arm if needed, '
-            'and start Auto (takeoff ${takeoffAltitude.toStringAsFixed(1)} m)?',
+            l10n.uploadFlyConfirmMessage(
+              waypoints.length,
+              takeoffAltitude.toStringAsFixed(1),
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: Text(l10n.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Upload & start'),
+              child: Text(l10n.uploadAndStart),
             ),
           ],
         );
@@ -1187,7 +1192,7 @@ class _GroundPlanPageState extends ConsumerState<GroundPlanPage> {
       if (!mounted) {
         return;
       }
-      _showMessage('Mission uploaded — saved locally and Auto started on live K++');
+      _showMessage(AppLocalizations.of(context).missionUploadedSuccess);
     } on FlightCommandException catch (error) {
       if (!mounted) {
         return;
@@ -1351,21 +1356,22 @@ class _PlanMapState extends ConsumerState<_PlanMap> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final hint = widget.obstacleMapping
         ? switch (widget.obstacleTool) {
             ObstacleTool.circle => widget.previewObstacle == null
-                ? 'Tap inside the field to place the circle.'
+                ? l10n.tapInsideFieldPlaceCircle
                 : 'Adjust the circle, then press OK',
             ObstacleTool.polygon => widget.polygonDraft.length < 3
-                ? 'Tap the map to place each corner, in order'
+                ? l10n.tapMapPlaceCornersInOrder
                 : 'Press OK to keep this no-fly zone',
-            null => 'Choose Circle or Polygon',
+            null => l10n.chooseCircleOrPolygon,
           }
         : switch (widget.placement) {
-            _MapPlacement.pointA => 'Tap the map to place point A',
-            _MapPlacement.pointB => 'Tap the map to place point B',
-            _MapPlacement.split => 'Tap the boundary for the selected point',
-            _MapPlacement.boundary => 'Tap the map to add a boundary point',
+            _MapPlacement.pointA => l10n.mapHintTapPlacePointA,
+            _MapPlacement.pointB => l10n.mapHintTapPlacePointB,
+            _MapPlacement.split => l10n.mapHintTapBoundaryForSplit,
+            _MapPlacement.boundary => l10n.mapHintTapAddBoundaryPoint,
           };
     final points = _displayPoints();
 
@@ -1428,12 +1434,12 @@ class _PlanMapState extends ConsumerState<_PlanMap> {
               markers: [
                 for (final point in widget.mission.boundaryPoints)
                   Marker(
-                    key: ValueKey(point.id),
+                    // Do not key Markers: flutter_map clones them across wrapped
+                    // worlds at low zoom, and duplicate Positioned keys crash.
                     point: LatLng(point.latitude, point.longitude),
                     width: 44,
                     height: 44,
                     child: BoundaryPointMarker(
-                      key: ValueKey(point.id),
                       point: LatLng(point.latitude, point.longitude),
                       label: '${point.order + 1}',
                       dimmed: _boundaryDimmed(
@@ -1754,6 +1760,7 @@ class _SheetHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return GestureDetector(
       key: const Key('ground-plan-sheet-handle'),
       behavior: HitTestBehavior.opaque,
@@ -1788,7 +1795,7 @@ class _SheetHeader extends StatelessWidget {
                     ),
                   ),
                   IconButton(
-                    tooltip: 'Close',
+                    tooltip: l10n.close,
                     onPressed: onClose,
                     icon: const Icon(Icons.close, size: 20),
                     style: IconButton.styleFrom(
@@ -1884,6 +1891,7 @@ class _BoundaryCompact extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Material(
       key: const Key('ground-plan-boundary-box'),
       color: AppTheme.surface,
@@ -1895,9 +1903,9 @@ class _BoundaryCompact extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Boundaries',
-              style: TextStyle(
+            Text(
+              l10n.boundaries,
+              style: const TextStyle(
                 color: AppTheme.text,
                 fontWeight: FontWeight.w600,
               ),
@@ -1907,12 +1915,12 @@ class _BoundaryCompact extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 PlanHistoryButton(
-                  label: 'Undo',
+                  label: l10n.undo,
                   icon: Icons.undo,
                   onPressed: canUndo ? onUndo : null,
                 ),
                 PlanHistoryButton(
-                  label: 'Redo',
+                  label: l10n.redo,
                   icon: Icons.redo,
                   onPressed: canRedo ? onRedo : null,
                 ),
@@ -1925,7 +1933,7 @@ class _BoundaryCompact extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                   ),
                   onPressed: onReset,
-                  child: const Text('Reset'),
+                  child: Text(l10n.reset),
                 ),
               ],
             ),
@@ -1998,8 +2006,9 @@ class _FieldSplitControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (!canSplit) {
-      return const Text('Draw at least three boundary points before splitting.');
+      return Text(l10n.drawBoundaryBeforeSplit);
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -2013,7 +2022,7 @@ class _FieldSplitControls extends StatelessWidget {
             children: [
               Expanded(
                 child: _PlaceButton(
-                  label: 'First Point',
+                  label: l10n.firstPoint,
                   selected: splitSlot == _SplitSlot.first,
                   placed: firstPlaced,
                   onPressed: onChooseFirst,
@@ -2022,7 +2031,7 @@ class _FieldSplitControls extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: _PlaceButton(
-                  label: 'End Point',
+                  label: l10n.endPoint,
                   selected: splitSlot == _SplitSlot.end,
                   placed: endPlaced,
                   onPressed: onChooseEnd,
@@ -2037,7 +2046,7 @@ class _FieldSplitControls extends StatelessWidget {
             minimumSize: const Size.fromHeight(44),
           ),
           onPressed: onSplit,
-          child: Text(splitting ? 'Cancel' : 'Split'),
+          child: Text(splitting ? l10n.cancel : l10n.split),
         ),
         if (canUndoSplit) ...[
           const SizedBox(height: 8),
@@ -2046,9 +2055,9 @@ class _FieldSplitControls extends StatelessWidget {
               minimumSize: const Size.fromHeight(44),
             ),
             onPressed: onUndoSplit,
-            child: const FittedBox(
+            child: FittedBox(
               fit: BoxFit.scaleDown,
-              child: Text('Undo split'),
+              child: Text(l10n.undoSplit),
             ),
           ),
         ],
@@ -2058,7 +2067,7 @@ class _FieldSplitControls extends StatelessWidget {
             children: [
               Expanded(
                 child: _PlaceButton(
-                  label: 'Select Split A',
+                  label: l10n.selectSplitA,
                   selected: activeSplit == 0,
                   placed: false,
                   onPressed: onSelectSplitA,
@@ -2067,7 +2076,7 @@ class _FieldSplitControls extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: _PlaceButton(
-                  label: 'Select Split B',
+                  label: l10n.selectSplitB,
                   selected: activeSplit == 1,
                   placed: false,
                   onPressed: onSelectSplitB,
@@ -2118,6 +2127,7 @@ class _PointPairSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -2125,7 +2135,7 @@ class _PointPairSection extends StatelessWidget {
           children: [
             Expanded(
               child: _PlaceButton(
-                label: 'Set A',
+                label: l10n.setA,
                 selected: placement == _MapPlacement.pointA,
                 placed: pointA != null,
                 onPressed: onSetA,
@@ -2134,7 +2144,7 @@ class _PointPairSection extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
               child: _PlaceButton(
-                label: 'Set B',
+                label: l10n.setB,
                 selected: placement == _MapPlacement.pointB,
                 placed: pointB != null,
                 onPressed: onSetB,
@@ -2145,14 +2155,14 @@ class _PointPairSection extends StatelessWidget {
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
           initialValue: operationMode,
-          decoration: const InputDecoration(
-            labelText: 'Operation Mode',
+          decoration: InputDecoration(
+            labelText: l10n.operationMode,
             isDense: true,
           ),
-          items: const [
-            DropdownMenuItem(value: 'Spray', child: Text('Spray')),
-            DropdownMenuItem(value: 'Survey', child: Text('Survey')),
-            DropdownMenuItem(value: 'Manual', child: Text('Manual')),
+          items: [
+            DropdownMenuItem(value: 'Spray', child: Text(l10n.missionSpray)),
+            DropdownMenuItem(value: 'Survey', child: Text(l10n.missionSurvey)),
+            DropdownMenuItem(value: 'Manual', child: Text(l10n.missionManual)),
           ],
           onChanged: (value) {
             if (value != null) {
@@ -2215,15 +2225,16 @@ class _WaypointList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Waypoints (${waypoints.length})'),
+        Text(l10n.waypointsCount(waypoints.length)),
         const SizedBox(height: 4),
         if (waypoints.isEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8),
-            child: Text('No waypoints yet'),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Text(l10n.noWaypointsYet),
           )
         else
           SizedBox(
@@ -2275,6 +2286,7 @@ class _WaypointRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final muted = dimmed ? const Color(0xFF94A3B8) : null;
     return ListTile(
       dense: true,
@@ -2288,7 +2300,7 @@ class _WaypointRow extends StatelessWidget {
       subtitle: Text(
         '${waypoint.altitude.toStringAsFixed(1)} m · '
         '${waypoint.speed.toStringAsFixed(1)} m/s · '
-        '${waypoint.pumpOn ? 'Spray on' : 'Spray off'}',
+        '${waypoint.pumpOn ? l10n.sprayOn : l10n.sprayOff}',
         style: TextStyle(color: muted),
       ),
       trailing: Row(
@@ -2331,22 +2343,23 @@ class _WaypointDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text('Waypoint detail'),
+        Text(l10n.waypointDetail),
         const SizedBox(height: 8),
         if (waypoint != null)
-          Text(waypoint!.pumpOn ? 'Spray on' : 'Spray off'),
+          Text(waypoint!.pumpOn ? l10n.sprayOn : l10n.sprayOff),
         const SizedBox(height: 8),
         if (waypoint == null)
-          const Text('Select a waypoint')
+          Text(l10n.selectWaypoint)
         else ...[
           TextField(
             controller: altitudeController,
             readOnly: !canEdit,
-            decoration: const InputDecoration(
-              labelText: 'Altitude',
+            decoration: InputDecoration(
+              labelText: l10n.altitude,
               suffixText: 'm',
               isDense: true,
             ),
@@ -2364,8 +2377,8 @@ class _WaypointDetail extends StatelessWidget {
           TextField(
             controller: speedController,
             readOnly: !canEdit,
-            decoration: const InputDecoration(
-              labelText: 'Speed',
+            decoration: InputDecoration(
+              labelText: l10n.speed,
               suffixText: 'm/s',
               isDense: true,
             ),
@@ -2382,22 +2395,22 @@ class _WaypointDetail extends StatelessWidget {
           const SizedBox(height: 8),
           DropdownButtonFormField<WaypointAction>(
             initialValue: waypoint!.action,
-            decoration: const InputDecoration(
-              labelText: 'Action',
+            decoration: InputDecoration(
+              labelText: l10n.action,
               isDense: true,
             ),
-            items: const [
+            items: [
               DropdownMenuItem(
                 value: WaypointAction.waypoint,
-                child: Text('Waypoint'),
+                child: Text(l10n.waypoint),
               ),
               DropdownMenuItem(
                 value: WaypointAction.loiter,
-                child: Text('Loiter'),
+                child: Text(l10n.loiter),
               ),
               DropdownMenuItem(
                 value: WaypointAction.land,
-                child: Text('Land'),
+                child: Text(l10n.land),
               ),
             ],
             onChanged: canEdit
@@ -2461,6 +2474,7 @@ class _MissionActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final style = OutlinedButton.styleFrom(
       minimumSize: const Size.fromHeight(48),
     );
@@ -2473,19 +2487,19 @@ class _MissionActions extends StatelessWidget {
         OutlinedButton(
           style: style,
           onPressed: onSave,
-          child: const Text('Save Mission'),
+          child: Text(l10n.saveMission),
         ),
         const SizedBox(height: 8),
         OutlinedButton(
           style: style,
           onPressed: onLoad,
-          child: const Text('Load Mission'),
+          child: Text(l10n.loadMission),
         ),
         const SizedBox(height: 8),
         FilledButton(
           style: filled,
           onPressed: onUpload,
-          child: const Text('Upload Mission'),
+          child: Text(l10n.uploadMission),
         ),
       ],
     );
@@ -2535,8 +2549,9 @@ class _CallForJobDialogState extends State<_CallForJobDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return AlertDialog(
-      title: const Text('Call for Job'),
+      title: Text(l10n.callForJob),
       content: SizedBox(
           width: Responsive.dialogWidth(context, 360),
         child: Column(
@@ -2544,11 +2559,11 @@ class _CallForJobDialogState extends State<_CallForJobDialog> {
           children: [
             DropdownButtonFormField<String>(
               initialValue: _crop,
-              decoration: const InputDecoration(labelText: 'Select Crop'),
-              items: const [
-                DropdownMenuItem(value: 'Rice', child: Text('Rice')),
-                DropdownMenuItem(value: 'Wheat', child: Text('Wheat')),
-                DropdownMenuItem(value: 'Other', child: Text('Other')),
+              decoration: InputDecoration(labelText: l10n.selectCrop),
+              items: [
+                DropdownMenuItem(value: 'Rice', child: Text(l10n.cropRice)),
+                DropdownMenuItem(value: 'Wheat', child: Text(l10n.cropWheat)),
+                DropdownMenuItem(value: 'Other', child: Text(l10n.cropOther)),
               ],
               onChanged: (value) {
                 if (value != null) {
@@ -2560,7 +2575,7 @@ class _CallForJobDialogState extends State<_CallForJobDialog> {
             TextField(
               controller: _sprayRateController,
               decoration: InputDecoration(
-                labelText: 'Spray Rate',
+                labelText: l10n.sprayRate,
                 errorText: _sprayRateError,
               ),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -2568,7 +2583,7 @@ class _CallForJobDialogState extends State<_CallForJobDialog> {
             const SizedBox(height: 12),
             TextField(
               controller: _notesController,
-              decoration: const InputDecoration(labelText: 'Notes'),
+              decoration: InputDecoration(labelText: l10n.notes),
             ),
           ],
         ),
@@ -2576,9 +2591,9 @@ class _CallForJobDialogState extends State<_CallForJobDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(l10n.cancel),
         ),
-        FilledButton(onPressed: _confirm, child: const Text('Confirm')),
+        FilledButton(onPressed: _confirm, child: Text(l10n.confirm)),
       ],
     );
   }
@@ -2604,20 +2619,21 @@ class _SaveMissionDialogState extends State<_SaveMissionDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return AlertDialog(
-      title: const Text('Save Mission'),
+      title: Text(l10n.saveMission),
       content: TextField(
         controller: _nameController,
-        decoration: const InputDecoration(labelText: 'Name'),
+        decoration: InputDecoration(labelText: l10n.name),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(l10n.cancel),
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(_nameController.text),
-          child: const Text('Save'),
+          child: Text(l10n.save),
         ),
       ],
     );
@@ -2631,8 +2647,9 @@ class _LoadMissionDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return AlertDialog(
-      title: const Text('Load Mission'),
+      title: Text(l10n.loadMission),
       content: SizedBox(
         width: Responsive.dialogWidth(context, 320),
         height: 320,

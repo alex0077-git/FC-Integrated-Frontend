@@ -1,4 +1,5 @@
 import 'package:fc_frontend/core/widgets/digital_sky_host.dart';
+import 'package:fc_frontend/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 const _portalUrl = 'https://digitalsky.aai.aero/digital-sky-map';
@@ -68,6 +69,7 @@ class _DigitalSkyViewState extends State<DigitalSkyView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -85,17 +87,17 @@ class _DigitalSkyViewState extends State<DigitalSkyView> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  'Digital Sky did not load',
+                Text(
+                  l10n.digitalSkyDidNotLoad,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
                     shadows: [Shadow(blurRadius: 6, color: Color(0xCC000000))],
                   ),
                 ),
                 const SizedBox(height: 12),
-                FilledButton(onPressed: _retry, child: const Text('Retry')),
+                FilledButton(onPressed: _retry, child: Text(l10n.retry)),
               ],
             ),
           ),

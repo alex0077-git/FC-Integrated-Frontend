@@ -2,6 +2,7 @@ import 'package:fc_frontend/core/widgets/command_result.dart';
 import 'package:fc_frontend/core/widgets/home_button.dart';
 import 'package:fc_frontend/data/repositories/flight_command_repository.dart';
 import 'package:fc_frontend/data/repositories/telemetry_repository.dart';
+import 'package:fc_frontend/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -20,34 +21,39 @@ class _FlightCommandBarState extends ConsumerState<FlightCommandBar> {
     final telemetry = ref.watch(telemetryStreamProvider).asData?.value;
     final connected = ref.watch(telemetryConnectionProvider);
     final armed = telemetry?.armed ?? false;
+    final l10n = AppLocalizations.of(context);
 
     return Row(
       children: [
         const Expanded(child: HomeButton()),
         Expanded(
           child: _FlightCommandButton(
-            label: 'Takeoff',
+            label: l10n.takeoff,
             onPressed: !connected || _busy ? null : _onTakeoff,
           ),
         ),
         Expanded(
           child: _FlightCommandButton(
-            label: armed ? 'Disarm' : 'Arm',
+            label: armed ? l10n.disarm : l10n.arm,
             onPressed: !connected || _busy ? null : () => _onArmDisarm(armed),
           ),
         ),
         Expanded(
           child: _FlightCommandButton(
-            label: 'RTL',
+            label: l10n.rtl,
             onPressed: !connected || _busy ? null : _onRtl,
           ),
         ),
         Expanded(
           child: _FlightCommandButton(
-            label: 'Land',
+            label: l10n.land,
             onPressed: !connected || _busy
                 ? null
-                : () => _confirmThen('Land', 'Land the drone now?', (c) => c.land()),
+                : () => _confirmThen(
+                      l10n.landConfirmTitle,
+                      l10n.landConfirmMessage,
+                      (c) => c.land(),
+                    ),
           ),
         ),
       ],
@@ -57,29 +63,31 @@ class _FlightCommandBarState extends ConsumerState<FlightCommandBar> {
   Future<void> _onTakeoff() async {
     // Default spray height until a dedicated takeoff altitude setting exists.
     const altitude = 10.0;
+    final l10n = AppLocalizations.of(context);
     final confirmed = await _confirm(
-      title: 'Takeoff',
-      message:
-          'Arm (if needed) and take off to ${altitude.toStringAsFixed(0)} m on the live aircraft?',
+      title: l10n.takeoff,
+      message: l10n.takeoffConfirmMessage(altitude.toStringAsFixed(0)),
     );
     if (!confirmed || !mounted) {
       return;
     }
-    await _run('Takeoff', (c) => c.takeoff(altitudeMeters: altitude));
+    await _run(l10n.takeoff, (c) => c.takeoff(altitudeMeters: altitude));
   }
 
   Future<void> _onArmDisarm(bool armed) async {
+    final l10n = AppLocalizations.of(context);
     await _confirmThen(
-      armed ? 'Disarm' : 'Arm',
-      armed ? 'Disarm the live drone?' : 'Arm the live drone?',
+      armed ? l10n.disarm : l10n.arm,
+      armed ? l10n.disarmConfirmMessage : l10n.armConfirmMessage,
       (c) => armed ? c.disarm() : c.arm(),
     );
   }
 
   Future<void> _onRtl() async {
+    final l10n = AppLocalizations.of(context);
     await _confirmThen(
-      'RTL',
-      'Command the live drone to return to launch?',
+      l10n.rtl,
+      l10n.rtlConfirmMessage,
       (c) => c.returnToLaunch(),
     );
   }
@@ -120,6 +128,7 @@ class _FlightCommandBarState extends ConsumerState<FlightCommandBar> {
   }
 
   Future<bool> _confirm({required String title, required String message}) async {
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) {
@@ -129,11 +138,11 @@ class _FlightCommandBarState extends ConsumerState<FlightCommandBar> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: Text(l10n.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Confirm'),
+              child: Text(l10n.confirm),
             ),
           ],
         );

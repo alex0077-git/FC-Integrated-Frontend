@@ -1,3 +1,4 @@
+import 'package:fc_frontend/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class CalibrationPage extends StatelessWidget {
@@ -5,16 +6,17 @@ class CalibrationPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Text('Calibration', style: Theme.of(context).textTheme.titleLarge),
+        Text(l10n.calibration, style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 16),
         const _CalibrationCard(title: 'Radio', rowLabels: ['Radio']),
         const SizedBox(height: 12),
-        const _CalibrationCard(title: 'IMU', rowLabels: ['IMU 1', 'IMU 2']),
+        _CalibrationCard(title: l10n.imuCalibration, rowLabels: const ['IMU 1', 'IMU 2']),
         const SizedBox(height: 12),
-        const _CalibrationCard(title: 'Compass', rowLabels: ['Compass']),
+        _CalibrationCard(title: l10n.compassCalibration, rowLabels: const ['Compass']),
       ],
     );
   }
@@ -80,6 +82,7 @@ class _CalibrationCardState extends State<_CalibrationCard>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -113,7 +116,7 @@ class _CalibrationCardState extends State<_CalibrationCard>
                 minimumSize: const Size.fromHeight(48),
               ),
               onPressed: _running ? null : _start,
-              child: const Text('Start Calibration'),
+              child: Text(l10n.startCalibration),
             ),
           ],
         ),

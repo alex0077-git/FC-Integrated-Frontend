@@ -1,3 +1,4 @@
+import 'package:fc_frontend/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:web/web.dart' as web;
 
@@ -46,16 +47,17 @@ class _DigitalSkyHostState extends State<DigitalSkyHost> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              'Digital Sky will not open inside this app. Their site blocks other websites from showing the map.',
+            Text(
+              l10n.digitalSkyEmbedBlocked,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
                 shadows: [Shadow(blurRadius: 6, color: Color(0xCC000000))],
@@ -64,7 +66,7 @@ class _DigitalSkyHostState extends State<DigitalSkyHost> {
             const SizedBox(height: 12),
             FilledButton(
               onPressed: _openPortal,
-              child: const Text('Open Digital Sky'),
+              child: Text(l10n.openDigitalSky),
             ),
           ],
         ),

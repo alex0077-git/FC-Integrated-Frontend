@@ -1,5 +1,6 @@
 import 'package:fc_frontend/core/widgets/home_button.dart';
 import 'package:fc_frontend/features/ground_plan/ground_plan_section.dart';
+import 'package:fc_frontend/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -9,12 +10,13 @@ class GroundPlanBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final open = ref.watch(groundPlanSectionProvider).section;
+    final l10n = AppLocalizations.of(context);
     return Row(
       children: [
         const Expanded(child: HomeButton()),
         Expanded(
           child: _SectionButton(
-            label: 'Boundaries',
+            label: l10n.boundaries,
             icon: Icons.polyline_outlined,
             selected: open == GroundPlanSection.boundary,
             onPressed: () => _toggle(ref, GroundPlanSection.boundary),
@@ -22,7 +24,7 @@ class GroundPlanBar extends ConsumerWidget {
         ),
         Expanded(
           child: _SectionButton(
-            label: 'Split',
+            label: l10n.split,
             icon: Icons.call_split,
             selected: open == GroundPlanSection.split,
             onPressed: () => _toggle(ref, GroundPlanSection.split),
@@ -30,7 +32,7 @@ class GroundPlanBar extends ConsumerWidget {
         ),
         Expanded(
           child: _SectionButton(
-            label: 'Obstacles',
+            label: l10n.obstacles,
             icon: Icons.block,
             selected: open == GroundPlanSection.obstacles,
             onPressed: () => _toggle(ref, GroundPlanSection.obstacles),
@@ -38,7 +40,7 @@ class GroundPlanBar extends ConsumerWidget {
         ),
         Expanded(
           child: _SectionButton(
-            label: 'Waypoints',
+            label: l10n.waypoints,
             icon: Icons.place_outlined,
             selected: open == GroundPlanSection.waypoints,
             onPressed: () => _toggle(ref, GroundPlanSection.waypoints),
@@ -46,7 +48,7 @@ class GroundPlanBar extends ConsumerWidget {
         ),
         Expanded(
           child: _SectionButton(
-            label: 'History',
+            label: l10n.history,
             icon: Icons.history,
             selected: open == GroundPlanSection.history,
             onPressed: () => _toggle(ref, GroundPlanSection.history),
@@ -96,4 +98,3 @@ class _SectionButton extends StatelessWidget {
     );
   }
 }
-

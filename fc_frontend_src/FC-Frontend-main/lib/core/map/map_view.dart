@@ -1,4 +1,5 @@
 import 'package:fc_frontend/core/theme/app_theme.dart';
+import 'package:fc_frontend/l10n/app_localizations.dart';
 import 'package:fc_frontend/core/widgets/digital_sky_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -80,32 +81,33 @@ class MapStyleButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final mode = ref.watch(mapViewModeProvider);
     return Material(
       color: AppTheme.surface.withValues(alpha: 0.92),
       shape: const CircleBorder(),
       elevation: 2,
       child: PopupMenuButton<MapViewMode>(
-        tooltip: 'Map style',
+        tooltip: l10n.mapStyle,
         initialValue: mode,
         onSelected: (value) {
           ref.read(mapViewModeProvider.notifier).setMode(value);
         },
         icon: Icon(mapModeIcon(mode)),
         itemBuilder: (context) {
-          return const [
-            PopupMenuItem(value: MapViewMode.street, child: Text('Street')),
+          return [
+            PopupMenuItem(value: MapViewMode.street, child: Text(l10n.mapStreet)),
             PopupMenuItem(
               value: MapViewMode.satellite,
-              child: Text('Satellite'),
+              child: Text(l10n.mapSatellite),
             ),
             PopupMenuItem(
               value: MapViewMode.digitalSky,
               child: Row(
                 children: [
-                  Icon(Icons.flight, size: 20),
-                  SizedBox(width: 12),
-                  Text('Digital Sky'),
+                  const Icon(Icons.flight, size: 20),
+                  const SizedBox(width: 12),
+                  Text(l10n.mapDigitalSky),
                 ],
               ),
             ),

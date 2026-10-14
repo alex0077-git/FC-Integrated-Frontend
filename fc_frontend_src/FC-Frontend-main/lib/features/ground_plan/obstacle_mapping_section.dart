@@ -1,4 +1,5 @@
 import 'package:fc_frontend/core/theme/app_theme.dart';
+import 'package:fc_frontend/l10n/app_localizations.dart';
 import 'package:fc_frontend/core/widgets/line_spacing_control.dart';
 import 'package:fc_frontend/data/models/obstacle.dart';
 import 'package:fc_frontend/features/ground_plan/obstacle_adjustment_panel.dart';
@@ -95,17 +96,18 @@ class _ObstacleChooser extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         _ShapeChoice(
-          label: 'Circle',
+          label: l10n.obstacleCircle,
           shape: _ShapeKind.circle,
           onPressed: onCircle,
         ),
         const SizedBox(height: 8),
         _ShapeChoice(
-          label: 'Polygon',
+          label: l10n.obstaclePolygon,
           shape: _ShapeKind.polygon,
           onPressed: onPolygon,
         ),
@@ -240,6 +242,7 @@ class _ObstacleDraftControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final circle = tool == ObstacleTool.circle;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -264,12 +267,12 @@ class _ObstacleDraftControls extends StatelessWidget {
         Row(
           children: [
             PlanHistoryButton(
-              label: 'Undo',
+              label: l10n.undo,
               icon: Icons.undo,
               onPressed: canUndo ? onUndo : null,
             ),
             PlanHistoryButton(
-              label: 'Redo',
+              label: l10n.redo,
               icon: Icons.redo,
               onPressed: canRedo ? onRedo : null,
             ),
@@ -284,7 +287,7 @@ class _ObstacleDraftControls extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 12),
               ),
               onPressed: onReset,
-              child: const Text('Reset'),
+              child: Text(l10n.reset),
             ),
           ],
         ),

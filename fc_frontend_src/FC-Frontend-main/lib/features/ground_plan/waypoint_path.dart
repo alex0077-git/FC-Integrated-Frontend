@@ -62,7 +62,7 @@ List<Widget> waypointPathMarkers(
         markers: [
           for (final index in indexes)
             Marker(
-              key: ValueKey(waypoints[index].id),
+              // Avoid keyed Markers — world-wrap clones duplicate Positioned keys.
               point: LatLng(waypoints[index].latitude, waypoints[index].longitude),
               width: 36,
               height: 36,

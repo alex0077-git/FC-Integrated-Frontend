@@ -7,6 +7,7 @@ import 'package:fc_frontend/data/models/battery_settings.dart';
 import 'package:fc_frontend/data/models/telemetry.dart';
 import 'package:fc_frontend/data/repositories/settings_repository.dart';
 import 'package:fc_frontend/data/repositories/telemetry_repository.dart';
+import 'package:fc_frontend/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -94,7 +95,8 @@ class _BatteryBanner extends StatelessWidget {
     final color = critical
         ? statusColors.statusCritical
         : statusColors.statusWarning;
-    final message = critical ? 'Battery critical' : 'Battery low';
+    final l10n = AppLocalizations.of(context);
+    final message = critical ? l10n.batteryCritical : l10n.batteryLow;
 
     return Material(
       color: color.withValues(alpha: 0.18),
@@ -131,6 +133,7 @@ class _FlightMapState extends ConsumerState<_FlightMap> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final satellite = ref.watch(mapViewModeProvider) == MapViewMode.satellite;
     final initialCenter = liveFcGpsPoint(ref) ?? defaultMapCenter;
 
@@ -164,9 +167,7 @@ class _FlightMapState extends ConsumerState<_FlightMap> {
               child: Padding(
                 padding: const EdgeInsets.all(4),
                 child: Text(
-                  satellite
-                      ? 'Tiles © Esri (imagery + place labels)'
-                      : '© OpenStreetMap contributors',
+                  satellite ? l10n.mapAttributionEsri : l10n.mapAttributionOsm,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 11, color: Colors.white),
@@ -189,26 +190,27 @@ class _TelemetryCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final drone = telemetry == null
         ? null
         : LatLng(telemetry!.latitude, telemetry!.longitude);
     final readings = [
       (
-        label: 'Altitude',
+        label: l10n.altitude,
         value: telemetry == null
             ? '--'
             : '${telemetry!.altitude.toStringAsFixed(1)} m',
       ),
       (
-        label: 'Distance to Drone',
+        label: l10n.distanceToDrone,
         value: drone == null ? '--' : _formatMeters(defaultMapCenter, drone),
       ),
       (
-        label: 'Distance to Landing Point',
+        label: l10n.distanceToLanding,
         value: drone == null ? '--' : _formatMeters(_landingPoint, drone),
       ),
       (
-        label: 'Speed',
+        label: l10n.speed,
         value: telemetry == null
             ? '--'
             : '${telemetry!.speed.toStringAsFixed(1)} m/s',

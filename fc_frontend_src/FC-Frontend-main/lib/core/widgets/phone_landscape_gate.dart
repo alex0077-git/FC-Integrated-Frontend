@@ -1,3 +1,4 @@
+import 'package:fc_frontend/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class PhoneLandscapeGate extends StatelessWidget {
@@ -24,6 +25,7 @@ class _RotateToLandscape extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     return ColoredBox(
       color: Theme.of(context).scaffoldBackgroundColor,
@@ -36,13 +38,13 @@ class _RotateToLandscape extends StatelessWidget {
               Icon(Icons.screen_rotation, size: 56, color: scheme.primary),
               const SizedBox(height: 20),
               Text(
-                'Rotate to landscape',
+                l10n.phoneLandscapeTitle,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 8),
               Text(
-                'The map stays large, and the controls sit along the bottom.',
+                l10n.phoneLandscapeBody,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),

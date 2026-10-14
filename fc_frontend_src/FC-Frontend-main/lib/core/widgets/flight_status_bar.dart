@@ -6,6 +6,7 @@ import 'package:fc_frontend/data/models/battery_level.dart';
 import 'package:fc_frontend/data/models/battery_settings.dart';
 import 'package:fc_frontend/data/repositories/settings_repository.dart';
 import 'package:fc_frontend/data/repositories/telemetry_repository.dart';
+import 'package:fc_frontend/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -28,6 +29,7 @@ class FlightStatusBar extends ConsumerWidget {
           );
     final batteryColor = _batteryColor(battery, settings, statusColors);
     final location = GoRouterState.of(context).uri.path;
+    final l10n = AppLocalizations.of(context);
 
     return Material(
       color: AppTheme.surface,
@@ -43,24 +45,27 @@ class FlightStatusBar extends ConsumerWidget {
                 child: _StatusChip(
                   icon: Icons.satellite_alt,
                   label: telemetry == null
-                      ? 'GPS --'
-                      : 'GPS ${telemetry.gpsFixLabel} · ${telemetry.gpsCount} sats',
+                      ? l10n.gpsUnknown
+                      : l10n.gpsStatus(
+                          telemetry.gpsFixLabel,
+                          '${telemetry.gpsCount}',
+                        ),
                 ),
               ),
               Expanded(
                 child: _StatusChip(
                   icon: Icons.flight,
-                  label: telemetry == null ? 'Mode --' : telemetry.mode,
+                  label: telemetry == null ? l10n.modeUnknown : telemetry.mode,
                 ),
               ),
               _TopBarIcon(
-                tooltip: 'Profile',
+                tooltip: l10n.profile,
                 icon: Icons.person_outline,
                 selected: location == '/profile',
                 onPressed: () => context.go('/profile'),
               ),
               _TopBarIcon(
-                tooltip: 'Settings',
+                tooltip: l10n.settings,
                 icon: Icons.settings_outlined,
                 selected: location.startsWith('/settings'),
                 onPressed: () => showSettingsHub(context),
@@ -77,10 +82,10 @@ class FlightStatusBar extends ConsumerWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text('Connect'),
+                    Text(l10n.connect),
                     const SizedBox(width: 4),
                     Semantics(
-                      label: connected ? 'Connected' : 'Disconnected',
+                      label: connected ? l10n.connected : l10n.disconnected,
                       child: Container(
                         width: 8,
                         height: 8,

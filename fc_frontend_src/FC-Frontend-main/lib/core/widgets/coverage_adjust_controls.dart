@@ -1,4 +1,5 @@
 import 'package:fc_frontend/core/widgets/joystick_control.dart';
+import 'package:fc_frontend/l10n/app_localizations.dart';
 import 'package:fc_frontend/core/widgets/line_spacing_control.dart';
 import 'package:fc_frontend/data/repositories/mission_repository.dart';
 import 'package:flutter/material.dart';
@@ -14,10 +15,14 @@ class CoverageAdjustControls extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final mission = ref.watch(missionRepositoryProvider);
     final repository = ref.read(missionRepositoryProvider.notifier);
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        Text(l10n.coverageAdjust, style: Theme.of(context).textTheme.titleSmall),
+        SizedBox(height: gap),
         Row(
           children: [
             JoystickControl(

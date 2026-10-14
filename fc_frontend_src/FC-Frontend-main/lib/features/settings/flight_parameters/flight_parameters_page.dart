@@ -3,6 +3,7 @@ import 'package:fc_frontend/data/models/flight_parameters.dart';
 import 'package:fc_frontend/data/repositories/settings_repository.dart';
 import 'package:fc_frontend/data/repositories/telemetry_repository.dart';
 import 'package:fc_frontend/features/settings/settings_number_field.dart';
+import 'package:fc_frontend/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuselage_kpp/data/repositories/connection_repository.dart';
@@ -48,37 +49,38 @@ class _FlightParametersPageState extends ConsumerState<FlightParametersPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Text('Flight Parameters', style: Theme.of(context).textTheme.titleLarge),
+        Text(l10n.flightParameters, style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 16),
         SettingsNumberField(
-          label: 'Max Yaw Rate',
+          label: l10n.maxYawRate,
           controller: _maxYawRate,
           errorText: _errors['yaw'],
           onChanged: (_) => _save(),
         ),
         SettingsNumberField(
-          label: 'Max Roll Angle',
+          label: l10n.maxRollAngle,
           controller: _maxRollAngle,
           errorText: _errors['roll'],
           onChanged: (_) => _save(),
         ),
         SettingsNumberField(
-          label: 'Max Pitch Angle',
+          label: l10n.maxPitchAngle,
           controller: _maxPitchAngle,
           errorText: _errors['pitch'],
           onChanged: (_) => _save(),
         ),
         SettingsNumberField(
-          label: 'Max Speed',
+          label: l10n.maxSpeed,
           controller: _maxSpeed,
           errorText: _errors['maxSpeed'],
           onChanged: (_) => _save(),
         ),
         SettingsNumberField(
-          label: 'Cruise Speed',
+          label: l10n.cruiseSpeed,
           controller: _cruiseSpeed,
           errorText: _errors['cruise'],
           onChanged: (_) => _save(),
@@ -135,8 +137,9 @@ class _FlightParametersPageState extends ConsumerState<FlightParametersPage> {
         if (!mounted) {
           return;
         }
+        final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Saved locally; FC sync failed: $error')),
+          SnackBar(content: Text(l10n.savedLocallyFcSyncFailed('$error'))),
         );
       });
     }

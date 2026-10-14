@@ -1,4 +1,5 @@
 import 'package:fc_frontend/core/theme/app_theme.dart';
+import 'package:fc_frontend/l10n/app_localizations.dart';
 import 'package:fc_frontend/core/widgets/command_result.dart';
 import 'package:fc_frontend/data/repositories/telemetry_repository.dart';
 import 'package:flutter/foundation.dart';
@@ -171,19 +172,14 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
   }
 
   Future<void> _connectUsb() async {
+    final l10n = AppLocalizations.of(context);
     if (kIsWeb) {
-      showCommandResult(
-        context,
-        'Live K++ USB needs the Windows or Android build — web cannot open serial ports.',
-      );
+      showCommandResult(context, l10n.connectErrorUsbNeedsNative);
       return;
     }
     final port = _selectedPort;
     if (port == null) {
-      showCommandResult(
-        context,
-        'No COM port found. Plug the K++ USB data cable in and refresh.',
-      );
+      showCommandResult(context, l10n.connectErrorNoComPort);
       return;
     }
     await ref.read(fcConnectionProvider.notifier).connect(
@@ -192,26 +188,24 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
   }
 
   int? _parsePort(TextEditingController controller, {required String label}) {
+    final l10n = AppLocalizations.of(context);
     final value = int.tryParse(controller.text.trim());
     if (value == null || value <= 0 || value > 65535) {
-      showCommandResult(context, 'Enter a valid $label (1–65535).');
+      showCommandResult(context, l10n.connectErrorInvalidPort(label));
       return null;
     }
     return value;
   }
 
   Future<void> _connectBluetooth() async {
+    final l10n = AppLocalizations.of(context);
     if (kIsWeb) {
-      showCommandResult(context, 'Bluetooth needs the Windows or Android desktop/mobile build.');
+      showCommandResult(context, l10n.connectErrorBluetoothNeedsNative);
       return;
     }
     final id = _selectedBtId;
     if (id == null) {
-      showCommandResult(
-        context,
-        'No Bluetooth serial port found. Pair the transmitter in system Bluetooth settings, '
-        'then tap Refresh. If it still missing, enable “Show all COM ports”.',
-      );
+      showCommandResult(context, l10n.connectErrorNoBluetoothSerial);
       return;
     }
     await ref.read(fcConnectionProvider.notifier).connect(
@@ -220,8 +214,9 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
   }
 
   Future<void> _connectWifi() async {
+    final l10n = AppLocalizations.of(context);
     if (kIsWeb) {
-      showCommandResult(context, 'Transmitter WiFi needs the Windows or Android build.');
+      showCommandResult(context, l10n.connectErrorWifiNeedsNative);
       return;
     }
 
@@ -245,9 +240,10 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
   }
 
   ConnectionSettings? _wifiSettingsOrNull() {
+    final l10n = AppLocalizations.of(context);
     switch (_wifiMode) {
       case _WifiMode.udpListen:
-        final local = _parsePort(_localPortController, label: 'local UDP port');
+        final local = _parsePort(_localPortController, label: l10n.localUdpPort);
         if (local == null) {
           return null;
         }
@@ -255,11 +251,11 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
       case _WifiMode.udpHost:
         final host = _hostController.text.trim();
         if (host.isEmpty) {
-          showCommandResult(context, 'Enter the transmitter WiFi IP / hostname.');
+          showCommandResult(context, l10n.connectErrorEnterTxHost);
           return null;
         }
-        final remote = _parsePort(_remotePortController, label: 'remote UDP port');
-        final local = _parsePort(_localPortController, label: 'local UDP port');
+        final remote = _parsePort(_remotePortController, label: l10n.remoteUdpPort);
+        final local = _parsePort(_localPortController, label: l10n.localUdpPort);
         if (remote == null || local == null) {
           return null;
         }
@@ -267,10 +263,10 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
       case _WifiMode.tcp:
         final host = _hostController.text.trim();
         if (host.isEmpty) {
-          showCommandResult(context, 'Enter the transmitter WiFi IP / hostname.');
+          showCommandResult(context, l10n.connectErrorEnterTxHost);
           return null;
         }
-        final remote = _parsePort(_remotePortController, label: 'TCP port');
+        final remote = _parsePort(_remotePortController, label: l10n.tcpPort);
         if (remote == null) {
           return null;
         }
@@ -279,13 +275,14 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
   }
 
   Future<void> _useGatewayIp() async {
+    final l10n = AppLocalizations.of(context);
     await _refreshWifiNetworkHint();
     final gateway = await detectDefaultGatewayIp();
     if (!mounted) {
       return;
     }
     if (gateway == null) {
-      showCommandResult(context, 'No WiFi gateway found. Join the transmitter WiFi first.');
+      showCommandResult(context, l10n.connectErrorNoWifiGateway);
       return;
     }
     setState(() {
@@ -293,11 +290,12 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
       _wifiMode = _WifiMode.tcp;
       _remotePortController.text = '${ConnectionSettings.defaultTcpPort}';
     });
-    showCommandResult(context, 'Using gateway $gateway — tap Connect transmitter (WiFi).');
+    showCommandResult(context, l10n.connectUsingGateway(gateway));
   }
 
   /// Tries common TCP ports on the host, then UDP listen 14550.
   Future<void> _autoTryWifi() async {
+    final l10n = AppLocalizations.of(context);
     if (kIsWeb) {
       return;
     }
@@ -305,7 +303,7 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
     var host = _hostController.text.trim();
     host = (await detectDefaultGatewayIp()) ?? host;
     if (host.isEmpty) {
-      showCommandResult(context, 'Join transmitter WiFi first, then try again.');
+      showCommandResult(context, l10n.connectWifiJoinFirst);
       return;
     }
     setState(() {
@@ -327,7 +325,7 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
       final state = ref.read(fcConnectionProvider);
       if (state.session != null && state.errorMessage == null) {
         setState(() => _wifiProbing = false);
-        showCommandResult(context, 'Connected over TX WiFi TCP $host:$port');
+        showCommandResult(context, l10n.connectWifiTcpSuccess(host, '$port'));
         return;
       }
       lastError = state.errorMessage;
@@ -350,7 +348,7 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
       final g20 = ref.read(fcConnectionProvider);
       if (g20.session != null && g20.errorMessage == null) {
         setState(() => _wifiProbing = false);
-        showCommandResult(context, 'Connected to Skydroid G20 TCP 192.168.43.1:5760');
+        showCommandResult(context, l10n.connectWifiG20Success);
         return;
       }
       lastError = g20.errorMessage ?? lastError;
@@ -368,21 +366,20 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
     final state = ref.read(fcConnectionProvider);
     setState(() => _wifiProbing = false);
     if (state.session != null && state.errorMessage == null) {
-      showCommandResult(context, 'Listening UDP 14550 — power the TX/aircraft so it sends telemetry.');
+      showCommandResult(context, l10n.connectWifiUdpListenSuccess);
       return;
     }
     showCommandResult(
       context,
-      'WiFi auto-try failed.\n'
-      '${lastError ?? state.errorMessage ?? 'No MAVLink reply.'}\n\n'
-      'For Skydroid G20: WiFi mode = TCP, IP 192.168.43.1, port 5760. '
-      'On the G20 turn on WLAN hotspot and data-transmission sharing; '
-      'aircraft + GR01 must be linked (baud match on FC telem port).',
+      l10n.connectWifiAutoTryFailed(
+        lastError ?? state.errorMessage ?? 'No MAVLink reply.',
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final connection = ref.watch(fcConnectionProvider);
     final connected = ref.watch(telemetryConnectionProvider);
     final busy = connection.isBusy;
@@ -400,25 +397,23 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text('Connect live K++', style: Theme.of(context).textTheme.titleLarge),
+                Text(l10n.connectLiveKpp, style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 8),
                 Text(
                   connected
-                      ? 'Live link: ${connection.session?.linkLabel ?? 'K++'}'
-                      : 'USB for ground setup. For flying, connect the app to the '
-                          'transmitter over Bluetooth or WiFi — commands go App → TX → aircraft.',
+                      ? l10n.connectLiveLink(connection.session?.linkLabel ?? 'K++')
+                      : l10n.connectUsbIntro,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: 16),
                 if (kIsWeb)
                   Text(
-                    'This web build cannot open USB, Bluetooth, or WiFi sockets. '
-                    'Run the Windows or Android app.',
+                    l10n.connectWebUnsupported,
                     style: TextStyle(color: Theme.of(context).colorScheme.error),
                   )
                 else ...[
                   // —— USB (unchanged) ——
-                  Text('USB (ground)', style: Theme.of(context).textTheme.titleSmall),
+                  Text(l10n.usbGround, style: Theme.of(context).textTheme.titleSmall),
                   const SizedBox(height: 8),
                   Row(
                     children: [
@@ -427,12 +422,12 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                           key: ValueKey('usb-port-${_selectedPort ?? 'none'}-${_ports.length}'),
                           initialValue: _ports.isEmpty ? null : _selectedPort,
                           isExpanded: true,
-                          decoration: const InputDecoration(
-                            labelText: 'COM port',
+                          decoration: InputDecoration(
+                            labelText: l10n.comPort,
                             isDense: true,
-                            border: OutlineInputBorder(),
+                            border: const OutlineInputBorder(),
                           ),
-                          hint: const Text('No COM port'),
+                          hint: Text(l10n.noComPort),
                           items: [
                             for (final port in _ports)
                               DropdownMenuItem(
@@ -450,7 +445,7 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                       ),
                       const SizedBox(width: 8),
                       IconButton(
-                        tooltip: 'Refresh COM ports',
+                        tooltip: l10n.refreshComPorts,
                         onPressed: connected || busy || _loadingPorts ? null : _refreshPorts,
                         icon: const Icon(Icons.refresh),
                       ),
@@ -459,10 +454,10 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                   const SizedBox(height: 12),
                   DropdownButtonFormField<int>(
                     initialValue: _baudRate,
-                    decoration: const InputDecoration(
-                      labelText: 'Baud',
+                    decoration: InputDecoration(
+                      labelText: l10n.baud,
                       isDense: true,
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
                     ),
                     items: [
                       for (final baud in ConnectionSettings.baudRates)
@@ -484,7 +479,7 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                             ? _disconnect
                             : _connectUsb,
                     icon: Icon(connected ? Icons.link_off : Icons.usb),
-                    label: Text(connected ? 'Disconnect' : 'Connect USB to K++'),
+                    label: Text(connected ? l10n.disconnect : l10n.connectUsbToKpp),
                   ),
 
                   // —— Transmitter Bluetooth / WiFi ——
@@ -496,17 +491,16 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                       tilePadding: EdgeInsets.zero,
                       childrenPadding: const EdgeInsets.only(bottom: 4),
                       title: Text(
-                        'Transmitter (Bluetooth / WiFi)',
+                        l10n.transmitterBtWifi,
                         style: Theme.of(context).textTheme.titleSmall,
                       ),
                       subtitle: Text(
-                        'Airborne path — App → transmitter → aircraft',
+                        l10n.airbornePath,
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                       children: [
                         Text(
-                          'Pick Bluetooth or WiFi depending on your transmitter. '
-                          'USB above is unchanged for ground setup.',
+                          l10n.transmitterPickHint,
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                         const SizedBox(height: 12),
@@ -526,12 +520,12 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                                 segments: [
                                   ButtonSegment(
                                     value: _TxTransport.bluetooth,
-                                    label: Text(compact ? 'BT' : 'Bluetooth'),
+                                    label: Text(compact ? l10n.btAbbrev : l10n.bluetooth),
                                     icon: const Icon(Icons.bluetooth, size: 18),
                                   ),
                                   ButtonSegment(
                                     value: _TxTransport.wifi,
-                                    label: const Text('WiFi'),
+                                    label: Text(l10n.wifi),
                                     icon: const Icon(Icons.wifi, size: 18),
                                   ),
                                 ],
@@ -564,12 +558,12 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                                   ),
                                   initialValue: _btDevices.isEmpty ? null : _selectedBtId,
                                   isExpanded: true,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Bluetooth transmitter',
+                                  decoration: InputDecoration(
+                                    labelText: l10n.bluetoothTransmitter,
                                     isDense: true,
-                                    border: OutlineInputBorder(),
+                                    border: const OutlineInputBorder(),
                                   ),
-                                  hint: const Text('No Bluetooth port'),
+                                  hint: Text(l10n.noBluetoothPort),
                                   items: [
                                     for (final device in _btDevices)
                                       DropdownMenuItem(
@@ -587,7 +581,7 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                               ),
                               const SizedBox(width: 8),
                               IconButton(
-                                tooltip: 'Refresh Bluetooth ports',
+                                tooltip: l10n.refreshBluetoothPorts,
                                 onPressed: connected || busy ? null : _refreshBluetooth,
                                 icon: const Icon(Icons.refresh),
                               ),
@@ -604,17 +598,15 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                                     setState(() => _showAllComAsBt = value ?? false);
                                     _refreshBluetooth();
                                   },
-                            title: const Text('Show all COM ports'),
-                            subtitle: const Text(
-                              'Use if your TX paired but is not listed as Bluetooth',
-                            ),
+                            title: Text(l10n.showAllComPorts),
+                            subtitle: Text(l10n.showAllComPortsHint),
                           ),
                           DropdownButtonFormField<int>(
                             initialValue: _btBaud,
-                            decoration: const InputDecoration(
-                              labelText: 'Baud',
+                            decoration: InputDecoration(
+                              labelText: l10n.baud,
                               isDense: true,
-                              border: OutlineInputBorder(),
+                              border: const OutlineInputBorder(),
                             ),
                             items: [
                               for (final baud in ConnectionSettings.baudRates)
@@ -633,13 +625,13 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                             OutlinedButton.icon(
                               onPressed: busy ? null : _connectBluetooth,
                               icon: const Icon(Icons.bluetooth_connected),
-                              label: const Text('Connect transmitter (Bluetooth)'),
+                              label: Text(l10n.connectTransmitterBt),
                             )
                           else if (transmitter)
                             OutlinedButton.icon(
                               onPressed: busy ? null : _disconnect,
                               icon: const Icon(Icons.link_off),
-                              label: const Text('Disconnect transmitter'),
+                              label: Text(l10n.disconnectTransmitter),
                             ),
                         ] else ...[
                           if (_wifiNetworkHint != null) ...[
@@ -658,42 +650,42 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                               FilledButton.tonalIcon(
                                 onPressed: connected || busy || _wifiProbing ? null : _applyG20Preset,
                                 icon: const Icon(Icons.sports_esports),
-                                label: const Text('G20 preset'),
+                                label: Text(l10n.g20Preset),
                               ),
                               OutlinedButton.icon(
                                 onPressed: connected || busy || _wifiProbing ? null : _useGatewayIp,
                                 icon: const Icon(Icons.router),
-                                label: const Text('Use gateway IP'),
+                                label: Text(l10n.useGatewayIp),
                               ),
                               OutlinedButton.icon(
                                 onPressed: connected || busy || _wifiProbing
                                     ? null
                                     : _refreshWifiNetworkHint,
                                 icon: const Icon(Icons.refresh),
-                                label: const Text('Refresh network'),
+                                label: Text(l10n.refreshNetwork),
                               ),
                             ],
                           ),
                           const SizedBox(height: 12),
                           DropdownButtonFormField<_WifiMode>(
                             initialValue: _wifiMode,
-                            decoration: const InputDecoration(
-                              labelText: 'WiFi mode',
+                            decoration: InputDecoration(
+                              labelText: l10n.wifiMode,
                               isDense: true,
-                              border: OutlineInputBorder(),
+                              border: const OutlineInputBorder(),
                             ),
-                            items: const [
+                            items: [
                               DropdownMenuItem(
                                 value: _WifiMode.tcp,
-                                child: Text('TCP to transmitter AP'),
+                                child: Text(l10n.wifiModeTcp),
                               ),
                               DropdownMenuItem(
                                 value: _WifiMode.udpHost,
-                                child: Text('UDP to transmitter'),
+                                child: Text(l10n.wifiModeUdp),
                               ),
                               DropdownMenuItem(
                                 value: _WifiMode.udpListen,
-                                child: Text('UDP listen (GCS port)'),
+                                child: Text(l10n.wifiModeUdpListen),
                               ),
                             ],
                             onChanged: connected || busy || _wifiProbing
@@ -718,10 +710,10 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                             TextField(
                               controller: _hostController,
                               enabled: !connected && !busy && !_wifiProbing,
-                              decoration: const InputDecoration(
-                                labelText: 'Transmitter IP / host',
+                              decoration: InputDecoration(
+                                labelText: l10n.hostIp,
                                 isDense: true,
-                                border: OutlineInputBorder(),
+                                border: const OutlineInputBorder(),
                                 hintText: 'gateway IP while on TX WiFi',
                               ),
                             ),
@@ -737,9 +729,7 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                                     keyboardType: TextInputType.number,
                                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                     decoration: InputDecoration(
-                                      labelText: _wifiMode == _WifiMode.tcp
-                                          ? 'TCP port'
-                                          : 'Remote UDP port',
+                                      labelText: l10n.remotePort,
                                       isDense: true,
                                       border: const OutlineInputBorder(),
                                     ),
@@ -753,10 +743,10 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                                     enabled: !connected && !busy && !_wifiProbing,
                                     keyboardType: TextInputType.number,
                                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                                    decoration: const InputDecoration(
-                                      labelText: 'Local UDP port',
+                                    decoration: InputDecoration(
+                                      labelText: l10n.localPort,
                                       isDense: true,
-                                      border: OutlineInputBorder(),
+                                      border: const OutlineInputBorder(),
                                     ),
                                   ),
                                 ),
@@ -774,19 +764,19 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                                       child: CircularProgressIndicator(strokeWidth: 2),
                                     )
                                   : const Icon(Icons.travel_explore),
-                              label: Text(_wifiProbing ? 'Trying ports…' : 'Auto-try WiFi ports'),
+                              label: Text(_wifiProbing ? l10n.tryingWifiPorts : l10n.autoTryWifi),
                             ),
                             const SizedBox(height: 8),
                             OutlinedButton.icon(
                               onPressed: busy || _wifiProbing ? null : _connectWifi,
                               icon: const Icon(Icons.wifi),
-                              label: const Text('Connect transmitter (WiFi)'),
+                              label: Text(l10n.connectTransmitterWifi),
                             ),
                           ] else if (transmitter)
                             OutlinedButton.icon(
                               onPressed: busy ? null : _disconnect,
                               icon: const Icon(Icons.link_off),
-                              label: const Text('Disconnect transmitter'),
+                              label: Text(l10n.disconnectTransmitter),
                             ),
                         ],
                       ],
@@ -802,16 +792,17 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Loading parameters ${connection.paramsReceived}/${connection.paramsTotal}',
+                    l10n.loadingParameters(
+                      connection.paramsReceived,
+                      connection.paramsTotal,
+                    ),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
                 if (connection.status == FcLinkStatus.linkLost) ...[
                   const SizedBox(height: 8),
                   Text(
-                    transmitter
-                        ? 'Link lost — check transmitter power, Bluetooth/WiFi, and range.'
-                        : 'Link lost — check the USB cable and FC power.',
+                    transmitter ? l10n.linkLostTransmitter : l10n.linkLostUsb,
                     style: TextStyle(color: Theme.of(context).colorScheme.error),
                   ),
                 ],
@@ -823,7 +814,7 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                   ),
                 ],
                 const SizedBox(height: 12),
-                const _LiveHint(),
+                _LiveHint(text: l10n.connectLiveHint),
               ],
             ),
           ),
@@ -834,7 +825,9 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
 }
 
 class _LiveHint extends StatelessWidget {
-  const _LiveHint();
+  const _LiveHint({required this.text});
+
+  final String text;
 
   @override
   Widget build(BuildContext context) {
@@ -844,14 +837,9 @@ class _LiveHint extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: const Color(0xFF2A3548)),
       ),
-      child: const Padding(
-        padding: EdgeInsets.all(12),
-        child: Text(
-          'USB: plug into the FC on the ground. '
-          'Flying: connect this app to the transmitter (Bluetooth or WiFi); '
-          'commands and telemetry go through the TX to the aircraft. '
-          'Keep the RC sticks for manual override.',
-        ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Text(text),
       ),
     );
   }
