@@ -2,14 +2,14 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-/// Schematic motor layout for a K++ FRAME id (1–6).
+/// K++-assistant style motor layout: yellow nose, M1… ports, CW / CCW arrows.
 ///
 /// Drawn top-down with the aircraft nose toward the top of the widget.
 class FrameLayoutDiagram extends StatelessWidget {
   const FrameLayoutDiagram({
     super.key,
     required this.frameId,
-    this.size = 112,
+    this.size = 128,
     this.selected = false,
   });
 
@@ -31,11 +31,27 @@ class FrameLayoutDiagram extends StatelessWidget {
           bodyColor: selected ? scheme.primaryContainer : scheme.surfaceContainerHighest,
           motorFill: selected ? scheme.primary : scheme.secondaryContainer,
           motorInk: selected ? scheme.onPrimary : scheme.onSecondaryContainer,
-          accent: scheme.primary,
+          noseColor: const Color(0xFFF5C518),
+          cwColor: const Color(0xFFE11D48),
+          ccwColor: const Color(0xFF2563EB),
         ),
       ),
     );
   }
+}
+
+enum _Spin { clockwise, anticlockwise }
+
+class _MotorSpot {
+  const _MotorSpot({
+    required this.number,
+    required this.offset,
+    required this.spin,
+  });
+
+  final int number;
+  final Offset offset;
+  final _Spin spin;
 }
 
 class _FrameLayoutPainter extends CustomPainter {
@@ -45,7 +61,9 @@ class _FrameLayoutPainter extends CustomPainter {
     required this.bodyColor,
     required this.motorFill,
     required this.motorInk,
-    required this.accent,
+    required this.noseColor,
+    required this.cwColor,
+    required this.ccwColor,
   });
 
   final int frameId;
@@ -53,13 +71,16 @@ class _FrameLayoutPainter extends CustomPainter {
   final Color bodyColor;
   final Color motorFill;
   final Color motorInk;
-  final Color accent;
+  final Color noseColor;
+  final Color cwColor;
+  final Color ccwColor;
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.shortestSide * 0.38;
-    final motors = _motorOffsets(frameId, radius);
+    final radius = size.shortestSide * 0.34;
+    final motors = _motors(frameId, radius);
+    final motorR = size.shortestSide * 0.105;
 
     final armPaint = Paint()
       ..color = armColor
@@ -67,67 +88,213 @@ class _FrameLayoutPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
 
+    // Yellow nose arm first (K++ assistant convention).
+    final noseArm = motors.isEmpty
+        ? Offset(0, -radius)
+        : motors.map((m) => m.offset).reduce(
+              (a, b) => a.dy <= b.dy ? a : b,
+            );
+    canvas.drawLine(
+      center,
+      center + noseArm,
+      Paint()
+        ..color = noseColor
+        ..strokeWidth = 4.5
+        ..strokeCap = StrokeCap.round
+        ..style = PaintingStyle.stroke,
+    );
+
     for (final motor in motors) {
+      if ((motor.offset - noseArm).distance < 0.5) {
+        continue;
+      }
       canvas.drawLine(center, center + motor.offset, armPaint);
     }
 
-    final bodyPaint = Paint()..color = bodyColor;
-    final bodyR = radius * 0.28;
+    final bodyR = radius * 0.26;
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromCenter(center: center, width: bodyR * 1.6, height: bodyR * 1.6),
+        Rect.fromCenter(center: center, width: bodyR * 1.7, height: bodyR * 1.7),
         const Radius.circular(6),
       ),
-      bodyPaint,
+      Paint()..color = bodyColor,
     );
 
-    // Nose marker (front).
-    final nosePaint = Paint()..color = accent;
+    // Nose chevron.
     canvas.drawPath(
       Path()
-        ..moveTo(center.dx, center.dy - bodyR * 0.95)
+        ..moveTo(center.dx, center.dy - bodyR * 1.05)
         ..lineTo(center.dx - 5, center.dy - bodyR * 0.35)
         ..lineTo(center.dx + 5, center.dy - bodyR * 0.35)
         ..close(),
-      nosePaint,
+      Paint()..color = noseColor,
     );
 
-    final motorPaint = Paint()..color = motorFill;
-    final textStyle = TextStyle(
+    final numberStyle = TextStyle(
       color: motorInk,
-      fontSize: size.shortestSide * 0.12,
-      fontWeight: FontWeight.w700,
+      fontSize: size.shortestSide * 0.095,
+      fontWeight: FontWeight.w800,
     );
 
     for (final motor in motors) {
       final pos = center + motor.offset;
-      canvas.drawCircle(pos, size.shortestSide * 0.11, motorPaint);
+      final spinColor = motor.spin == _Spin.clockwise ? cwColor : ccwColor;
+
+      canvas.drawCircle(pos, motorR, Paint()..color = motorFill);
+      canvas.drawCircle(
+        pos,
+        motorR,
+        Paint()
+          ..color = spinColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2,
+      );
+
+      _drawSpinArrow(canvas, pos, motorR * 1.55, motor.spin, spinColor);
+
       final tp = TextPainter(
-        text: TextSpan(text: '${motor.number}', style: textStyle),
+        text: TextSpan(text: 'M${motor.number}', style: numberStyle),
         textDirection: TextDirection.ltr,
       )..layout();
       tp.paint(canvas, pos - Offset(tp.width / 2, tp.height / 2));
     }
+
+    _drawLegend(canvas, size);
   }
 
-  /// Motor positions relative to center. Angle 0 = right, −90° = nose (up).
-  List<_MotorSpot> _motorOffsets(int id, double radius) {
-    final anglesDegrees = switch (id) {
-      2 => const [-90.0, 0.0, 90.0, 180.0], // Quad +
-      3 => const [-60.0, 0.0, 60.0, 120.0, 180.0, -120.0], // Hexa X
-      4 => const [-90.0, -30.0, 30.0, 90.0, 150.0, -150.0], // Hexa +
-      5 => const [-67.5, -22.5, 22.5, 67.5, 112.5, 157.5, -157.5, -112.5], // Octo X
-      6 => const [-90.0, -45.0, 0.0, 45.0, 90.0, 135.0, 180.0, -135.0], // Octo +
-      _ => const [-45.0, 45.0, 135.0, -135.0], // Quad X
+  void _drawSpinArrow(
+    Canvas canvas,
+    Offset center,
+    double radius,
+    _Spin spin,
+    Color color,
+  ) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+
+    // Screen y grows downward; clockwise on screen matches aircraft top-view CW.
+    final start = spin == _Spin.clockwise ? -2.2 : -0.9;
+    final sweep = spin == _Spin.clockwise ? 1.8 : -1.8;
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      start,
+      sweep,
+      false,
+      paint,
+    );
+
+    final endAngle = start + sweep;
+    final tip = Offset(
+      center.dx + radius * math.cos(endAngle),
+      center.dy + radius * math.sin(endAngle),
+    );
+    final tangent = spin == _Spin.clockwise
+        ? Offset(-math.sin(endAngle), math.cos(endAngle))
+        : Offset(math.sin(endAngle), -math.cos(endAngle));
+    final normal = Offset(-tangent.dy, tangent.dx);
+    final head = Path()
+      ..moveTo(tip.dx, tip.dy)
+      ..lineTo(
+        tip.dx - tangent.dx * 7 + normal.dx * 3.5,
+        tip.dy - tangent.dy * 7 + normal.dy * 3.5,
+      )
+      ..lineTo(
+        tip.dx - tangent.dx * 7 - normal.dx * 3.5,
+        tip.dy - tangent.dy * 7 - normal.dy * 3.5,
+      )
+      ..close();
+    canvas.drawPath(head, Paint()..color = color);
+  }
+
+  void _drawLegend(Canvas canvas, Size size) {
+    final style = TextStyle(
+      fontSize: size.shortestSide * 0.07,
+      fontWeight: FontWeight.w600,
+      color: const Color(0xFF334155),
+    );
+    final cw = TextPainter(
+      text: TextSpan(text: 'CW ↻', style: style.copyWith(color: cwColor)),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    final ccw = TextPainter(
+      text: TextSpan(text: 'CCW ↺', style: style.copyWith(color: ccwColor)),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    cw.paint(canvas, Offset(4, size.height - cw.height - 2));
+    ccw.paint(canvas, Offset(size.width - ccw.width - 4, size.height - ccw.height - 2));
+  }
+
+  /// Motor spots matching K++ assistant port order (M1…) and spin.
+  List<_MotorSpot> _motors(int id, double radius) {
+    // Angle 0 = right, −90° = nose (up). Order matches JIYI M1… numbering.
+    final specs = switch (id) {
+      2 => const [
+          // Quad +: Front, Right, Rear, Left
+          (1, -90.0, _Spin.anticlockwise),
+          (2, 0.0, _Spin.clockwise),
+          (3, 90.0, _Spin.anticlockwise),
+          (4, 180.0, _Spin.clockwise),
+        ],
+      3 => const [
+          // Hexa X
+          (1, -60.0, _Spin.anticlockwise),
+          (2, 0.0, _Spin.clockwise),
+          (3, 60.0, _Spin.anticlockwise),
+          (4, 120.0, _Spin.clockwise),
+          (5, 180.0, _Spin.anticlockwise),
+          (6, -120.0, _Spin.clockwise),
+        ],
+      4 => const [
+          // Hexa +
+          (1, -90.0, _Spin.anticlockwise),
+          (2, -30.0, _Spin.clockwise),
+          (3, 30.0, _Spin.anticlockwise),
+          (4, 90.0, _Spin.clockwise),
+          (5, 150.0, _Spin.anticlockwise),
+          (6, -150.0, _Spin.clockwise),
+        ],
+      5 => const [
+          // Octo X
+          (1, -67.5, _Spin.anticlockwise),
+          (2, -22.5, _Spin.clockwise),
+          (3, 22.5, _Spin.anticlockwise),
+          (4, 67.5, _Spin.clockwise),
+          (5, 112.5, _Spin.anticlockwise),
+          (6, 157.5, _Spin.clockwise),
+          (7, -157.5, _Spin.anticlockwise),
+          (8, -112.5, _Spin.clockwise),
+        ],
+      6 => const [
+          // Octo +
+          (1, -90.0, _Spin.anticlockwise),
+          (2, -45.0, _Spin.clockwise),
+          (3, 0.0, _Spin.anticlockwise),
+          (4, 45.0, _Spin.clockwise),
+          (5, 90.0, _Spin.anticlockwise),
+          (6, 135.0, _Spin.clockwise),
+          (7, 180.0, _Spin.anticlockwise),
+          (8, -135.0, _Spin.clockwise),
+        ],
+      _ => const [
+          // Quad X (default) — K++: FR M1 CCW, RR M2 CW, RL M3 CCW, FL M4 CW
+          (1, -45.0, _Spin.anticlockwise),
+          (2, 45.0, _Spin.clockwise),
+          (3, 135.0, _Spin.anticlockwise),
+          (4, -135.0, _Spin.clockwise),
+        ],
     };
 
     return [
-      for (var i = 0; i < anglesDegrees.length; i++)
+      for (final (number, deg, spin) in specs)
         _MotorSpot(
-          number: i + 1,
+          number: number,
+          spin: spin,
           offset: Offset(
-            radius * math.cos(anglesDegrees[i] * math.pi / 180),
-            radius * math.sin(anglesDegrees[i] * math.pi / 180),
+            radius * math.cos(deg * math.pi / 180),
+            radius * math.sin(deg * math.pi / 180),
           ),
         ),
     ];
@@ -138,15 +305,8 @@ class _FrameLayoutPainter extends CustomPainter {
     return oldDelegate.frameId != frameId ||
         oldDelegate.armColor != armColor ||
         oldDelegate.motorFill != motorFill ||
-        oldDelegate.accent != accent;
+        oldDelegate.noseColor != noseColor;
   }
-}
-
-class _MotorSpot {
-  const _MotorSpot({required this.number, required this.offset});
-
-  final int number;
-  final Offset offset;
 }
 
 /// Simple shape cue for SHAPE param (Standard / Coaxial / Y6).
@@ -173,6 +333,8 @@ class FrameShapeDiagram extends StatelessWidget {
           shapeId: shapeId,
           color: selected ? scheme.primary : scheme.outline,
           fill: selected ? scheme.primaryContainer : scheme.surfaceContainerHighest,
+          upperColor: const Color(0xFF2563EB),
+          lowerColor: const Color(0xFFF97316),
         ),
       ),
     );
@@ -184,11 +346,15 @@ class _ShapePainter extends CustomPainter {
     required this.shapeId,
     required this.color,
     required this.fill,
+    required this.upperColor,
+    required this.lowerColor,
   });
 
   final int shapeId;
   final Color color;
   final Color fill;
+  final Color upperColor;
+  final Color lowerColor;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -201,17 +367,22 @@ class _ShapePainter extends CustomPainter {
     final fillPaint = Paint()..color = fill;
 
     if (shapeId == 1) {
-      // Coaxial — stacked motors
+      // Coaxial — blue upper / orange lower (K++ assistant).
       final top = c.translate(0, -r * 0.35);
       final bottom = c.translate(0, r * 0.35);
-      canvas.drawCircle(top, r * 0.7, fillPaint);
-      canvas.drawCircle(top, r * 0.7, stroke);
-      canvas.drawCircle(bottom, r * 0.7, fillPaint);
-      canvas.drawCircle(bottom, r * 0.7, stroke);
+      canvas.drawCircle(top, r * 0.7, Paint()..color = upperColor.withValues(alpha: 0.35));
+      canvas.drawCircle(top, r * 0.7, Paint()
+        ..color = upperColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.5);
+      canvas.drawCircle(bottom, r * 0.7, Paint()..color = lowerColor.withValues(alpha: 0.35));
+      canvas.drawCircle(bottom, r * 0.7, Paint()
+        ..color = lowerColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.5);
       return;
     }
     if (shapeId == 2) {
-      // Y6 — Y layout
       for (final deg in const [-90.0, 150.0, 30.0]) {
         final o = Offset(
           r * 1.4 * math.cos(deg * math.pi / 180),
@@ -223,7 +394,6 @@ class _ShapePainter extends CustomPainter {
       }
       return;
     }
-    // Standard
     canvas.drawCircle(c, r, fillPaint);
     canvas.drawCircle(c, r, stroke);
     canvas.drawLine(c.translate(-r * 1.3, 0), c.translate(r * 1.3, 0), stroke);
