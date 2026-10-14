@@ -139,10 +139,14 @@ class FcTelemetry {
 
   /// GPS row: "Not connected" unless the FC is actually reporting GPS data.
   ///
-  /// K++ often leaves the GPS2 *present* bit set even with the puck unplugged,
-  /// and GLOBAL_POSITION_INT / last lat-lon keep streaming — neither must show
-  /// Normal. Stale coordinates alone are never enough.
+  /// K++ often leaves the GPS2 *present* bit set even with the puck unplugged.
+  /// A live non-zero lat/lon (msgid 203 / RAW) means the puck is connected —
+  /// even when msgid 206 is a weak stub we intentionally ignore for sat tiles.
   SensorHealth _gpsModuleHealth() {
+    // Exact position on screen ⇒ connected (assistant parity outdoors).
+    if (latDeg != null && lonDeg != null) {
+      return SensorHealth.healthy;
+    }
     final bestFix = _maxInt(gpsFixType, gps2FixType);
     final bestSats = _maxInt(satellites, gps2Satellites);
     // 2D/3D/DGPS/RTK ⇒ module is talking (ignore bogus fix with zero sats).
@@ -167,7 +171,15 @@ class FcTelemetry {
     return left > right ? left : right;
   }
 
-  /// RAW GPS update: keep coords only while fix/sats look like a live module.
+  static int? _nonZeroSats(int? sats) => (sats == null || sats == 0) ? null : sats;
+
+  /// RAW GPS update for fix/sats/HDOP. Coords update only on a live lock.
+  ///
+  /// [gps2] writes GPS2_RAW into the GPS2 slots. K++ agri pucks usually report
+  /// on GPS2 — never overwrite GPS1 sats with GPS2 (or the reverse).
+  ///
+  /// Never clear lat/lon on a dead/zero RAW frame — K++ interleaves 0,0 RAW with
+  /// a good msgid 203, which used to make Overview Position blink.
   FcTelemetry _applyGpsRaw({
     required int fixType,
     required int sats,
@@ -175,73 +187,160 @@ class FcTelemetry {
     required int latE7,
     required int lonE7,
     required int altMm,
+    bool gps2 = false,
   }) {
     final valid = _validLatLon(latE7, lonE7);
     final looksLive = fixType >= 2
         ? sats > 0
         : fixType >= 1 && sats >= _gpsPresentMinSats;
+    final useCoords = valid && looksLive;
+    // Trust standard GPS_RAW_* when fix≥2 and sats≥4 (assistant outdoor path).
+    // Do not use the proprietary-206 "weak" rules here — those blocked real RAW.
+    final plausible = fixType >= 2 && sats >= 4 && sats <= 40 && fixType <= 8;
     return _copy(
-      gpsFixType: fixType,
-      satellites: sats,
+      gpsFixType: gps2 ? null : (plausible ? fixType : null),
+      satellites: gps2 ? null : (plausible ? sats : null),
+      gps2FixType: gps2 ? (plausible ? fixType : null) : null,
+      gps2Satellites: gps2 ? (plausible ? sats : null) : null,
       hdop: eph == 0xFFFF ? null : eph / 100,
-      latDeg: valid && looksLive ? latE7 / 1e7 : null,
-      lonDeg: valid && looksLive ? lonE7 / 1e7 : null,
-      clearLatLon: !valid || !looksLive,
+      latDeg: useCoords ? latE7 / 1e7 : null,
+      lonDeg: useCoords ? lonE7 / 1e7 : null,
       altMeters: altMm / 1000,
     );
   }
 
   FcTelemetry _applyKppGpsStatus(KppGpsStatus message) {
-    final next = _copy(
-      // Live layout: [res, gps1_fix, gps1_sats, gps2_fix, gps2_sats, ...]
-      gpsFixType: message.fixType,
-      satellites: message.satellites,
-      gps2FixType: message.fixType2,
-      gps2Satellites: message.satellites2,
-    );
-    // Unplugged stub (fix≈1, few sats) must drop any stale lat/lon.
-    if (next._gpsModuleHealth() != SensorHealth.healthy) {
-      return next._copy(clearLatLon: true);
-    }
-    return next;
+    // msgid 206 layouts are firmware-dependent and produced fake DGPS·2 / 4-sat
+    // stubs. Ignore for UI until wire capture confirms the real byte order.
+    // Sat tiles come from GPS_RAW_INT / GPS2_RAW / GPS_STATUS only.
+    return this;
   }
 
-  /// Fused / K++ position — only keep coords while the GPS module looks live.
+  /// True for stub / mis-decoded GPS reports that must not drive the UI.
+  ///
+  /// Example bug: bytes `[1,4,2,1]` scored as DGPS·2 sats because fix was
+  /// weighted over sats — reject any lock that is physically impossible.
+  static bool _isWeakGpsReport(int fix, int sats) {
+    if (sats > 40 || fix > 8) {
+      return true;
+    }
+    // No GPS / No fix with fewer than 6 sats ⇒ stub or still searching.
+    if (fix <= 1 && sats < 6) {
+      return true;
+    }
+    // 2D needs ≥4 sats; 3D/DGPS/RTK need ≥6 — else byte-order garbage.
+    if (fix == 2 && sats < 4) {
+      return true;
+    }
+    if (fix >= 3 && sats < 6) {
+      return true;
+    }
+    return false;
+  }
+
+  /// Prefer satellite count over inflated fix enums (sats primary).
+  static int _gpsSlotScore(int? fix, int? sats) {
+    final f = fix ?? 0;
+    final s = sats ?? 0;
+    if (_isWeakGpsReport(f, s)) {
+      return -1;
+    }
+    return s * 100 + f;
+  }
+
+  /// Merge msgid 206 into a GPS slot. Weak stubs never write (even into empty).
+  ({int? fixType, int? satellites}) _mergeGpsSlot({
+    required int? currentFix,
+    required int? currentSats,
+    required int incomingFix,
+    required int incomingSats,
+  }) {
+    if (_isWeakGpsReport(incomingFix, incomingSats)) {
+      // Keep whatever RAW (or a prior strong 206) already stored.
+      return (fixType: null, satellites: null);
+    }
+    if (currentFix == null && currentSats == null) {
+      return (fixType: incomingFix, satellites: incomingSats);
+    }
+    final currentScore = _gpsSlotScore(currentFix, currentSats);
+    final incomingScore = _gpsSlotScore(incomingFix, incomingSats);
+    if (incomingScore >= currentScore) {
+      return (fixType: incomingFix, satellites: incomingSats);
+    }
+    return (fixType: null, satellites: null);
+  }
+
+  /// Exact location like the JIYI assistant: non-zero 203 lat/lon wins.
+  ///
+  /// Do not invent fix/sats from the 203 tail until a wire capture confirms
+  /// the byte layout — wrong guesses showed DGPS·2 / 0 sats outdoors.
+  FcTelemetry _applyKppGpsPosition(KppGpsPosition message) {
+    return _applyPositionOnly(
+      latE7: message.latE7,
+      lonE7: message.lonE7,
+      altMeters: message.altMm / 1000,
+    );
+  }
+
   FcTelemetry _applyPositionOnly({
     required int latE7,
     required int lonE7,
     required double altMeters,
   }) {
-    if (!_validLatLon(latE7, lonE7) || _gpsModuleHealth() != SensorHealth.healthy) {
-      return _copy(clearLatLon: true, altMeters: altMeters);
+    if (!_validLatLon(latE7, lonE7)) {
+      // Hold last good fix (do not clear).
+      return _copy(altMeters: altMeters);
     }
-    return _copy(
-      latDeg: latE7 / 1e7,
-      lonDeg: lonE7 / 1e7,
-      altMeters: altMeters,
+    return _withLivePositionFix(
+      _copy(
+        latDeg: latE7 / 1e7,
+        lonDeg: lonE7 / 1e7,
+        altMeters: altMeters,
+      ),
     );
   }
+
+  /// Keep coords only — do not invent a fake 3D/DGPS enum (caused "3D · 0 sats").
+  FcTelemetry _withLivePositionFix(FcTelemetry next) => next;
 
   FcTelemetry _applyGlobalPosition(GlobalPositionInt message) {
     final heading =
         message.hdgCdeg == 65535 ? headingDeg : message.hdgCdeg / 100;
     final speed = _groundSpeedMps(message.vx, message.vy);
     final alt = message.relativeAltMm / 1000;
-    if (!_validLatLon(message.latE7, message.lonE7) ||
-        _gpsModuleHealth() != SensorHealth.healthy) {
+    if (!_validLatLon(message.latE7, message.lonE7)) {
+      // Keep last lat/lon — FC often sends 0,0 GLOBAL between good 203 frames.
       return _copy(
-        clearLatLon: true,
         altMeters: alt,
         groundSpeedMps: speed,
         headingDeg: heading,
       );
     }
+    return _withLivePositionFix(
+      _copy(
+        latDeg: message.latE7 / 1e7,
+        lonDeg: message.lonE7 / 1e7,
+        altMeters: alt,
+        groundSpeedMps: speed,
+        headingDeg: heading,
+      ),
+    );
+  }
+
+  FcTelemetry _applyGpsStatus(GpsStatus message) {
+    final sats = message.satellitesVisible;
+    // Ignore empty / unknown / too-low counts (noise while searching).
+    if (sats < 6 || sats == 0xFF) {
+      return this;
+    }
+    // Prefer the stronger of GPS_STATUS vs whatever RAW/203 already stored.
+    final current = satellites ?? 0;
+    if (sats < current) {
+      return this;
+    }
     return _copy(
-      latDeg: message.latE7 / 1e7,
-      lonDeg: message.lonE7 / 1e7,
-      altMeters: alt,
-      groundSpeedMps: speed,
-      headingDeg: heading,
+      satellites: sats,
+      gpsFixType: (gpsFixType ?? 0) >= 3 ? gpsFixType : 3,
     );
   }
 
@@ -258,7 +357,16 @@ class FcTelemetry {
   /// MAVLink uses 0,0 for “no position”; do not treat that as a valid fix.
   static bool _validLatLon(int latE7, int lonE7) => latE7 != 0 || lonE7 != 0;
 
-  String get gpsFixLabel => fixLabelFor(gpsFixType);
+  String get gpsFixLabel {
+    if (gpsFixType != null) {
+      return fixLabelFor(gpsFixType);
+    }
+    // Live lat/lon without a RAW fix enum — honest label (not fake "3D").
+    if (latDeg != null && lonDeg != null) {
+      return 'Position lock';
+    }
+    return 'No data';
+  }
 
   String get gps2FixLabel => fixLabelFor(gps2FixType);
 
@@ -320,6 +428,8 @@ class FcTelemetry {
         lonE7: message.lonE7,
         altMm: message.altMm,
       ),
+      GpsStatus() => _applyGpsStatus(message),
+      // Agri GPS on K++ is typically GPS2 — keep it out of the GPS1 slots.
       Gps2Raw() => _applyGpsRaw(
         fixType: message.fixType,
         sats: message.satellites,
@@ -327,13 +437,10 @@ class FcTelemetry {
         latE7: message.latE7,
         lonE7: message.lonE7,
         altMm: message.altMm,
+        gps2: true,
       ),
       KppGpsStatus() => _applyKppGpsStatus(message),
-      KppGpsPosition() => _applyPositionOnly(
-        latE7: message.latE7,
-        lonE7: message.lonE7,
-        altMeters: message.altMm / 1000,
-      ),
+      KppGpsPosition() => _applyKppGpsPosition(message),
       GlobalPositionInt() => _applyGlobalPosition(message),
       ImuSample() => _copy(
         imus: [
@@ -404,9 +511,10 @@ class FcTelemetry {
       sensorsPresent: sensorsPresent ?? this.sensorsPresent,
       sensorsHealth: sensorsHealth ?? this.sensorsHealth,
       gpsFixType: gpsFixType ?? this.gpsFixType,
-      satellites: satellites ?? this.satellites,
+      // Coerce 0 → null so UI never shows "3D fix · 0 sats".
+      satellites: _nonZeroSats(satellites ?? this.satellites),
       gps2FixType: gps2FixType ?? this.gps2FixType,
-      gps2Satellites: gps2Satellites ?? this.gps2Satellites,
+      gps2Satellites: _nonZeroSats(gps2Satellites ?? this.gps2Satellites),
       hdop: hdop ?? this.hdop,
       latDeg: clearLatLon ? null : (latDeg ?? this.latDeg),
       lonDeg: clearLatLon ? null : (lonDeg ?? this.lonDeg),

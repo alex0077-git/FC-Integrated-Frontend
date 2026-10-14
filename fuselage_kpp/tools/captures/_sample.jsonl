@@ -1,0 +1,5 @@
+﻿{"t":"2026-10-13T00:00:00Z","dir":"app","msgid":211,"fields":{"payload_hex":"01"}}
+{"t":"2026-10-13T00:00:01Z","dir":"app","msgid":66,"fields":{"rate_hz":5,"stream_id":1,"stream":"RAW_SENSORS","target_system":1,"target_component":0,"start":true}}
+{"t":"2026-10-13T00:00:02Z","dir":"fc","msgid":206,"fields":{"gps1_fix":1,"gps1_sats":4,"gps2_fix":2,"gps2_sats":1,"payload_hex":"0101020101","layouts":{"skip_res":{"res":1,"gps1_fix":1,"gps1_sats":4,"gps2_fix":2,"gps2_sats":1},"no_res":{"gps1_fix":1,"gps1_sats":1,"gps2_fix":4,"gps2_sats":2}}}}
+{"t":"2026-10-13T00:00:03Z","dir":"fc","msgid":24,"fields":{"fix":3,"sats":14,"lat_e7":100558451,"lon_e7":763549900}}
+{"t":"2026-10-13T00:00:04Z","dir":"fc","msgid":203,"fields":{"lat_e7":100558451,"lon_e7":763549900,"alt_mm":-2500}}

@@ -48,16 +48,18 @@ final deviceGpsProvider = FutureProvider<LatLng?>((ref) async {
 
 /// Moves a map to GPS once when the page opens (FC first, then device).
 class MapGpsFocus {
-  bool _applied = false;
+  bool _appliedFc = false;
+  bool _appliedDevice = false;
   bool _deviceLookupStarted = false;
 
-  bool get applied => _applied;
+  bool get applied => _appliedFc || _appliedDevice;
 
-  void markApplied() => _applied = true;
+  void markApplied() => _appliedFc = true;
 
   /// Allow a new snap after the map is remounted / session changes.
   void reset() {
-    _applied = false;
+    _appliedFc = false;
+    _appliedDevice = false;
     _deviceLookupStarted = false;
   }
 
@@ -70,33 +72,37 @@ class MapGpsFocus {
     }
   }
 
-  bool _move(MapController controller, LatLng point, double zoom) {
+  bool _move(MapController controller, LatLng point, double zoom, {required bool fromFc}) {
     if (!_mapReady(controller)) {
       return false;
     }
     try {
       controller.move(point, zoom);
-      _applied = true;
+      if (fromFc) {
+        _appliedFc = true;
+      } else {
+        _appliedDevice = true;
+      }
       return true;
     } catch (_) {
       return false;
     }
   }
 
-  /// Snap to FC GPS when available. No-op after the first successful move.
+  /// Snap to FC GPS when available. May override a prior device-only snap.
   bool tryFocusFc(
     WidgetRef ref,
     MapController controller, {
     double zoom = mapGpsFocusZoom,
   }) {
-    if (_applied) {
+    if (_appliedFc) {
       return false;
     }
     final point = liveFcGpsPoint(ref);
     if (point == null) {
       return false;
     }
-    return _move(controller, point, zoom);
+    return _move(controller, point, zoom, fromFc: true);
   }
 
   /// FC GPS if available; otherwise device GPS. Safe from [onMapReady] or a post-frame callback.
@@ -105,7 +111,7 @@ class MapGpsFocus {
     MapController controller, {
     double zoom = mapGpsFocusZoom,
   }) async {
-    if (_applied) {
+    if (_appliedFc) {
       return;
     }
     if (tryFocusFc(ref, controller, zoom: zoom)) {
@@ -115,18 +121,18 @@ class MapGpsFocus {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       tryFocusFc(ref, controller, zoom: zoom);
     });
-    if (_applied || _deviceLookupStarted) {
+    if (_appliedFc || _appliedDevice || _deviceLookupStarted) {
       return;
     }
     _deviceLookupStarted = true;
     final device = await ref.read(deviceGpsProvider.future);
-    if (_applied || device == null) {
+    if (_appliedFc || device == null) {
       return;
     }
     // Prefer FC if it arrived while waiting for the device fix.
     if (tryFocusFc(ref, controller, zoom: zoom)) {
       return;
     }
-    _move(controller, device, zoom);
+    _move(controller, device, zoom, fromFc: false);
   }
 }

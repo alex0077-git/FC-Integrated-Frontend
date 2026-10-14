@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:fuselage_kpp/data/link/fc_link.dart';
 import 'package:fuselage_kpp/data/mavlink/mavlink_codec.dart';
 import 'package:fuselage_kpp/data/mavlink/mavlink_messages.dart';
+import 'package:fuselage_kpp/data/session/gps_capture_log.dart';
 
 /// Sends and receives K++ serial frames over an [FcLink] and keeps the
 /// ground-station heartbeat running.
@@ -41,13 +42,16 @@ class MavlinkConnection {
   DateTime? get lastPacketAt => _lastPacketAt;
 
   Future<void> start() async {
+    GpsCaptureLog.ensureStarted();
     await link.open();
     _linkSubscription = link.incoming.listen(_onBytes, onError: _packets.addError);
     _sendHeartbeat();
     _heartbeatTimer = Timer.periodic(_heartbeatInterval, (_) => _sendHeartbeat());
   }
 
-  void send(MavMessage message) => link.write(_encoder.encode(message));
+  void send(MavMessage message) {
+    link.write(_encoder.encode(message));
+  }
 
   Future<void> close() async {
     _heartbeatTimer?.cancel();
@@ -57,6 +61,7 @@ class MavlinkConnection {
     // Link close cancels simulator/serial poll timers synchronously.
     await link.close();
     unawaited(sub?.cancel());
+    await GpsCaptureLog.close();
     if (!_packets.isClosed) {
       unawaited(_packets.close());
     }
@@ -69,6 +74,11 @@ class MavlinkConnection {
       if (packet.message is Heartbeat && packet.systemId != _gcsSystemId) {
         _targetSystem = packet.systemId;
         _targetComponent = packet.componentId;
+      }
+      GpsCaptureLog.logPacket('fc', packet);
+      // Unknown ids are capture-only — do not feed telemetry.
+      if (packet.message is UnknownMavMessage) {
+        continue;
       }
       _packets.add(packet);
     }

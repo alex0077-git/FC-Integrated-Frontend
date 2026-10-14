@@ -6,12 +6,21 @@ import 'package:fuselage_kpp/data/mavlink/payload_buffer.dart';
 
 /// A decoded message plus the header of the serial frame that carried it.
 class MavPacket {
-  const MavPacket({required this.message, required this.systemId, required this.componentId, required this.sequence});
+  const MavPacket({
+    required this.message,
+    required this.systemId,
+    required this.componentId,
+    required this.sequence,
+    required this.messageId,
+    this.rawPayload,
+  });
 
   final MavMessage message;
   final int systemId;
   final int componentId;
   final int sequence;
+  final int messageId;
+  final Uint8List? rawPayload;
 }
 
 /// Cleartext K++ / MAVLink-1 frame layout (before USB wire obfuscation):
@@ -111,24 +120,45 @@ class MavFrameParser {
   MavPacket? _decodeFrame(int frameLength) {
     final payloadLength = _buffer[1];
     final messageId = _buffer[5];
+    final seq = _buffer[2];
+    final sys = _buffer[3];
+    final comp = _buffer[4];
+    final crcEnd = _headerLength + payloadLength;
+    final payload = Uint8List.fromList(_buffer.sublist(_headerLength, crcEnd));
+    final received = _buffer[crcEnd] | (_buffer[crcEnd + 1] << 8);
     final spec = mavMessageSpecs[messageId];
-    if (spec == null || payloadLength > spec.fullLength) {
+
+    // Unknown id: still emit a packet (no CRC) so GPS discovery / capture works.
+    // Consume the whole length-prefixed frame to avoid one-byte desync storms.
+    if (spec == null) {
+      if (payloadLength > 255) {
+        return null;
+      }
+      return MavPacket(
+        message: UnknownMavMessage(messageId: messageId, payload: payload),
+        sequence: seq,
+        systemId: sys,
+        componentId: comp,
+        messageId: messageId,
+        rawPayload: payload,
+      );
+    }
+    if (payloadLength > spec.fullLength) {
       return null;
     }
 
-    final crcEnd = _headerLength + payloadLength;
     final expected = x25Crc([..._buffer.sublist(1, crcEnd), spec.crcExtra]);
-    final received = _buffer[crcEnd] | (_buffer[crcEnd + 1] << 8);
     if (expected != received) {
       return null;
     }
 
-    final payload = Uint8List.fromList(_buffer.sublist(_headerLength, crcEnd));
     return MavPacket(
       message: spec.decode(PayloadReader(payload, spec.fullLength)),
-      sequence: _buffer[2],
-      systemId: _buffer[3],
-      componentId: _buffer[4],
+      sequence: seq,
+      systemId: sys,
+      componentId: comp,
+      messageId: messageId,
+      rawPayload: payload,
     );
   }
 }

@@ -37,6 +37,26 @@ sealed class MavMessage {
   }
 }
 
+/// Frame with an id we do not decode yet (kept for wire capture / discovery).
+class UnknownMavMessage extends MavMessage {
+  const UnknownMavMessage({required this.messageId, required this.payload});
+
+  final int messageId;
+  final Uint8List payload;
+
+  @override
+  MavMessageSpec get spec => MavMessageSpec(
+        id: messageId,
+        crcExtra: 0,
+        baseLength: payload.length,
+        fullLength: payload.length,
+        decode: (_) => throw UnsupportedError('UnknownMavMessage'),
+      );
+
+  @override
+  void writeFields(PayloadWriter writer) => writer.bytes(payload, payload.length);
+}
+
 /// Every supported message, keyed by MAVLink message id.
 final Map<int, MavMessageSpec> mavMessageSpecs = {
   for (final spec in [
@@ -48,6 +68,7 @@ final Map<int, MavMessageSpec> mavMessageSpecs = {
     ParamValue.messageSpec,
     ParamSet.messageSpec,
     GpsRawInt.messageSpec,
+    GpsStatus.messageSpec,
     GlobalPositionInt.messageSpec,
     Gps2Raw.messageSpec,
     KppGpsPosition.messageSpec,
@@ -646,8 +667,44 @@ class KppAppReady extends MavMessage {
 }
 
 /// K++ proprietary GPS position (msgid 203). Lat/lon are degE7; zero when no fix.
+///
+/// Full 17-byte payload: `lat | lon | alt | 5-byte GPS tail`.
+/// The tail layout varies by firmware build — we score two common orders and
+/// keep the stronger fix/sat pair (assistant outdoor counts live here).
 class KppGpsPosition extends MavMessage {
-  const KppGpsPosition({required this.latE7, required this.lonE7, required this.altMm});
+  const KppGpsPosition({
+    required this.latE7,
+    required this.lonE7,
+    required this.altMm,
+    this.status = 0,
+    this.fixType = 0,
+    this.satellites = 0,
+    this.fixType2 = 0,
+    this.satellites2 = 0,
+  });
+
+  /// Sats-primary score. High fix + few sats (e.g. DGPS·2) must lose.
+  static int _slotQuality(int fix, int sats) {
+    if (sats > 40 || fix > 8) {
+      return -1;
+    }
+    if (fix >= 2 && sats < 4) {
+      return -1;
+    }
+    if (fix >= 3 && sats < 6) {
+      return -1;
+    }
+    if (fix <= 1 && sats < 6) {
+      return sats;
+    }
+    return sats * 100 + fix;
+  }
+
+  static int _tailScore(int fix1, int sats1, int fix2, int sats2) {
+    final a = _slotQuality(fix1, sats1);
+    final b = _slotQuality(fix2, sats2);
+    return a > b ? a : b;
+  }
 
   static final MavMessageSpec messageSpec = MavMessageSpec(
     id: 203,
@@ -658,14 +715,48 @@ class KppGpsPosition extends MavMessage {
       final lat = r.i32();
       final lon = r.i32();
       final alt = r.i32();
-      r.u8(); // trailing status / flags
-      return KppGpsPosition(latE7: lat, lonE7: lon, altMm: alt);
+      final b0 = r.u8();
+      final b1 = r.u8();
+      final b2 = r.u8();
+      final b3 = r.u8();
+      final b4 = r.u8();
+      // A: status, fix1, sats1, fix2, sats2
+      // B: fix1, sats1, fix2, sats2, status
+      final scoreA = _tailScore(b1, b2, b3, b4);
+      final scoreB = _tailScore(b0, b1, b2, b3);
+      if (scoreB > scoreA) {
+        return KppGpsPosition(
+          latE7: lat,
+          lonE7: lon,
+          altMm: alt,
+          status: b4,
+          fixType: b0,
+          satellites: b1,
+          fixType2: b2,
+          satellites2: b3,
+        );
+      }
+      return KppGpsPosition(
+        latE7: lat,
+        lonE7: lon,
+        altMm: alt,
+        status: b0,
+        fixType: b1,
+        satellites: b2,
+        fixType2: b3,
+        satellites2: b4,
+      );
     },
   );
 
   final int latE7;
   final int lonE7;
   final int altMm;
+  final int status;
+  final int fixType;
+  final int satellites;
+  final int fixType2;
+  final int satellites2;
 
   @override
   MavMessageSpec get spec => messageSpec;
@@ -675,12 +766,49 @@ class KppGpsPosition extends MavMessage {
     ..i32(latE7)
     ..i32(lonE7)
     ..i32(altMm)
-    ..u8(0);
+    ..u8(status)
+    ..u8(fixType)
+    ..u8(satellites)
+    ..u8(fixType2)
+    ..u8(satellites2);
+}
+
+/// Standard GPS_STATUS (25) — satellites_visible when RAW is quiet on K++.
+class GpsStatus extends MavMessage {
+  const GpsStatus({required this.satellitesVisible});
+
+  static final MavMessageSpec messageSpec = MavMessageSpec(
+    id: 25,
+    crcExtra: 23,
+    baseLength: 101,
+    fullLength: 101,
+    decode: (r) {
+      final sats = r.u8();
+      // Remainder is per-sat PRN/used/elevation/azimuth/snr — not needed for UI.
+      return GpsStatus(satellitesVisible: sats);
+    },
+  );
+
+  final int satellitesVisible;
+
+  @override
+  MavMessageSpec get spec => messageSpec;
+
+  @override
+  void writeFields(PayloadWriter w) => w..u8(satellitesVisible)..bytes(List<int>.filled(100, 0), 100);
 }
 
 /// K++ proprietary GPS status (msgid 206): fix type + satellite count.
 class KppGpsStatus extends MavMessage {
   const KppGpsStatus({required this.fixType, required this.satellites, this.fixType2 = 0, this.satellites2 = 0});
+
+  static int _slotQuality(int fix, int sats) => KppGpsPosition._slotQuality(fix, sats);
+
+  static int _slotScore(int fix1, int sats1, int fix2, int sats2) {
+    final a = _slotQuality(fix1, sats1);
+    final b = _slotQuality(fix2, sats2);
+    return a > b ? a : b;
+  }
 
   static final MavMessageSpec messageSpec = MavMessageSpec(
     id: 206,
@@ -688,8 +816,18 @@ class KppGpsStatus extends MavMessage {
     baseLength: 6,
     fullLength: 6,
     decode: (r) {
-      r.u8(); // reserved / instance
-      return KppGpsStatus(fixType: r.u8(), satellites: r.u8(), fixType2: r.u8(), satellites2: r.u8());
+      final b0 = r.u8();
+      final b1 = r.u8();
+      final b2 = r.u8();
+      final b3 = r.u8();
+      final b4 = r.u8();
+      // skip_res: [res, f1, s1, f2, s2]  vs  no_res: [f1, s1, f2, s2, ...]
+      final skip = _slotScore(b1, b2, b3, b4);
+      final noRes = _slotScore(b0, b1, b2, b3);
+      if (noRes > skip) {
+        return KppGpsStatus(fixType: b0, satellites: b1, fixType2: b2, satellites2: b3);
+      }
+      return KppGpsStatus(fixType: b1, satellites: b2, fixType2: b3, satellites2: b4);
     },
   );
 

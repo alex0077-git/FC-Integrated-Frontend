@@ -159,11 +159,16 @@ class FcSession {
 
   static const Duration _firstPacketTimeout = Duration(seconds: 5);
 
-  /// Exact stream table captured from JIYI K++ assistant APP→FC traffic.
+  /// Exact stream table captured from JIYI K++ assistant APP→FC traffic,
+  /// plus EXTRA1–3 so GPS_RAW_INT / GPS2_RAW keep flowing on K++ builds that
+  /// park sat counts on those streams instead of RAW_SENSORS alone.
   static const List<(int rateHz, int streamId)> _jiyiStreams = [
     (5, RequestDataStream.rawSensors),
     (2, RequestDataStream.extendedStatus),
     (2, RequestDataStream.rcChannels),
+    (2, RequestDataStream.extra1),
+    (2, RequestDataStream.extra2),
+    (2, RequestDataStream.extra3),
     (1, RequestDataStream.kppAgri1),
     (2, RequestDataStream.kppAgri2),
   ];
@@ -234,6 +239,15 @@ class FcSession {
         targetComponent: 0,
         rateHz: 2,
         streamId: RequestDataStream.position,
+      ),
+    );
+    // Broad request so GPS_STATUS / RAW variants the assistant uses still flow.
+    connection.send(
+      RequestDataStream(
+        targetSystem: connection.targetSystem,
+        targetComponent: 0,
+        rateHz: 2,
+        streamId: RequestDataStream.allStreams,
       ),
     );
     connection.send(const KppAppReady());
