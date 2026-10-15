@@ -73,6 +73,7 @@ final Map<int, MavMessageSpec> mavMessageSpecs = {
     Gps2Raw.messageSpec,
     KppGpsPosition.messageSpec,
     KppGpsStatus.messageSpec,
+    KppGpsDetail.messageSpec,
     KppLinkSetup.messageSpec,
     KppAppReady.messageSpec,
     ImuSample.rawImuSpec,
@@ -82,6 +83,8 @@ final Map<int, MavMessageSpec> mavMessageSpecs = {
     RcChannelsRaw.messageSpec,
     RcChannels.messageSpec,
     RequestDataStream.messageSpec,
+    SetMode.messageSpec,
+    RcChannelsOverride.messageSpec,
     CommandLong.messageSpec,
     CommandAck.messageSpec,
     MissionRequestList.messageSpec,
@@ -668,9 +671,8 @@ class KppAppReady extends MavMessage {
 
 /// K++ proprietary GPS position (msgid 203). Lat/lon are degE7; zero when no fix.
 ///
-/// Full 17-byte payload: `lat | lon | alt | 5-byte GPS tail`.
-/// The tail layout varies by firmware build — we score two common orders and
-/// keep the stronger fix/sat pair (assistant outdoor counts live here).
+/// Payload: `lat | lon | alt | 5-byte tail`. Tail layout is unproven on this
+/// firmware — do not invent fix/sat counts from it (sats come from msgid 206).
 class KppGpsPosition extends MavMessage {
   const KppGpsPosition({
     required this.latE7,
@@ -683,29 +685,6 @@ class KppGpsPosition extends MavMessage {
     this.satellites2 = 0,
   });
 
-  /// Sats-primary score. High fix + few sats (e.g. DGPS·2) must lose.
-  static int _slotQuality(int fix, int sats) {
-    if (sats > 40 || fix > 8) {
-      return -1;
-    }
-    if (fix >= 2 && sats < 4) {
-      return -1;
-    }
-    if (fix >= 3 && sats < 6) {
-      return -1;
-    }
-    if (fix <= 1 && sats < 6) {
-      return sats;
-    }
-    return sats * 100 + fix;
-  }
-
-  static int _tailScore(int fix1, int sats1, int fix2, int sats2) {
-    final a = _slotQuality(fix1, sats1);
-    final b = _slotQuality(fix2, sats2);
-    return a > b ? a : b;
-  }
-
   static final MavMessageSpec messageSpec = MavMessageSpec(
     id: 203,
     crcExtra: 61,
@@ -715,37 +694,13 @@ class KppGpsPosition extends MavMessage {
       final lat = r.i32();
       final lon = r.i32();
       final alt = r.i32();
-      final b0 = r.u8();
-      final b1 = r.u8();
-      final b2 = r.u8();
-      final b3 = r.u8();
-      final b4 = r.u8();
-      // A: status, fix1, sats1, fix2, sats2
-      // B: fix1, sats1, fix2, sats2, status
-      final scoreA = _tailScore(b1, b2, b3, b4);
-      final scoreB = _tailScore(b0, b1, b2, b3);
-      if (scoreB > scoreA) {
-        return KppGpsPosition(
-          latE7: lat,
-          lonE7: lon,
-          altMm: alt,
-          status: b4,
-          fixType: b0,
-          satellites: b1,
-          fixType2: b2,
-          satellites2: b3,
-        );
-      }
-      return KppGpsPosition(
-        latE7: lat,
-        lonE7: lon,
-        altMm: alt,
-        status: b0,
-        fixType: b1,
-        satellites: b2,
-        fixType2: b3,
-        satellites2: b4,
-      );
+      // Consume tail; leave fix/sats at 0 until a capture proves the layout.
+      r.u8();
+      r.u8();
+      r.u8();
+      r.u8();
+      r.u8();
+      return KppGpsPosition(latE7: lat, lonE7: lon, altMm: alt);
     },
   );
 
@@ -798,17 +753,18 @@ class GpsStatus extends MavMessage {
   void writeFields(PayloadWriter w) => w..u8(satellitesVisible)..bytes(List<int>.filled(100, 0), 100);
 }
 
-/// K++ proprietary GPS status (msgid 206): fix type + satellite count.
+/// K++ proprietary GPS status (msgid 206) — quality grade, not sat count.
+///
+/// Live USB (6 bytes): `[res, hdr, quality, b3, pad, pad]`
+/// Captures show byte[2] in 1..4 while msgid 207[73] holds the sat count.
+/// [satellites] here stores that quality grade (legacy field name).
 class KppGpsStatus extends MavMessage {
   const KppGpsStatus({required this.fixType, required this.satellites, this.fixType2 = 0, this.satellites2 = 0});
 
-  static int _slotQuality(int fix, int sats) => KppGpsPosition._slotQuality(fix, sats);
+  static const int minGoodSatellites = 6;
 
-  static int _slotScore(int fix1, int sats1, int fix2, int sats2) {
-    final a = _slotQuality(fix1, sats1);
-    final b = _slotQuality(fix2, sats2);
-    return a > b ? a : b;
-  }
+  /// Quality grade from payload[2] (1..4 in outdoor captures).
+  int get quality => satellites;
 
   static final MavMessageSpec messageSpec = MavMessageSpec(
     id: 206,
@@ -816,18 +772,13 @@ class KppGpsStatus extends MavMessage {
     baseLength: 6,
     fullLength: 6,
     decode: (r) {
-      final b0 = r.u8();
-      final b1 = r.u8();
-      final b2 = r.u8();
-      final b3 = r.u8();
-      final b4 = r.u8();
-      // skip_res: [res, f1, s1, f2, s2]  vs  no_res: [f1, s1, f2, s2, ...]
-      final skip = _slotScore(b1, b2, b3, b4);
-      final noRes = _slotScore(b0, b1, b2, b3);
-      if (noRes > skip) {
-        return KppGpsStatus(fixType: b0, satellites: b1, fixType2: b2, satellites2: b3);
-      }
-      return KppGpsStatus(fixType: b1, satellites: b2, fixType2: b3, satellites2: b4);
+      r.u8(); // reserved
+      r.u8(); // hdr
+      final quality = r.u8();
+      r.u8();
+      r.u8();
+      r.u8();
+      return KppGpsStatus(fixType: 0, satellites: quality);
     },
   );
 
@@ -840,13 +791,97 @@ class KppGpsStatus extends MavMessage {
   MavMessageSpec get spec => messageSpec;
 
   @override
-  void writeFields(PayloadWriter w) => w
-    ..u8(0)
-    ..u8(fixType)
-    ..u8(satellites)
-    ..u8(fixType2)
-    ..u8(satellites2)
-    ..u8(0);
+  void writeFields(PayloadWriter w) {
+    w
+      ..u8(0)
+      ..u8(1)
+      ..u8(satellites & 0xFF)
+      ..u8(0)
+      ..u8(1)
+      ..u8(1);
+  }
+}
+
+/// K++ proprietary GPS detail (msgid 207) — 75-byte payload.
+///
+/// Satellite count is unsigned payload[73]. Ignore any frame whose wire
+/// length is not exactly 75 (enforced in the frame parser + [tryParse]).
+class KppGpsDetail extends MavMessage {
+  const KppGpsDetail({
+    required this.utcTime,
+    required this.latE7,
+    required this.lonE7,
+    required this.gpsState,
+    required this.rtkStatus,
+    required this.gpsSats,
+  });
+
+  static const int payloadLength = 75;
+  // crc_extra from JIYI221014 dialect table (index 207).
+  static const int crcExtraValue = 154;
+
+  /// Returns null when [payload] length is not 75.
+  static KppGpsDetail? tryParse(List<int> payload) {
+    if (payload.length != payloadLength) {
+      return null;
+    }
+    return _parseReader(PayloadReader(Uint8List.fromList(payload), payloadLength));
+  }
+
+  static KppGpsDetail _parseReader(PayloadReader r) {
+    // utc_time u64 @0, latitude i32 @20, longitude i32 @24,
+    // gps_state u8 @65, rtk_status u8 @69, gps_sats u8 @73 (unsigned).
+    final utcTime = r.u64();
+    r.bytes(12);
+    final latE7 = r.i32();
+    final lonE7 = r.i32();
+    r.bytes(37);
+    final gpsState = r.u8();
+    r.bytes(3);
+    final rtkStatus = r.u8();
+    r.bytes(3);
+    final gpsSats = r.u8();
+    return KppGpsDetail(
+      utcTime: utcTime,
+      latE7: latE7,
+      lonE7: lonE7,
+      gpsState: gpsState,
+      rtkStatus: rtkStatus,
+      gpsSats: gpsSats,
+    );
+  }
+
+  static final MavMessageSpec messageSpec = MavMessageSpec(
+    id: 207,
+    crcExtra: crcExtraValue,
+    baseLength: payloadLength,
+    fullLength: payloadLength,
+    decode: (r) => _parseReader(r),
+  );
+
+  final int utcTime;
+  final int latE7;
+  final int lonE7;
+  final int gpsState;
+  final int rtkStatus;
+  final int gpsSats;
+
+  @override
+  MavMessageSpec get spec => messageSpec;
+
+  @override
+  void writeFields(PayloadWriter w) {
+    w.u64(utcTime);
+    w.bytes(List<int>.filled(12, 0), 12);
+    w.i32(latE7);
+    w.i32(lonE7);
+    w.bytes(List<int>.filled(37, 0), 37);
+    w.u8(gpsState);
+    w.bytes(List<int>.filled(3, 0), 3);
+    w.u8(rtkStatus);
+    w.bytes(List<int>.filled(3, 0), 3);
+    w.u8(gpsSats & 0xFF);
+  }
 }
 
 /// GPS2_RAW (124) — K++ reports the agri GPS on the GPS2 sensor bit.
@@ -1273,6 +1308,102 @@ class LogData extends MavMessage {
     ..u16(logId)
     ..u8(data.length)
     ..bytes(data, chunkSize);
+}
+
+/// SET_MODE (#11) — legacy arm/mode path some proprietary FCs still honor.
+class SetMode extends MavMessage {
+  const SetMode({
+    required this.targetSystem,
+    required this.baseMode,
+    required this.customMode,
+  });
+
+  static const int flagCustomModeEnabled = 1;
+  static const int flagSafetyArmed = 128;
+
+  static final MavMessageSpec messageSpec = MavMessageSpec(
+    id: 11,
+    crcExtra: 89,
+    baseLength: 6,
+    fullLength: 6,
+    decode: (r) {
+      final target = r.u8();
+      final base = r.u8();
+      return SetMode(targetSystem: target, baseMode: base, customMode: r.u32());
+    },
+  );
+
+  final int targetSystem;
+  final int baseMode;
+  final int customMode;
+
+  @override
+  MavMessageSpec get spec => messageSpec;
+
+  @override
+  void writeFields(PayloadWriter w) => w
+    ..u8(targetSystem)
+    ..u8(baseMode)
+    ..u32(customMode);
+}
+
+/// RC_CHANNELS_OVERRIDE (#70) — used for stick-arm on FCs that reject cmd 400.
+class RcChannelsOverride extends MavMessage {
+  const RcChannelsOverride({
+    required this.targetSystem,
+    required this.targetComponent,
+    required this.channels,
+  });
+
+  /// UINT16_MAX = ignore / release this channel.
+  static const int ignore = 0xFFFF;
+
+  static RcChannelsOverride release({required int targetSystem, int targetComponent = 0}) {
+    return RcChannelsOverride(
+      targetSystem: targetSystem,
+      targetComponent: targetComponent,
+      channels: List<int>.filled(8, ignore),
+    );
+  }
+
+  /// Throttle-low + yaw-right arm gesture (Mode-2 AETR: ch3 thr, ch4 yaw).
+  static RcChannelsOverride stickArm({required int targetSystem, int targetComponent = 0}) {
+    return RcChannelsOverride(
+      targetSystem: targetSystem,
+      targetComponent: targetComponent,
+      channels: const [1500, 1500, 1000, 2000, ignore, ignore, ignore, ignore],
+    );
+  }
+
+  static final MavMessageSpec messageSpec = MavMessageSpec(
+    id: 70,
+    crcExtra: 124,
+    baseLength: 18,
+    fullLength: 18,
+    decode: (r) {
+      final sys = r.u8();
+      final comp = r.u8();
+      final ch = [for (var i = 0; i < 8; i++) r.u16()];
+      return RcChannelsOverride(targetSystem: sys, targetComponent: comp, channels: ch);
+    },
+  );
+
+  final int targetSystem;
+  final int targetComponent;
+  final List<int> channels;
+
+  @override
+  MavMessageSpec get spec => messageSpec;
+
+  @override
+  void writeFields(PayloadWriter w) {
+    w
+      ..u8(targetSystem)
+      ..u8(targetComponent);
+    for (var i = 0; i < 8; i++) {
+      w.u16(i < channels.length ? channels[i] : ignore);
+    }
+  }
 }
 
 class CommandLong extends MavMessage {

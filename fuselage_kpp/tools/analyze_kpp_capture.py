@@ -55,11 +55,26 @@ def main() -> int:
         hx = fields.get("payload_hex") or r.get("payload_hex")
         seen206[hx] += 1
     for hx, n in seen206.most_common(20):
-        sample = next(r for r in rows if r["msgid"] == 206 and (r.get("fields") or {}).get("payload_hex") == hx)
-        layouts = (sample.get("fields") or {}).get("layouts") or {}
+        sample = next(
+            (
+                r
+                for r in rows
+                if r["msgid"] == 206
+                and ((r.get("fields") or {}).get("payload_hex") or r.get("payload_hex")) == hx
+            ),
+            None,
+        )
+        layouts = ((sample or {}).get("fields") or {}).get("layouts") or {}
+        fields = ((sample or {}).get("fields") or {})
         print(f"  n={n}  hex={hx}")
-        print(f"       skip_res={layouts.get('skip_res')}")
-        print(f"       no_res  ={layouts.get('no_res')}")
+        if layouts:
+            print(f"       skip_res={layouts.get('skip_res')}")
+            print(f"       no_res  ={layouts.get('no_res')}")
+        if fields:
+            print(
+                f"       decoded f1={fields.get('gps1_fix')} s1={fields.get('gps1_sats')} "
+                f"f2={fields.get('gps2_fix')} s2={fields.get('gps2_sats')}"
+            )
 
     print("\n== GPS_RAW / GPS2_RAW sat histogram (FC->APP) ==")
     for msgid, name in ((24, "GPS1_RAW"), (124, "GPS2_RAW")):

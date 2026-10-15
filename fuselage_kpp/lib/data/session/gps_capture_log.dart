@@ -16,7 +16,7 @@ class GpsCaptureLog {
   static bool _ready = false;
   static String? capturePath;
 
-  static final _gpsIds = {24, 25, 33, 66, 124, 203, 204, 205, 206, 207, 211, 220};
+  static final _gpsIds = {1, 24, 25, 33, 66, 124, 203, 204, 205, 206, 207, 211, 220};
 
   /// Call once on connect; safe to call repeatedly.
   static void ensureStarted() {
@@ -147,9 +147,17 @@ class GpsCaptureLog {
         },
       KppGpsStatus(:final fixType, :final satellites, :final fixType2, :final satellites2) => {
           'gps1_fix': fixType,
-          'gps1_sats': satellites,
+          'gps_quality': satellites,
           'gps2_fix': fixType2,
           'gps2_sats': satellites2,
+        },
+      KppGpsDetail(:final utcTime, :final latE7, :final lonE7, :final gpsState, :final rtkStatus, :final gpsSats) => {
+          'utc_time': utcTime,
+          'lat_e7': latE7,
+          'lon_e7': lonE7,
+          'gps_state': gpsState,
+          'rtk_status': rtkStatus,
+          'gps_sats': gpsSats,
         },
       RequestDataStream(:final rateHz, :final streamId, :final targetSystem, :final targetComponent, :final start) => {
           'rate_hz': rateHz,

@@ -114,7 +114,8 @@ class _FlightCommandBarState extends ConsumerState<FlightCommandBar> {
       if (!mounted) {
         return;
       }
-      showCommandResult(context, '$label sent to K++');
+      // Shown only after COMMAND_ACK accepted on the live USB/BT/WiFi link.
+      showCommandResult(context, '$label accepted by K++');
     } on FlightCommandException catch (error) {
       if (!mounted) {
         return;

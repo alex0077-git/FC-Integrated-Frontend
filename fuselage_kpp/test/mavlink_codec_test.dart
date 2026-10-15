@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fuselage_kpp/data/mavlink/mavlink_codec.dart';
+import 'package:fuselage_kpp/data/mavlink/mavlink_crc.dart';
 import 'package:fuselage_kpp/data/mavlink/mavlink_messages.dart';
 
 /// Wire frames: clear EB MAVLink after `rotl3(clear ^ 0xDF)` (magic becomes A1).
@@ -80,6 +81,30 @@ void main() {
     frame[frame.length - 1] ^= 0xFF;
 
     expect(MavFrameParser().addBytes(frame), isEmpty);
+  });
+
+  test('msgid 207 decodes when wire crc_extra differs from dialect 154', () {
+    MavFrameParser.resetDiscoveredGpsDetailCrcForTest();
+    const detail = KppGpsDetail(
+      utcTime: 0,
+      latE7: 129716000,
+      lonE7: 775946000,
+      gpsState: 4,
+      rtkStatus: 0,
+      gpsSats: 14,
+    );
+    // Build a clear frame using a non-dialect crc_extra (42), like a FC mismatch.
+    const wireExtra = 42;
+    final payload = detail.encodePayload();
+    final header = [serialFrameMagic, payload.length, 0, 1, 1, KppGpsDetail.messageSpec.id];
+    final crc = x25Crc([...header.skip(1), ...payload, wireExtra]);
+    final clear = [...header, ...payload, crc & 0xFF, crc >> 8];
+    final packets = MavFrameParser().addBytes(encodeWireFrame(clear));
+
+    expect(packets, hasLength(1));
+    expect(packets.single.message, isA<KppGpsDetail>());
+    expect((packets.single.message as KppGpsDetail).gpsSats, 14);
+    expect(MavFrameParser.discoveredGpsDetailCrcExtra, wireExtra);
   });
 
   test('every message round-trips through a serial frame', () {

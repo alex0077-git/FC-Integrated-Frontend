@@ -50,6 +50,7 @@ class FlightCommandRepository {
     });
   }
 
+  /// Instant land on the live K++ (USB serial or wireless). Rejects simulator.
   Future<void> land() {
     return _run((session) async {
       _requireLiveSession(session);
@@ -78,7 +79,14 @@ class FlightCommandRepository {
     try {
       await session.missions.upload(items);
       if (!session.telemetry.current.armed) {
-        await session.commands.arm();
+        try {
+          await session.commands.arm();
+        } on CommandException catch (error) {
+          // K++ APP jobs auto-unlock; continue into Auto if arm cmd is unsupported.
+          if (!error.message.contains('unsupported') && !error.message.contains('stick-arm')) {
+            rethrow;
+          }
+        }
       }
       await session.commands.setMode(CopterMode.auto);
       try {
@@ -132,15 +140,22 @@ class FlightCommandRepository {
     }
   }
 
-  /// Same bar as the UI: best of GPS1/GPS2, 3D+ fix, ≥6 sats, live lat/lon.
+  /// Same bar as the UI: RAW 3D+ or K++ quality Good/RTK, ≥6 sats, live lat/lon.
   static String? _gpsNotReadyReason(FcTelemetry telemetry) {
     final fix = _max(telemetry.gpsFixType, telemetry.gps2FixType);
-    final sats = _max(telemetry.satellites, telemetry.gps2Satellites);
+    final liveSats = telemetry.displaySatellites;
+    final sats = liveSats ?? _max(telemetry.satellites, telemetry.gps2Satellites);
     final hasPosition = telemetry.latDeg != null && telemetry.lonDeg != null;
-    final label = FcTelemetry.fixLabelFor(fix == 0 ? null : fix);
+    final quality = telemetry.gpsQuality;
+    final qualityOk = quality != null && quality >= 4;
+    final label = fix >= 2
+        ? FcTelemetry.fixLabelFor(fix)
+        : (quality != null
+            ? FcTelemetry.observedQualityLabel(quality)
+            : FcTelemetry.fixLabelFor(fix == 0 ? null : fix));
 
-    if (fix < 3) {
-      return 'GPS is $label · $sats sats. Need a 3D fix (or better) before arming.';
+    if (fix < 3 && !qualityOk) {
+      return 'GPS is $label · $sats sats. Need Good GPS quality (or a 3D fix) before arming.';
     }
     if (sats < 6) {
       return 'GPS is $label with only $sats satellites. Need at least 6 sats outdoors before arming.';

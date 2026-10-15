@@ -353,20 +353,6 @@ class _HudBar extends StatelessWidget {
   final VoidCallback onLand;
   final void Function(int mode) onMode;
 
-  /// Prefer the stronger of GPS1 / GPS2 (agri puck is usually GPS2 on K++).
-  static String _bestGpsLabel(FcTelemetry t) {
-    final g1 = t.gpsFixType ?? 0;
-    final g2 = t.gps2FixType ?? 0;
-    return FcTelemetry.fixLabelFor(g1 >= g2 ? t.gpsFixType : t.gps2FixType);
-  }
-
-  static String _bestGpsSats(FcTelemetry t) {
-    final s1 = t.satellites ?? 0;
-    final s2 = t.gps2Satellites ?? 0;
-    final best = s1 >= s2 ? s1 : s2;
-    return best > 0 ? '$best' : '—';
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = KppLocalizations.of(context);
@@ -394,7 +380,8 @@ class _HudBar extends StatelessWidget {
             Flexible(
               child: Text(
                 '${telemetry.armed ? l10n.armed : l10n.disarmed}  ·  $modeLabel()  ·  '
-                'GPS ${_bestGpsLabel(telemetry)} (${_bestGpsSats(telemetry)} sats)  ·  '
+                // Observed quality + 207 sats (not RAW fixType — often "No fix" on agri).
+                'GPS ${telemetry.gpsQualitySatsDisplay}  ·  '
                 '${telemetry.voltage == null ? '— V' : '${telemetry.voltage!.toStringAsFixed(1)} V'}  ·  '
                 'Alt ${telemetry.altMeters == null ? '—' : '${telemetry.altMeters!.toStringAsFixed(1)} m'}',
                 style: Theme.of(context).textTheme.bodyMedium,

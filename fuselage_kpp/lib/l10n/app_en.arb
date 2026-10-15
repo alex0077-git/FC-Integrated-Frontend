@@ -136,7 +136,7 @@
   "armed": "ARMED",
   "disarmed": "Disarmed",
   "notConnected": "Not connected",
-  "notConnectedHint": "Choose a COM port (or the simulator) in the bar above and press Connect.",
+  "notConnectedHint": "Connect the flight controller first (USB or transmitter BT/WiFi) in the bar above, then press Connect. Plugging in the GPS puck alone is not enough.",
   "cardFrameType": "Frame type",
   "frameTypeSubtitle": "Same as K++ assistant: yellow arm = nose, M1–M8 = FC ports, red CW / blue CCW = propeller spin. Writes FRAME and SHAPE.",
   "cardImuGpsMounting": "IMU & GPS mounting",

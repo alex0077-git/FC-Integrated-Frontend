@@ -13,13 +13,12 @@ import 'package:fuselage_kpp/data/params/param_catalog.dart';
 class SimulatedFcLink implements FcLink {
   SimulatedFcLink({this.paramBatchInterval = const Duration(milliseconds: 5)});
 
-  static const int sensorFlags = _gyro | _accel | _mag | _baro | _gps | _gps2;
+  // No GPS bits / frames — simulator must not invent a Normal GPS row.
+  static const int sensorFlags = _gyro | _accel | _mag | _baro;
   static const int _gyro = 1;
   static const int _accel = 2;
   static const int _mag = 4;
   static const int _baro = 8;
-  static const int _gps = 32;
-  static const int _gps2 = 0x400000;
   static const List<int> _logSizes = [12600, 48000, 3150];
   static const Duration _heartbeatInterval = Duration(seconds: 1);
 
@@ -110,6 +109,10 @@ class SimulatedFcLink implements FcLink {
         _sendLogData(logId, offset, count);
       case CommandLong(:final command, :final param1, :final param2):
         _handleCommand(command, param1, param2);
+      case SetMode(:final baseMode, :final customMode):
+        _customMode = customMode;
+        _baseMode = baseMode;
+        _send(Heartbeat(type: 2, autopilot: 3, customMode: _customMode, baseMode: _baseMode, systemStatus: 3));
       case MissionRequestList():
         _send(MissionCount(count: _mission.length, targetSystem: 255, targetComponent: 190));
       case MissionRequestInt(:final seq):
@@ -148,6 +151,7 @@ class SimulatedFcLink implements FcLink {
       case MavCmd.doSetMode:
         _customMode = param2.round();
         _send(CommandAck(command: command, result: MavResult.accepted));
+        _send(Heartbeat(type: 2, autopilot: 3, customMode: _customMode, baseMode: _baseMode, systemStatus: 3));
       case MavCmd.componentArmDisarm:
         final arm = param1 >= 0.5;
         _baseMode = arm ? (_baseMode | 128) : (_baseMode & ~128);
@@ -223,7 +227,6 @@ class SimulatedFcLink implements FcLink {
         batteryRemaining: 82,
       ),
     );
-    _send(const GpsRawInt(latE7: 129716000, lonE7: 775946000, altMm: 920000, eph: 80, fixType: 6, satellites: 21));
     for (var instance = 0; instance < 3; instance++) {
       _send(
         ImuSample(

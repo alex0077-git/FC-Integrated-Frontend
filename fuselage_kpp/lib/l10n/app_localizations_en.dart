@@ -305,7 +305,7 @@ class KppLocalizationsEn extends KppLocalizations {
 
   @override
   String get notConnectedHint =>
-      'Choose a COM port (or the simulator) in the bar above and press Connect.';
+      'Connect the flight controller first (USB or transmitter BT/WiFi) in the bar above, then press Connect. Plugging in the GPS puck alone is not enough.';
 
   @override
   String get cardFrameType => 'Frame type';

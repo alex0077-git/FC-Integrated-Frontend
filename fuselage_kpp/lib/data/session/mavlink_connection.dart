@@ -26,7 +26,11 @@ class MavlinkConnection {
   int _bytesReceived = 0;
   int _targetSystem = 1;
   int _targetComponent = 1;
+  int _lastBaseMode = 0;
+  int _lastCustomMode = 0;
   DateTime? _lastPacketAt;
+
+  static const int _baseModeArmed = 128;
 
   Stream<MavPacket> get packets => _packets.stream;
 
@@ -37,6 +41,9 @@ class MavlinkConnection {
 
   int get targetSystem => _targetSystem;
   int get targetComponent => _targetComponent;
+  int get lastBaseMode => _lastBaseMode;
+  int get lastCustomMode => _lastCustomMode;
+  bool get heartbeatArmed => (_lastBaseMode & _baseModeArmed) != 0;
   int get bytesReceived => _bytesReceived;
   int get rejectedFrames => _parser.rejectedFrames;
   DateTime? get lastPacketAt => _lastPacketAt;
@@ -72,8 +79,11 @@ class MavlinkConnection {
     for (final packet in _parser.addBytes(bytes)) {
       _lastPacketAt = DateTime.now();
       if (packet.message is Heartbeat && packet.systemId != _gcsSystemId) {
+        final hb = packet.message as Heartbeat;
         _targetSystem = packet.systemId;
         _targetComponent = packet.componentId;
+        _lastBaseMode = hb.baseMode;
+        _lastCustomMode = hb.customMode;
       }
       GpsCaptureLog.logPacket('fc', packet);
       // Unknown ids are capture-only — do not feed telemetry.

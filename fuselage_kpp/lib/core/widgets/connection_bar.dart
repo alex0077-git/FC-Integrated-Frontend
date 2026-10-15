@@ -68,9 +68,25 @@ class _ConnectionBarState extends ConsumerState<ConnectionBar> {
     });
   }
 
-  ConnectionSettings get _settings => _selectedPort == ConnectionBar.simulatorOption
-      ? const ConnectionSettings(useSimulator: true)
-      : ConnectionSettings(useSimulator: false, portName: _selectedPort, baudRate: _baudRate);
+  /// If the Port dropdown picks a Bluetooth COM, use the resilient BT MAVLink path
+  /// (same as the Transmitter → Bluetooth button). Treating it as USB was why
+  /// COM4 showed “check the cable” with 0 bytes.
+  ConnectionSettings get _settings {
+    if (_selectedPort == ConnectionBar.simulatorOption) {
+      return const ConnectionSettings(useSimulator: true);
+    }
+    SerialPortInfo? info;
+    for (final p in _ports) {
+      if (p.name == _selectedPort) {
+        info = p;
+        break;
+      }
+    }
+    if (info != null && isBluetoothSerialPort(info)) {
+      return ConnectionSettings.bluetooth(portName: _selectedPort, baudRate: _baudRate);
+    }
+    return ConnectionSettings(useSimulator: false, portName: _selectedPort, baudRate: _baudRate);
+  }
 
   Future<void> _connectBluetooth() async {
     final id = _selectedBtId;
@@ -78,7 +94,7 @@ class _ConnectionBarState extends ConsumerState<ConnectionBar> {
       return;
     }
     await ref.read(fcConnectionProvider.notifier).connect(
-      ConnectionSettings.bluetooth(portName: id),
+      ConnectionSettings.bluetooth(portName: id, baudRate: _baudRate),
     );
   }
 

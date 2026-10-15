@@ -14,8 +14,6 @@ import 'package:fuselage_kpp/l10n/app_localizations.dart';
 class OverviewPage extends ConsumerWidget {
   const OverviewPage({super.key});
 
-  static const int _goodSatellites = 12;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = KppLocalizations.of(context);
@@ -34,7 +32,15 @@ class OverviewPage extends ConsumerWidget {
               spacing: 12,
               runSpacing: 12,
               children: [
-                for (final sensor in FcSensor.values) _sensorTile(l10n, sensor, telemetry.healthOf(sensor)),
+                for (final sensor in FcSensor.values)
+                  if (sensor == FcSensor.gps)
+                    StatusTile(
+                      label: _sensorName(l10n, sensor),
+                      value: telemetry.statusGpsSensorValue,
+                      level: _gpsQualityToneLevel(telemetry.statusGpsSensorTone),
+                    )
+                  else
+                    _sensorTile(l10n, sensor, telemetry.healthOf(sensor)),
               ],
             ),
           ),
@@ -54,31 +60,54 @@ class OverviewPage extends ConsumerWidget {
               spacing: 12,
               runSpacing: 12,
               children: [
-                StatusTile(label: l10n.gps1, value: telemetry.gpsFixLabel, level: _fixLevel(telemetry.gpsFixType)),
                 StatusTile(
-                  label: l10n.gps1Sats,
-                  value: _satText(telemetry.satellites),
-                  level: _satLevel(telemetry.satellites),
+                  label: 'GPS quality',
+                  value: telemetry.gpsQualityLabel,
+                  level: _gpsQualityToneLevel(telemetry.statusGpsSensorTone),
                 ),
-                StatusTile(label: l10n.gps2, value: telemetry.gps2FixLabel, level: _fixLevel(telemetry.gps2FixType)),
                 StatusTile(
-                  label: l10n.gps2Sats,
-                  value: _satText(telemetry.gps2Satellites),
-                  level: _satLevel(telemetry.gps2Satellites),
+                  label: 'Satellites',
+                  value: telemetry.statusSatellitesValue,
+                  level: _gpsQualityToneLevel(telemetry.statusSatellitesTone),
                 ),
                 StatusTile(
                   label: l10n.position,
-                  value: telemetry.latDeg == null || telemetry.lonDeg == null
-                      ? '—'
-                      : '${telemetry.latDeg!.toStringAsFixed(7)}, ${telemetry.lonDeg!.toStringAsFixed(7)}',
-                  level: telemetry.latDeg == null ? StatusLevel.unknown : StatusLevel.good,
+                  value: telemetry.statusPositionValue,
+                  level: _gpsQualityToneLevel(telemetry.statusPositionTone),
                 ),
                 StatusTile(
                   label: l10n.altitude,
                   value: telemetry.altMeters == null ? '—' : '${telemetry.altMeters!.toStringAsFixed(1)} m',
                   level: StatusLevel.unknown,
                 ),
-                StatusTile(label: l10n.hdop, value: telemetry.hdop?.toStringAsFixed(2) ?? '—', level: StatusLevel.unknown),
+                if (telemetry.hasFreshStandardGpsDetail) ...[
+                  StatusTile(label: l10n.gps1, value: telemetry.gpsFixLabel, level: _fixLevel(telemetry.gpsFixType)),
+                  StatusTile(
+                    label: l10n.gps1Sats,
+                    value: _satText(telemetry.gpsRawIntReceivedAt == null ? null : telemetry.satellites),
+                    level: _satLevel(telemetry.gpsRawIntReceivedAt == null ? null : telemetry.satellites),
+                  ),
+                  StatusTile(label: l10n.gps2, value: telemetry.gps2FixLabel, level: _fixLevel(telemetry.gps2FixType)),
+                  StatusTile(
+                    label: l10n.gps2Sats,
+                    value: _satText(telemetry.gps2Satellites),
+                    level: _satLevel(telemetry.gps2Satellites),
+                  ),
+                  StatusTile(
+                    label: l10n.hdop,
+                    value: telemetry.hdop?.toStringAsFixed(2) ?? '—',
+                    level: StatusLevel.unknown,
+                  ),
+                ] else
+                  SizedBox(
+                    width: StatusTile.width * 2 + 12,
+                    child: Text(
+                      'GPS1/GPS2 detail not reported by this firmware',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.65),
+                          ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -146,26 +175,33 @@ class OverviewPage extends ConsumerWidget {
   static const int _min3dFix = 3;
 
   static StatusLevel _fixLevel(int? fixType) => switch (fixType) {
-    null => StatusLevel.unknown,
-    >= _min3dFix => StatusLevel.good,
-    _ => StatusLevel.critical,
-  };
+        null => StatusLevel.unknown,
+        >= _min3dFix => StatusLevel.good,
+        _ => StatusLevel.critical,
+      };
 
-  static String _satText(int? satellites) =>
-      (satellites == null || satellites == 0) ? '—' : satellites.toString();
+  /// null → "—" (stale / no value).
+  static String _satText(int? satellites) => satellites == null ? '—' : satellites.toString();
 
   static StatusLevel _satLevel(int? satellites) {
-    if (satellites == null || satellites == 0) {
+    if (satellites == null) {
       return StatusLevel.unknown;
     }
-    if (satellites >= _goodSatellites) {
+    if (satellites >= 6) {
       return StatusLevel.good;
     }
     if (satellites > 0) {
       return StatusLevel.warning;
     }
-    return StatusLevel.critical;
+    return StatusLevel.unknown;
   }
+
+  static StatusLevel _gpsQualityToneLevel(GpsQualityTone tone) => switch (tone) {
+        GpsQualityTone.grey => StatusLevel.unknown,
+        GpsQualityTone.amber => StatusLevel.warning,
+        GpsQualityTone.green => StatusLevel.good,
+        GpsQualityTone.blue => StatusLevel.info,
+      };
 
   static StatusLevel _voltageLevel(double? voltage, double? level1, double? level2) {
     if (voltage == null) {

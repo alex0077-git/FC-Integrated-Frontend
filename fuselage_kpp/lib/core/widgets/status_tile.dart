@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fuselage_kpp/core/theme/app_theme.dart';
 import 'package:fuselage_kpp/core/widgets/app_card.dart';
 
-enum StatusLevel { good, warning, critical, unknown }
+enum StatusLevel { good, warning, critical, unknown, info }
 
 /// Small coloured tile for one status value, like the K++ 状态检测 panel.
 class StatusTile extends StatelessWidget {
@@ -22,6 +22,7 @@ class StatusTile extends StatelessWidget {
       StatusLevel.warning => colors.statusWarning,
       StatusLevel.critical => colors.statusCritical,
       StatusLevel.unknown => Colors.grey,
+      StatusLevel.info => colors.statusInfo,
     };
     return Container(
       width: width,

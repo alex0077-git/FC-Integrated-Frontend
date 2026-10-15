@@ -30,7 +30,8 @@ void main() {
     await _pumpUntilFound(tester, find.text('Connected · Simulator'));
 
     await _pumpUntilFound(tester, find.text('Normal'));
-    expect(find.text('RTK fixed'), findsOneWidget);
+    // Simulator has no GPS hardware — must not show mock RTK / coords.
+    expect(find.text('RTK fixed'), findsNothing);
     expect(find.text('221014'), findsOneWidget);
 
     await tester.tap(find.text('Gains'));

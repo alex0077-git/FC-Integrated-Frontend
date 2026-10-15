@@ -1,5 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fuselage_kpp/data/mavlink/mavlink_messages.dart';
+import 'package:fuselage_kpp/data/mavlink/payload_buffer.dart';
 import 'package:fuselage_kpp/data/session/fc_telemetry.dart';
 
 void main() {
@@ -85,16 +88,27 @@ void main() {
     expect(withMag.healthOf(FcSensor.compass), SensorHealth.healthy);
   });
 
-  test('msgid 203 with position marks GPS Normal even without sat tail', () {
+  test('msgid 203 with real position marks GPS Normal; fix stays No data', () {
     final telemetry = const FcTelemetry().apply(
       const KppGpsPosition(latE7: 100558451, lonE7: 763549900, altMm: -2500),
     );
     expect(telemetry.latDeg, isNotNull);
     expect(telemetry.healthOf(FcSensor.gps), SensorHealth.healthy);
-    expect(telemetry.gpsFixLabel, 'Position lock');
+    // Coords alone are not a fake fix enum.
+    expect(telemetry.gpsFixLabel, 'No data');
   });
 
-  test('GLOBAL_POSITION with coords shows Position lock (not fake 3D)', () {
+  test('msgid 203 with 0,0 alone is Not connected (same zeros when unplugged)', () {
+    final telemetry = const FcTelemetry().apply(
+      const KppGpsPosition(latE7: 0, lonE7: 0, altMm: -2500),
+    );
+
+    expect(telemetry.latDeg, isNull);
+    expect(telemetry.gpsAgriLinked, isFalse);
+    expect(telemetry.healthOf(FcSensor.gps), SensorHealth.notConnected);
+  });
+
+  test('GLOBAL_POSITION with coords does not invent a fix label', () {
     final telemetry = const FcTelemetry().apply(
       const GlobalPositionInt(
         latE7: 100554956,
@@ -108,11 +122,11 @@ void main() {
       ),
     );
     expect(telemetry.latDeg, closeTo(10.0554956, 1e-7));
-    expect(telemetry.gpsFixLabel, 'Position lock');
+    expect(telemetry.gpsFixLabel, 'No data');
     expect(telemetry.healthOf(FcSensor.gps), SensorHealth.healthy);
   });
 
-  test('GPS_STATUS satellites fill GPS1 sats when RAW is quiet', () {
+  test('GPS_STATUS does not invent sats or 3D fix', () {
     final telemetry = const FcTelemetry()
         .apply(
           const GlobalPositionInt(
@@ -127,8 +141,8 @@ void main() {
           ),
         )
         .apply(const GpsStatus(satellitesVisible: 16));
-    expect(telemetry.satellites, 16);
-    expect(telemetry.gpsFixLabel, '3D fix');
+    expect(telemetry.satellites, isNull);
+    expect(telemetry.gpsFixLabel, 'No data');
   });
 
   test('RAW with 0 sats does not stick as 0 sats', () {
@@ -144,16 +158,16 @@ void main() {
         hdgCdeg: 0,
       ),
     );
-    expect(telemetry.gpsFixLabel, 'Position lock');
+    expect(telemetry.gpsFixLabel, 'No data');
 
     telemetry = telemetry.apply(
       const GpsRawInt(latE7: 0, lonE7: 0, altMm: 0, eph: 0xFFFF, fixType: 3, satellites: 0),
     );
-    expect(telemetry.gpsFixLabel, 'Position lock');
+    expect(telemetry.gpsFixLabel, 'No data');
     expect(telemetry.satellites, isNull);
   });
 
-  test('msgid 206 is ignored even when it claims DGPS', () {
+  test('206 publishes quality grade while keeping live lat/lon (not sat count)', () {
     final telemetry = const FcTelemetry()
         .apply(
           const GlobalPositionInt(
@@ -167,13 +181,17 @@ void main() {
             hdgCdeg: 0,
           ),
         )
-        .apply(const KppGpsStatus(fixType: 4, satellites: 2, fixType2: 1, satellites2: 1));
+        .apply(const KppGpsStatus(fixType: 0, satellites: 3));
 
-    expect(telemetry.gpsFixLabel, 'Position lock');
+    expect(telemetry.latDeg, isNotNull);
+    expect(telemetry.gpsQuality, 3);
     expect(telemetry.satellites, isNull);
+    expect(telemetry.gpsFixType, isNull);
+    expect(telemetry.gpsQualityLabel, 'Poor');
+    expect(telemetry.gpsAgriLinked, isTrue);
   });
 
-  test('stub 206 does not wipe RAW sat counts or lat/lon', () {
+  test('live 206 sets quality without wiping RAW sat count; keeps lat/lon', () {
     var telemetry = const FcTelemetry().apply(
       const GpsRawInt(
         latE7: 129716000,
@@ -187,7 +205,7 @@ void main() {
     expect(telemetry.healthOf(FcSensor.gps), SensorHealth.healthy);
 
     telemetry = telemetry
-        .apply(const KppGpsStatus(fixType: 1, satellites: 4, fixType2: 2, satellites2: 1))
+        .apply(const KppGpsStatus(fixType: 0, satellites: 4))
         .apply(
           const GlobalPositionInt(
             latE7: 0,
@@ -201,49 +219,143 @@ void main() {
           ),
         );
 
-    // Assistant-quality RAW counts must survive the interleaved 206 stub.
+    expect(telemetry.gpsQuality, 4);
     expect(telemetry.satellites, 14);
-    expect(telemetry.gpsFixType, 3);
+    expect(telemetry.gps2Satellites, isNull);
     expect(telemetry.healthOf(FcSensor.gps), SensorHealth.healthy);
     expect(telemetry.latDeg, closeTo(12.9716, 1e-6));
     expect(telemetry.lonDeg, closeTo(77.5946, 1e-6));
   });
 
-  test('good GPS2_RAW sats survive stub 206', () {
+  test('206 quality does not clear GPS2_RAW slots', () {
     var telemetry = const FcTelemetry().apply(
       const Gps2Raw(latE7: 100558451, lonE7: 763549900, altMm: 920000, eph: 90, fixType: 3, satellites: 16),
     );
     telemetry = telemetry.apply(
-      const KppGpsStatus(fixType: 1, satellites: 4, fixType2: 2, satellites2: 1),
+      const KppGpsStatus(fixType: 0, satellites: 4),
     );
 
+    expect(telemetry.gpsQuality, 4);
     expect(telemetry.gps2Satellites, 16);
     expect(telemetry.gps2FixType, 3);
-    // Weak 206 must not seed GPS1 either.
-    expect(telemetry.satellites, isNull);
-    expect(telemetry.gpsFixType, isNull);
   });
 
-  test('weak 206 alone does not seed Overview sat tiles', () {
-    final telemetry = const FcTelemetry().apply(
-      const KppGpsStatus(fixType: 1, satellites: 4, fixType2: 2, satellites2: 1),
+  test('plugged 206 shows quality grade from byte[2] (not sat count)', () {
+    // Wire 000104020101 → quality=4
+    final bytes = Uint8List.fromList([0, 1, 4, 2, 1, 1]);
+    final msg = KppGpsStatus.messageSpec.decode(
+      PayloadReader(bytes, KppGpsStatus.messageSpec.fullLength),
+    ) as KppGpsStatus;
+    expect(msg.quality, 4);
+    expect(msg.fixType, 0);
+    final plugged = const FcTelemetry().apply(msg);
+    expect(plugged.gpsAgriLinked, isTrue);
+    expect(plugged.healthOf(FcSensor.gps), SensorHealth.healthy);
+    expect(plugged.gpsQuality, 4);
+    expect(plugged.satellites, isNull);
+    expect(plugged.gpsQualityLabel, 'Good');
+  });
+
+  test('unplugged 206 stub 00-01-00-00-01-01 is Not connected', () {
+    final bytes = Uint8List.fromList([0, 1, 0, 0, 1, 1]);
+    final msg = KppGpsStatus.messageSpec.decode(
+      PayloadReader(bytes, KppGpsStatus.messageSpec.fullLength),
+    ) as KppGpsStatus;
+    expect(msg.fixType, 0);
+    expect(msg.satellites, 0);
+
+    final telemetry = const FcTelemetry(
+      gpsAgriLinked: true,
+      latDeg: 12.97,
+      lonDeg: 77.59,
+      satellites: 14,
+      gpsFixType: 3,
+    ).apply(msg);
+    expect(telemetry.gpsAgriLinked, isFalse);
+    expect(telemetry.latDeg, isNull);
+    expect(telemetry.satellites, isNull);
+    expect(telemetry.healthOf(FcSensor.gps), SensorHealth.notConnected);
+  });
+
+  test('plug then unplug toggles GPS Normal ↔ Not connected with quality', () {
+    var telemetry = const FcTelemetry().apply(
+      const KppGpsStatus(fixType: 0, satellites: 3),
     );
+    expect(telemetry.healthOf(FcSensor.gps), SensorHealth.healthy);
+    expect(telemetry.gpsQuality, 3);
 
-    expect(telemetry.satellites, isNull);
-    expect(telemetry.gps2Satellites, isNull);
-    expect(telemetry.gpsFixType, isNull);
-    expect(telemetry.gps2FixType, isNull);
+    telemetry = telemetry.apply(
+      const KppGpsStatus(fixType: 0, satellites: 0),
+    );
+    expect(telemetry.healthOf(FcSensor.gps), SensorHealth.notConnected);
+    expect(telemetry.gpsQuality, 0);
+
+    telemetry = telemetry.apply(
+      const KppGpsStatus(fixType: 0, satellites: 2),
+    );
+    expect(telemetry.healthOf(FcSensor.gps), SensorHealth.healthy);
+    expect(telemetry.gpsQuality, 2);
   });
 
-  test('K++ msgid 203 sets exact location even when 206 looks like a stub', () {
+  test('wire 206 00-01-01-03-01-01 is quality=1 (not sat count)', () {
+    final bytes = Uint8List.fromList([0, 1, 1, 3, 1, 1]);
+    final msg = KppGpsStatus.messageSpec.decode(
+      PayloadReader(bytes, KppGpsStatus.messageSpec.fullLength),
+    ) as KppGpsStatus;
+    expect(msg.quality, 1);
+    final telemetry = const FcTelemetry().apply(msg);
+    expect(telemetry.gpsQuality, 1);
+    expect(telemetry.satellites, isNull);
+    expect(telemetry.gpsQualityLabel, 'No fix');
+  });
+
+  test('K++ msgid 203 sets exact location with 206 quality grade', () {
     final telemetry = const FcTelemetry()
-        .apply(const KppGpsStatus(fixType: 1, satellites: 4, fixType2: 2, satellites2: 1))
+        .apply(const KppGpsStatus(fixType: 0, satellites: 4))
         .apply(const KppGpsPosition(latE7: 100558451, lonE7: 763549900, altMm: -2500));
 
-    expect(telemetry.gpsFixLabel, 'Position lock');
+    expect(telemetry.gpsQuality, 4);
+    expect(telemetry.satellites, isNull);
+    expect(telemetry.gpsFixLabel, 'No data');
     expect(telemetry.gps2FixLabel, 'No data');
+    expect(telemetry.gpsQualityLabel, 'Good');
     expect(telemetry.latDeg, closeTo(10.0558451, 1e-7));
     expect(telemetry.lonDeg, closeTo(76.35499, 1e-5));
+    expect(telemetry.healthOf(FcSensor.gps), SensorHealth.healthy);
+  });
+
+  test('outdoor RAW with 3 sats shows GPS Normal (not Not connected)', () {
+    final telemetry = const FcTelemetry().apply(
+      const GpsRawInt(
+        latE7: 100558451,
+        lonE7: 763549900,
+        altMm: 920000,
+        eph: 120,
+        fixType: 3,
+        satellites: 3,
+      ),
+    );
+
+    expect(telemetry.gpsFixType, 3);
+    expect(telemetry.satellites, 3);
+    expect(telemetry.healthOf(FcSensor.gps), SensorHealth.healthy);
+    expect(telemetry.latDeg, isNotNull);
+  });
+
+  test('3D fix with sats but zero lat/lon still marks GPS connected', () {
+    final telemetry = const FcTelemetry().apply(
+      const Gps2Raw(
+        latE7: 0,
+        lonE7: 0,
+        altMm: 0,
+        eph: 0xFFFF,
+        fixType: 3,
+        satellites: 5,
+      ),
+    );
+
+    expect(telemetry.gps2FixType, 3);
+    expect(telemetry.gps2Satellites, 5);
     expect(telemetry.healthOf(FcSensor.gps), SensorHealth.healthy);
   });
 
@@ -262,7 +374,7 @@ void main() {
     );
 
     expect(telemetry.latDeg, closeTo(10.0558451, 1e-7));
-    expect(telemetry.gpsFixLabel, 'Position lock');
+    expect(telemetry.gpsFixLabel, 'No data');
     expect(telemetry.satellites, isNull);
     expect(telemetry.gps2Satellites, isNull);
     expect(telemetry.healthOf(FcSensor.gps), SensorHealth.healthy);
@@ -270,7 +382,7 @@ void main() {
 
   test('position does not blink when 203 is followed by 0,0 GLOBAL or dead RAW', () {
     var telemetry = const FcTelemetry()
-        .apply(const KppGpsStatus(fixType: 1, satellites: 4, fixType2: 2, satellites2: 1))
+        .apply(const KppGpsStatus(fixType: 0, satellites: 4))
         .apply(const KppGpsPosition(latE7: 100558451, lonE7: 763549900, altMm: -2500));
 
     telemetry = telemetry.apply(
@@ -286,6 +398,7 @@ void main() {
       ),
     );
     expect(telemetry.latDeg, closeTo(10.0558451, 1e-7));
+    expect(telemetry.gpsQuality, 4);
 
     telemetry = telemetry.apply(
       const Gps2Raw(latE7: 0, lonE7: 0, altMm: 0, eph: 0xFFFF, fixType: 2, satellites: 1),
@@ -297,9 +410,9 @@ void main() {
     expect(telemetry.gps2Satellites, isNull);
   });
 
-  test('K++ status 206 with fix=1 and few sats is Not connected (unplugged stub)', () {
+  test('plugged searching 206 stays Normal with quality and 0,0 GLOBAL', () {
     final telemetry = const FcTelemetry()
-        .apply(const KppGpsStatus(fixType: 1, satellites: 1, fixType2: 1, satellites2: 3))
+        .apply(const KppGpsStatus(fixType: 0, satellites: 3))
         .apply(
           const GlobalPositionInt(
             latE7: 0,
@@ -313,10 +426,24 @@ void main() {
           ),
         );
 
-    // Weak 206 is ignored for display; without RAW the module stays Not connected.
+    expect(telemetry.gpsQuality, 3);
     expect(telemetry.satellites, isNull);
-    expect(telemetry.gps2Satellites, isNull);
-    expect(telemetry.healthOf(FcSensor.gps), SensorHealth.notConnected);
+    expect(telemetry.gpsAgriLinked, isTrue);
+    expect(telemetry.healthOf(FcSensor.gps), SensorHealth.healthy);
+  });
+
+  test('unplugged 206 quality=0 stays Not connected', () {
+    final live = const FcTelemetry().apply(
+      const KppGpsStatus(fixType: 0, satellites: 4),
+    );
+    expect(live.gpsAgriLinked, isTrue);
+    expect(live.gpsQuality, 4);
+
+    final dead = const FcTelemetry().apply(
+      const KppGpsStatus(fixType: 0, satellites: 0),
+    );
+    expect(dead.gpsAgriLinked, isFalse);
+    expect(dead.healthOf(FcSensor.gps), SensorHealth.notConnected);
   });
 
   test('compass follows GPS puck — mag samples alone are not Normal', () {
@@ -379,9 +506,14 @@ void main() {
     expect(telemetry.gpsFixLabel, 'No fix');
   });
 
-  test('2D fix alone is Normal even with few sats', () {
+  test('2D fix with sats is Normal', () {
     final telemetry = const FcTelemetry(gpsFixType: 2, satellites: 2);
     expect(telemetry.healthOf(FcSensor.gps), SensorHealth.healthy);
+  });
+
+  test('fix enum alone without sats is Not connected', () {
+    final telemetry = const FcTelemetry(gpsFixType: 3);
+    expect(telemetry.healthOf(FcSensor.gps), SensorHealth.notConnected);
   });
 
   test('GPS2_RAW updates GPS2 slots only (agri puck)', () {
@@ -408,15 +540,5 @@ void main() {
     expect(telemetry.gpsFixType, 3);
     expect(telemetry.gps2Satellites, 18);
     expect(telemetry.gps2FixType, 6);
-  });
-
-  test('msgid 206 ignored for sat tiles until layout is wire-proven', () {
-    final telemetry = const FcTelemetry().apply(
-      const KppGpsStatus(fixType: 3, satellites: 14, fixType2: 6, satellites2: 18),
-    );
-
-    expect(telemetry.gpsFixLabel, 'No data');
-    expect(telemetry.satellites, isNull);
-    expect(telemetry.gps2Satellites, isNull);
   });
 }

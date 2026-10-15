@@ -13,9 +13,23 @@ class TelemetryService {
         _updates.add(next);
       }
     });
+    // Refresh UI when msgid-207 sats go stale (>3s → "—").
+    _staleTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (_updates.isClosed) {
+        return;
+      }
+      final at = _current.gpsSatsReceivedAt;
+      if (at == null) {
+        return;
+      }
+      if (DateTime.now().difference(at) > FcTelemetry.gpsSatsStaleAfter) {
+        _updates.add(_current);
+      }
+    });
   }
 
   late final StreamSubscription<Object> _subscription;
+  Timer? _staleTimer;
   final StreamController<FcTelemetry> _updates = StreamController.broadcast();
   FcTelemetry _current = const FcTelemetry();
 
@@ -24,6 +38,7 @@ class TelemetryService {
   Stream<FcTelemetry> get updates => _updates.stream;
 
   Future<void> dispose() async {
+    _staleTimer?.cancel();
     unawaited(_subscription.cancel());
     if (!_updates.isClosed) {
       unawaited(_updates.close());

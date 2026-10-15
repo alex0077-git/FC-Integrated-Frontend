@@ -53,13 +53,16 @@ void main() {
     expect(fractions.last, 1.0);
   });
 
-  test('telemetry fills in sensors, GPS, IMUs and RC channels', () async {
+  test('telemetry fills in sensors, IMUs and RC channels (no mock GPS)', () async {
     final telemetry = await session.telemetry.updates.firstWhere(
       (t) => t.rcChannels.length >= 16 && t.imus.every((i) => i != null),
     );
 
-    expect(telemetry.healthOf(FcSensor.compass), SensorHealth.healthy);
-    expect(telemetry.gpsFixLabel, 'RTK fixed');
+    // Simulator must not invent GPS / compass Normal.
+    expect(telemetry.healthOf(FcSensor.gps), SensorHealth.notConnected);
+    expect(telemetry.healthOf(FcSensor.compass), SensorHealth.notConnected);
+    expect(telemetry.latDeg, isNull);
+    expect(telemetry.satellites, isNull);
     expect(telemetry.voltage, closeTo(48.2, 0.5));
     expect(telemetry.rcChannels[10], 1100);
   });

@@ -47,6 +47,23 @@ void main() {
     expect(mapped.gpsFixLabel, 'No fix');
   });
 
+  test('mapFcTelemetry uses K++ quality when RAW fix is absent (agri)', () {
+    final source = FcTelemetry(
+      latDeg: 12.97,
+      lonDeg: 77.59,
+      gpsQuality: 4,
+      satellites: 16,
+      gpsSatsReceivedAt: DateTime.now(),
+      gpsAgriLinked: true,
+      batteryRemaining: 80,
+      customMode: 0,
+    );
+    final mapped = mapFcTelemetry(source);
+    expect(mapped.gpsCount, 16);
+    expect(mapped.gpsFixLabel, 'Good');
+    expect(mapped.hasGpsFix, isTrue);
+  });
+
   test('waypointsToMissionItems adds takeoff speed and RTL', () {
     final items = waypointsToMissionItems(const [
       Waypoint(

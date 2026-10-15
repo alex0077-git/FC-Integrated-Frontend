@@ -48,6 +48,36 @@ void main() {
       await commands.dispose();
       await connection.close();
     });
+
+    test('land sends NAV_LAND and waits for COMMAND_ACK', () async {
+      final link = SimulatedFcLink();
+      final connection = MavlinkConnection(link: link);
+      await connection.start();
+      await connection.packets.first;
+      final commands = CommandService(connection);
+      final ack = await commands.land();
+      expect(ack.command, MavCmd.navLand);
+      expect(ack.result, MavResult.accepted);
+      final hb = await connection.messagesOf<Heartbeat>().firstWhere(
+            (h) => h.type != Heartbeat.typeGcs && h.customMode == CopterMode.land,
+          );
+      expect(hb.customMode, CopterMode.land);
+      await commands.dispose();
+      await connection.close();
+    });
+
+    test('returnToLaunch sends NAV_RTL and waits for COMMAND_ACK', () async {
+      final link = SimulatedFcLink();
+      final connection = MavlinkConnection(link: link);
+      await connection.start();
+      await connection.packets.first;
+      final commands = CommandService(connection);
+      final ack = await commands.returnToLaunch();
+      expect(ack.command, MavCmd.navReturnToLaunch);
+      expect(ack.result, MavResult.accepted);
+      await commands.dispose();
+      await connection.close();
+    });
   });
 
   group('MissionService', () {

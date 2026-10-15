@@ -1,30 +1,44 @@
 import 'package:flutter/material.dart';
 
 class AppStatusColors extends ThemeExtension<AppStatusColors> {
-  const AppStatusColors({required this.statusGood, required this.statusWarning, required this.statusCritical});
+  const AppStatusColors({
+    required this.statusGood,
+    required this.statusWarning,
+    required this.statusCritical,
+    required this.statusInfo,
+  });
 
   static const AppStatusColors dark = AppStatusColors(
     statusGood: Color(0xFF22C55E),
     statusWarning: Color(0xFFF59E0B),
     statusCritical: Color(0xFFEF4444),
+    statusInfo: Color(0xFF3B82F6),
   );
 
   static const AppStatusColors light = AppStatusColors(
     statusGood: Color(0xFF16A34A),
     statusWarning: Color(0xFFD97706),
     statusCritical: Color(0xFFDC2626),
+    statusInfo: Color(0xFF2563EB),
   );
 
   final Color statusGood;
   final Color statusWarning;
   final Color statusCritical;
+  final Color statusInfo;
 
   @override
-  AppStatusColors copyWith({Color? statusGood, Color? statusWarning, Color? statusCritical}) {
+  AppStatusColors copyWith({
+    Color? statusGood,
+    Color? statusWarning,
+    Color? statusCritical,
+    Color? statusInfo,
+  }) {
     return AppStatusColors(
       statusGood: statusGood ?? this.statusGood,
       statusWarning: statusWarning ?? this.statusWarning,
       statusCritical: statusCritical ?? this.statusCritical,
+      statusInfo: statusInfo ?? this.statusInfo,
     );
   }
 
@@ -38,6 +52,7 @@ class AppStatusColors extends ThemeExtension<AppStatusColors> {
       statusGood: Color.lerp(statusGood, other.statusGood, t) ?? statusGood,
       statusWarning: Color.lerp(statusWarning, other.statusWarning, t) ?? statusWarning,
       statusCritical: Color.lerp(statusCritical, other.statusCritical, t) ?? statusCritical,
+      statusInfo: Color.lerp(statusInfo, other.statusInfo, t) ?? statusInfo,
     );
   }
 }

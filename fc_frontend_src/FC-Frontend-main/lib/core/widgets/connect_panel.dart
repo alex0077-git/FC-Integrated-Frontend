@@ -211,6 +211,13 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
     await ref.read(fcConnectionProvider.notifier).connect(
       ConnectionSettings.bluetooth(portName: id, baudRate: _btBaud),
     );
+    if (!mounted) {
+      return;
+    }
+    final state = ref.read(fcConnectionProvider);
+    if (state.errorMessage != null && !ref.read(telemetryConnectionProvider)) {
+      showCommandResult(context, state.errorMessage!);
+    }
   }
 
   Future<void> _connectWifi() async {
@@ -781,6 +788,22 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                         ],
                       ],
                     ),
+                  ),
+                ],
+                if (connection.status == FcLinkStatus.connecting) ...[
+                  const SizedBox(height: 12),
+                  const LinearProgressIndicator(),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Connecting… opening the link and waiting for MAVLink '
+                    '(Bluetooth: use Outgoing COM, baud 57600).',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: _disconnect,
+                    icon: const Icon(Icons.close),
+                    label: Text(l10n.cancel),
                   ),
                 ],
                 if (connection.status == FcLinkStatus.loadingParameters) ...[

@@ -29,7 +29,7 @@ List<TransmitterBluetoothDevice> listBluetoothTransmitterPorts([
   final ports = (portLister ?? SerialPortInfo.available)();
   final matches = <TransmitterBluetoothDevice>[];
   for (final port in ports) {
-    if (!_looksLikeBluetooth(port)) {
+    if (!isBluetoothSerialPort(port)) {
       continue;
     }
     matches.add(
@@ -58,7 +58,8 @@ List<TransmitterBluetoothDevice> listSerialPortsAsBluetoothCandidates([
   ];
 }
 
-bool _looksLikeBluetooth(SerialPortInfo port) {
+/// True when [port] looks like a Bluetooth SPP / RFCOMM virtual COM.
+bool isBluetoothSerialPort(SerialPortInfo port) {
   final text = '${port.name} ${port.description}'.toLowerCase();
   return text.contains('bluetooth') ||
       text.contains('bth') ||

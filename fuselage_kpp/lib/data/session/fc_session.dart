@@ -184,6 +184,18 @@ class FcSession {
 
   bool get isSimulated => connection.link is SimulatedFcLink;
 
+  /// Open USB/BT serial port name, if this session is a [SerialFcLink].
+  String? get openSerialPortName {
+    final link = _rawLink;
+    return link is SerialFcLink ? link.portName : null;
+  }
+
+  /// Baud rate of the open serial link, if any.
+  int? get openSerialBaudRate {
+    final link = _rawLink;
+    return link is SerialFcLink ? link.baudRate : null;
+  }
+
   FcLink get _rawLink {
     final link = connection.link;
     return link is LabeledFcLink ? link.inner : link;
@@ -197,6 +209,7 @@ class FcSession {
   }
 
   /// Opens the link and waits for the first valid MAVLink frame.
+  /// (Same Bluetooth path as yesterday's working build.)
   static Future<FcSession> open(ConnectionSettings settings) async {
     final connection = MavlinkConnection(link: settings.createLink());
     final session = FcSession._(connection);
@@ -298,12 +311,21 @@ class FcSession {
         return 'No data at all from $where. Power the aircraft and telemetry/WiFi bridge, '
             'confirm the host/port, and that no other GCS is using the same link.';
       }
+      if (settings.resolvedKind == FcLinkKind.bluetooth || settings.isTransmitter) {
+        return 'No data at all from $where (Bluetooth). Keep Windows → TX Connected, '
+            'power the aircraft and radio link, try the other BT COM, baud 57600.';
+      }
       return 'No data at all from $where. Check the flight battery is connected and the cable is in the FC data port.';
     }
     if (settings.isNetwork) {
       return 'Received $bytes bytes from $where but no valid MAVLink frames '
           '(${connection.rejectedFrames} rejected). '
           'Confirm the bridge is forwarding MAVLink (not a different protocol).';
+    }
+    if (settings.resolvedKind == FcLinkKind.bluetooth) {
+      return 'Received $bytes bytes from $where but no valid MAVLink frames '
+          '(${connection.rejectedFrames} rejected). '
+          'Try baud 57600 or 115200, and the other Bluetooth COM port.';
     }
     return 'Received $bytes bytes from $where but no valid serial frames '
         '(${connection.rejectedFrames} rejected). '

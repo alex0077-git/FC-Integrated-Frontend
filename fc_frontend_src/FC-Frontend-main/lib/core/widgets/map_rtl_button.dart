@@ -36,7 +36,7 @@ class _MapRtlButtonState extends ConsumerState<MapRtlButton> {
       if (!mounted) {
         return;
       }
-      showCommandResult(context, 'RTL sent to K++');
+      showCommandResult(context, 'RTL accepted by K++');
     } on FlightCommandException catch (error) {
       if (!mounted) {
         return;

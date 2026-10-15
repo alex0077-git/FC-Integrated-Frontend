@@ -12,11 +12,17 @@ class CalibrationPage extends StatelessWidget {
       children: [
         Text(l10n.calibration, style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 16),
-        const _CalibrationCard(title: 'Radio', rowLabels: ['Radio']),
+        _CalibrationCard(title: l10n.calibrationRadio, rowLabels: [l10n.calibrationRadio]),
         const SizedBox(height: 12),
-        _CalibrationCard(title: l10n.imuCalibration, rowLabels: const ['IMU 1', 'IMU 2']),
+        _CalibrationCard(
+          title: l10n.imuCalibration,
+          rowLabels: ['${l10n.calibrationImu} 1', '${l10n.calibrationImu} 2'],
+        ),
         const SizedBox(height: 12),
-        _CalibrationCard(title: l10n.compassCalibration, rowLabels: const ['Compass']),
+        _CalibrationCard(
+          title: l10n.compassCalibration,
+          rowLabels: [l10n.calibrationCompass],
+        ),
       ],
     );
   }
@@ -70,14 +76,14 @@ class _CalibrationCardState extends State<_CalibrationCard>
     _progress.forward(from: 0);
   }
 
-  String get _statusLabel {
+  String _statusLabel(AppLocalizations l10n) {
     if (_running) {
-      return 'Calibrating...';
+      return l10n.calibrationStatusCalibrating;
     }
     if (_calibrated) {
-      return 'Calibrated';
+      return l10n.calibrationStatusCalibrated;
     }
-    return 'Not calibrated';
+    return l10n.calibrationStatusNotCalibrated;
   }
 
   @override
@@ -97,7 +103,7 @@ class _CalibrationCardState extends State<_CalibrationCard>
                 child: Row(
                   children: [
                     Expanded(child: Text(label)),
-                    Text(_statusLabel),
+                    Text(_statusLabel(l10n)),
                   ],
                 ),
               ),
@@ -116,7 +122,7 @@ class _CalibrationCardState extends State<_CalibrationCard>
                 minimumSize: const Size.fromHeight(48),
               ),
               onPressed: _running ? null : _start,
-              child: Text(l10n.startCalibration),
+              child: Text(l10n.startCalibrationFull),
             ),
           ],
         ),

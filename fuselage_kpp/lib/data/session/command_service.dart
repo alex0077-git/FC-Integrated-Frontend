@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:fuselage_kpp/data/link/fc_link.dart';
 import 'package:fuselage_kpp/data/mavlink/mavlink_messages.dart';
 import 'package:fuselage_kpp/data/session/mavlink_connection.dart';
 
@@ -30,6 +31,9 @@ class CommandService {
   static const Duration _ackTimeout = Duration(seconds: 3);
   static const int _maxAttempts = 3;
 
+  /// JIYI REQUEST_DATA_STREAM uses component 0; arm/mode should match.
+  static const int _kppBroadcastComponent = 0;
+
   final MavlinkConnection _connection;
   late final StreamSubscription<CommandAck> _subscription;
   late final StreamSubscription<StatusText> _statusSubscription;
@@ -48,7 +52,9 @@ class CommandService {
     double param6 = 0,
     double param7 = 0,
     bool acceptInProgress = false,
+    int? targetComponent,
   }) async {
+    final comp = targetComponent ?? _kppBroadcastComponent;
     Object? lastError;
     for (var attempt = 0; attempt < _maxAttempts; attempt++) {
       final pending = _acks.stream
@@ -62,7 +68,7 @@ class CommandService {
         CommandLong(
           command: command,
           targetSystem: _connection.targetSystem,
-          targetComponent: _connection.targetComponent,
+          targetComponent: comp,
           param1: param1,
           param2: param2,
           param3: param3,
@@ -130,24 +136,95 @@ class CommandService {
     );
   }
 
-  Future<CommandAck> returnToLaunch() => sendCommand(command: MavCmd.navReturnToLaunch);
+  /// RTL over the live link (USB / BT / WiFi).
+  ///
+  /// K++ often ACKs MAV_CMD_NAV_RTL (20) as failed/unsupported. Fall back to
+  /// DO_SET_MODE / SET_MODE → CopterMode.rtl — the path agri GCS apps use.
+  Future<CommandAck> returnToLaunch() async {
+    try {
+      return await sendCommand(command: MavCmd.navReturnToLaunch);
+    } on CommandException catch (error) {
+      if (!_shouldFallbackToMode(error)) {
+        rethrow;
+      }
+    }
+    await _setCopterMode(CopterMode.rtl);
+    return const CommandAck(command: MavCmd.navReturnToLaunch, result: MavResult.accepted);
+  }
 
-  Future<CommandAck> land() => sendCommand(command: MavCmd.navLand);
+  /// Land over the live link (USB / BT / WiFi).
+  /// Prefer NAV_LAND (21); if failed/unsupported, SET_MODE → Land.
+  Future<CommandAck> land() async {
+    try {
+      return await sendCommand(command: MavCmd.navLand);
+    } on CommandException catch (error) {
+      if (!_shouldFallbackToMode(error)) {
+        rethrow;
+      }
+    }
+    await _setCopterMode(CopterMode.land);
+    return const CommandAck(command: MavCmd.navLand, result: MavResult.accepted);
+  }
 
-  Future<CommandAck> arm({bool force = false}) {
-    return sendCommand(
-      command: MavCmd.componentArmDisarm,
-      param1: 1,
-      param2: force ? 21196 : 0,
+  /// Arm motors. JIYI K++ usually ACKs MAV_CMD 400 as unsupported over USB —
+  /// that means the link is fine; the firmware only arms from the RC. We still
+  /// try SET_MODE + RC override, then tell the pilot to stick-arm.
+  Future<CommandAck> arm({bool force = false}) async {
+    final forceFlags = force ? const [true] : const [false, true];
+    for (final useForce in forceFlags) {
+      try {
+        return await sendCommand(
+          command: MavCmd.componentArmDisarm,
+          param1: 1,
+          param2: useForce ? 21196 : 0,
+          targetComponent: _kppBroadcastComponent,
+        );
+      } on CommandException catch (error) {
+        if (!_shouldFallbackToMode(error)) {
+          rethrow;
+        }
+      }
+    }
+
+    if (await _armViaSetMode()) {
+      return const CommandAck(command: MavCmd.componentArmDisarm, result: MavResult.accepted);
+    }
+    if (await _armViaRcStick()) {
+      return const CommandAck(command: MavCmd.componentArmDisarm, result: MavResult.accepted);
+    }
+    throw const CommandException(
+      'USB/link is OK — this K++ does not accept MAVLink Arm (cmd 400). '
+      'Arm with the RC (throttle low + yaw right), then use Takeoff / mission from the app.',
     );
   }
 
-  Future<CommandAck> disarm({bool force = false}) {
-    return sendCommand(
-      command: MavCmd.componentArmDisarm,
-      param1: 0,
-      param2: force ? 21196 : 0,
+  Future<CommandAck> disarm({bool force = false}) async {
+    try {
+      return await sendCommand(
+        command: MavCmd.componentArmDisarm,
+        param1: 0,
+        param2: force ? 21196 : 0,
+        targetComponent: _kppBroadcastComponent,
+      );
+    } on CommandException catch (error) {
+      if (!_isUnsupported(error)) {
+        rethrow;
+      }
+    }
+    // Legacy disarm: clear SAFETY_ARMED via SET_MODE.
+    final base = (_connection.lastBaseMode & ~SetMode.flagSafetyArmed) | SetMode.flagCustomModeEnabled;
+    _connection.send(
+      SetMode(
+        targetSystem: _connection.targetSystem,
+        baseMode: base & 0xFF,
+        customMode: _connection.lastCustomMode,
+      ),
     );
+    await Future<void>.delayed(const Duration(milliseconds: 400));
+    if (!_connection.heartbeatArmed) {
+      return const CommandAck(command: MavCmd.componentArmDisarm, result: MavResult.accepted);
+    }
+    throw const CommandException('Disarm was unsupported and SET_MODE did not clear the armed flag.');
   }
 
   Future<CommandAck> takeoff({required double altitudeMeters}) {
@@ -167,6 +244,93 @@ class CommandService {
     if (!_statusTexts.isClosed) {
       unawaited(_statusTexts.close());
     }
+  }
+
+  static bool _isUnsupported(CommandException error) =>
+      error.message.contains('unsupported');
+
+  /// NAV_RTL / NAV_LAND often come back failed or unsupported on K++; mode set is the real path.
+  static bool _shouldFallbackToMode(CommandException error) {
+    final m = error.message;
+    return m.contains('unsupported') || m.contains('failed') || m.contains('denied');
+  }
+
+  /// Switch flight mode via DO_SET_MODE, then raw SET_MODE if needed, until heartbeat matches.
+  Future<void> _setCopterMode(int customMode) async {
+    try {
+      await setMode(customMode);
+      if (_connection.lastCustomMode == customMode) {
+        return;
+      }
+    } on CommandException {
+      // Fall through to SET_MODE message — K++ may reject DO_SET_MODE too.
+    }
+
+    final base = (_connection.lastBaseMode | SetMode.flagCustomModeEnabled) & 0xFF;
+    _connection.send(
+      SetMode(
+        targetSystem: _connection.targetSystem,
+        baseMode: base,
+        customMode: customMode,
+      ),
+    );
+    final deadline = DateTime.now().add(const Duration(seconds: 3));
+    while (DateTime.now().isBefore(deadline)) {
+      if (_connection.lastCustomMode == customMode) {
+        return;
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    }
+    if (_connection.lastCustomMode != customMode) {
+      throw CommandException(
+        'Could not switch to ${CopterMode.label(customMode)}. '
+        'Confirm the aircraft is armed / has a home point, then try again.',
+      );
+    }
+  }
+
+  Future<bool> _armViaSetMode() async {
+    final base = _connection.lastBaseMode | SetMode.flagSafetyArmed | SetMode.flagCustomModeEnabled;
+    _connection.send(
+      SetMode(
+        targetSystem: _connection.targetSystem,
+        baseMode: base & 0xFF,
+        customMode: _connection.lastCustomMode,
+      ),
+    );
+    final deadline = DateTime.now().add(const Duration(seconds: 2));
+    while (DateTime.now().isBefore(deadline)) {
+      if (_connection.heartbeatArmed) {
+        return true;
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    }
+    return _connection.heartbeatArmed;
+  }
+
+  /// Throttle-low + yaw-right via RC_CHANNELS_OVERRIDE (JIYI radio arm gesture).
+  Future<bool> _armViaRcStick() async {
+    final arm = RcChannelsOverride.stickArm(targetSystem: _connection.targetSystem);
+    final release = RcChannelsOverride.release(targetSystem: _connection.targetSystem);
+    final deadline = DateTime.now().add(const Duration(seconds: 3));
+    while (DateTime.now().isBefore(deadline)) {
+      try {
+        _connection.send(arm);
+      } on FcLinkException {
+        break;
+      }
+      if (_connection.heartbeatArmed) {
+        break;
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    }
+    try {
+      _connection.send(release);
+    } on FcLinkException {
+      // ignore
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+    return _connection.heartbeatArmed;
   }
 
   static String _describeResult(int command, int result) {

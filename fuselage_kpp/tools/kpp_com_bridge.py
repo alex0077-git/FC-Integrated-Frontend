@@ -201,30 +201,23 @@ def decode_gps_fields(msgid: int, payload: bytes) -> dict:
                 "payload_hex": payload.hex(),
             }
         elif msgid == 206 and len(payload) >= 5:
-            # Current Fuselage layout hypothesis: [res, f1, s1, f2, s2, ...]
+            # JIYI assistant displayGps1data(fix, sats):
+            # [res, hdr, sats, fix, pad, pad]
             layouts = {
-                "skip_res": {
+                "assistant_gps1": {
                     "res": u8(payload, 0),
-                    "gps1_fix": u8(payload, 1),
+                    "hdr": u8(payload, 1),
                     "gps1_sats": u8(payload, 2),
-                    "gps2_fix": u8(payload, 3),
-                    "gps2_sats": u8(payload, 4),
-                },
-                "no_res": {
-                    "gps1_fix": u8(payload, 0),
-                    "gps1_sats": u8(payload, 1),
-                    "gps2_fix": u8(payload, 2),
-                    "gps2_sats": u8(payload, 3),
+                    "gps1_fix": u8(payload, 3),
                 },
             }
             out = {
                 "payload_hex": payload.hex(),
                 "layouts": layouts,
-                # Primary decode matching fuselage_kpp today:
-                "gps1_fix": layouts["skip_res"]["gps1_fix"],
-                "gps1_sats": layouts["skip_res"]["gps1_sats"],
-                "gps2_fix": layouts["skip_res"]["gps2_fix"],
-                "gps2_sats": layouts["skip_res"]["gps2_sats"],
+                "gps1_fix": layouts["assistant_gps1"]["gps1_fix"],
+                "gps1_sats": layouts["assistant_gps1"]["gps1_sats"],
+                "gps2_fix": 0,
+                "gps2_sats": 0,
             }
         elif msgid == 66 and len(payload) >= 6:
             rate = u16(payload, 0)

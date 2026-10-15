@@ -671,7 +671,7 @@ abstract class KppLocalizations {
   /// No description provided for @notConnectedHint.
   ///
   /// In en, this message translates to:
-  /// **'Choose a COM port (or the simulator) in the bar above and press Connect.'**
+  /// **'Connect the flight controller first (USB or transmitter BT/WiFi) in the bar above, then press Connect. Plugging in the GPS puck alone is not enough.'**
   String get notConnectedHint;
 
   /// No description provided for @cardFrameType.

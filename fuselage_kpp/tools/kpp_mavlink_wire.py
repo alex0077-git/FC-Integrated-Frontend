@@ -152,28 +152,25 @@ def decode_gps_fields(msgid: int, payload: bytes) -> dict[str, Any]:
                 "payload_hex": payload.hex(),
             }
         elif msgid == 206 and len(payload) >= 5:
+            # JIYI assistant: displayGps1data(fix, sats) from
+            # [res, hdr, sats, fix, pad, pad] — GPS1 only on agri.
             layouts = {
-                "skip_res": {
+                "assistant_gps1": {
                     "res": u8(payload, 0),
-                    "gps1_fix": u8(payload, 1),
+                    "hdr": u8(payload, 1),
                     "gps1_sats": u8(payload, 2),
-                    "gps2_fix": u8(payload, 3),
-                    "gps2_sats": u8(payload, 4),
-                },
-                "no_res": {
-                    "gps1_fix": u8(payload, 0),
-                    "gps1_sats": u8(payload, 1),
-                    "gps2_fix": u8(payload, 2),
-                    "gps2_sats": u8(payload, 3),
+                    "gps1_fix": u8(payload, 3),
+                    "pad0": u8(payload, 4) if len(payload) > 4 else None,
+                    "pad1": u8(payload, 5) if len(payload) > 5 else None,
                 },
             }
             out = {
                 "payload_hex": payload.hex(),
                 "layouts": layouts,
-                "gps1_fix": layouts["skip_res"]["gps1_fix"],
-                "gps1_sats": layouts["skip_res"]["gps1_sats"],
-                "gps2_fix": layouts["skip_res"]["gps2_fix"],
-                "gps2_sats": layouts["skip_res"]["gps2_sats"],
+                "gps1_fix": layouts["assistant_gps1"]["gps1_fix"],
+                "gps1_sats": layouts["assistant_gps1"]["gps1_sats"],
+                "gps2_fix": 0,
+                "gps2_sats": 0,
             }
         elif msgid == 66 and len(payload) >= 6:
             stream_id = u8(payload, 4)
