@@ -64,26 +64,36 @@ class MissionService {
     final total = ordered.length;
     final done = Completer<void>();
     var sent = 0;
+    // K++/ArduPilot mission handlers accept component 0 (broadcast) the same
+    // way COMMAND_LONG does; heartbeat component alone can miss on some builds.
+    final targetSystem = _connection.targetSystem;
+    const targetComponent = 0;
+
+    void sendItem(int seq) {
+      if (seq < 0 || seq >= total) {
+        if (!done.isCompleted) {
+          done.completeError(MissionException('FC requested invalid mission seq $seq'));
+        }
+        return;
+      }
+      _connection.send(
+        ordered[seq].toMav(
+          targetSystem: targetSystem,
+          targetComponent: targetComponent,
+          current: seq == 0 ? 1 : 0,
+        ),
+      );
+      sent++;
+      onProgress?.call(sent.clamp(0, total), total);
+    }
 
     late final StreamSubscription<MavMessage> sub;
     sub = _connection.messages.listen((message) {
-      if (message is MissionRequestInt) {
-        final seq = message.seq;
-        if (seq < 0 || seq >= total) {
-          if (!done.isCompleted) {
-            done.completeError(MissionException('FC requested invalid mission seq $seq'));
-          }
-          return;
-        }
-        _connection.send(
-          ordered[seq].toMav(
-            targetSystem: _connection.targetSystem,
-            targetComponent: _connection.targetComponent,
-            current: seq == 0 ? 1 : 0,
-          ),
-        );
-        sent++;
-        onProgress?.call(sent.clamp(0, total), total);
+      // Real FCs usually pull with MISSION_REQUEST (#40); some use #51.
+      if (message is MissionRequest) {
+        sendItem(message.seq);
+      } else if (message is MissionRequestInt) {
+        sendItem(message.seq);
       } else if (message is MissionAck) {
         if (message.type != MavMissionResult.accepted) {
           if (!done.isCompleted) {
@@ -96,17 +106,31 @@ class MissionService {
     });
 
     try {
-      _connection.send(
-        MissionCount(
-          count: total,
-          targetSystem: _connection.targetSystem,
-          targetComponent: _connection.targetComponent,
-        ),
-      );
-      await done.future.timeout(
-        Duration(seconds: 3 + total),
-        onTimeout: () => throw const MissionException('Mission upload timed out.'),
-      );
+      void sendCount() {
+        _connection.send(
+          MissionCount(
+            count: total,
+            targetSystem: targetSystem,
+            targetComponent: targetComponent,
+          ),
+        );
+      }
+
+      sendCount();
+      // One retransmit if the first COUNT never reaches the FC / is ignored.
+      final recount = Timer(const Duration(milliseconds: 1500), () {
+        if (!done.isCompleted && sent == 0) {
+          sendCount();
+        }
+      });
+      try {
+        await done.future.timeout(
+          Duration(seconds: 5 + total),
+          onTimeout: () => throw const MissionException('Mission upload timed out.'),
+        );
+      } finally {
+        recount.cancel();
+      }
       _items = ordered;
     } finally {
       await sub.cancel();

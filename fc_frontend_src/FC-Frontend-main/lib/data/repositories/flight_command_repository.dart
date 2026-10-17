@@ -78,22 +78,42 @@ class FlightCommandRepository {
     }
     try {
       await session.missions.upload(items);
+      var needsRcArm = false;
       if (!session.telemetry.current.armed) {
         try {
           await session.commands.arm();
         } on CommandException catch (error) {
-          // K++ APP jobs auto-unlock; continue into Auto if arm cmd is unsupported.
-          if (!error.message.contains('unsupported') && !error.message.contains('stick-arm')) {
+          // K++ rejects MAV_CMD 400; mission is already on the FC — continue.
+          if (!_isKppRcArmOnly(error.message)) {
             rethrow;
           }
+          needsRcArm = true;
         }
       }
-      await session.commands.setMode(CopterMode.auto);
+      try {
+        await session.commands.setMode(CopterMode.auto);
+      } on CommandException catch (error) {
+        if (!needsRcArm) {
+          rethrow;
+        }
+        // Disarmed K++ may refuse Auto until stick-arm; upload still succeeded.
+        throw FlightCommandException(
+          'Mission uploaded. ${error.message.isNotEmpty ? error.message : 'Set Auto after RC arm.'} '
+          'Arm with the RC (throttle low + yaw right), then set Auto / Start.',
+        );
+      }
       try {
         await session.commands.startMission();
       } on CommandException {
         // Auto mode alone starts the mission on many K++ / ArduCopter builds.
       }
+      if (needsRcArm && !session.telemetry.current.armed) {
+        throw const FlightCommandException(
+          'Mission uploaded. This K++ needs RC arm (throttle low + yaw right) before Auto will fly.',
+        );
+      }
+    } on FlightCommandException {
+      rethrow;
     } on CommandException catch (error) {
       throw FlightCommandException(error.message);
     } catch (error) {
@@ -138,6 +158,16 @@ class FlightCommandRepository {
     if (reason != null) {
       throw FlightCommandException(reason);
     }
+  }
+
+  /// True when arm failed only because this K++ is RC-stick-arm (link is fine).
+  static bool _isKppRcArmOnly(String message) {
+    final m = message.toLowerCase();
+    return m.contains('cmd 400') ||
+        m.contains('mavlink arm') ||
+        m.contains('arm with the rc') ||
+        m.contains('unsupported') ||
+        m.contains('stick-arm');
   }
 
   /// Same bar as the UI: RAW 3D+ or K++ quality Good/RTK, ≥6 sats, live lat/lon.

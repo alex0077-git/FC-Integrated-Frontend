@@ -64,7 +64,7 @@ void main() {
     expect(mapped.hasGpsFix, isTrue);
   });
 
-  test('waypointsToMissionItems adds takeoff speed and RTL', () {
+  test('waypointsToMissionItems uses home takeoff path RTL (no speed cmds)', () {
     final items = waypointsToMissionItems(const [
       Waypoint(
         id: 'a',
@@ -83,9 +83,12 @@ void main() {
         action: WaypointAction.waypoint,
       ),
     ]);
-    expect(items.first.command, MavCmd.navTakeoff);
-    expect(items.any((i) => i.command == MavCmd.doChangeSpeed), isTrue);
-    expect(items.where((i) => i.command == MavCmd.navWaypoint), hasLength(2));
+    expect(items[0].command, MavCmd.navWaypoint);
+    expect(items[0].frame, MavFrame.globalRelativeAlt);
+    expect(items[1].command, MavCmd.navTakeoff);
+    expect(items.any((i) => i.command == MavCmd.doChangeSpeed), isFalse);
+    // Home + two path waypoints.
+    expect(items.where((i) => i.command == MavCmd.navWaypoint), hasLength(3));
     expect(items.last.command, MavCmd.navReturnToLaunch);
   });
 

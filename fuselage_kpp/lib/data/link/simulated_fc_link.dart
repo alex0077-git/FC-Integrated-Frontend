@@ -126,7 +126,8 @@ class SimulatedFcLink implements FcLink {
         if (count == 0) {
           _send(const MissionAck(targetSystem: 255, targetComponent: 190, type: MavMissionResult.accepted));
         } else {
-          _send(const MissionRequestInt(seq: 0, targetSystem: 255, targetComponent: 190));
+          // Match real ArduPilot/K++: pull items with MISSION_REQUEST (#40).
+          _send(const MissionRequest(seq: 0, targetSystem: 255, targetComponent: 190));
         }
       case MissionItemInt():
         _mission[message.seq] = message;
@@ -134,7 +135,7 @@ class SimulatedFcLink implements FcLink {
           _send(const MissionAck(targetSystem: 255, targetComponent: 190, type: MavMissionResult.accepted));
           _expectingMissionCount = 0;
         } else {
-          _send(MissionRequestInt(seq: message.seq + 1, targetSystem: 255, targetComponent: 190));
+          _send(MissionRequest(seq: message.seq + 1, targetSystem: 255, targetComponent: 190));
         }
       case MissionClearAll():
         _mission.clear();

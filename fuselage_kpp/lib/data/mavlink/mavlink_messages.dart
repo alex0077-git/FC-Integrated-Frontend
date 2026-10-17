@@ -92,6 +92,7 @@ final Map<int, MavMessageSpec> mavMessageSpecs = {
     MissionCount.messageSpec,
     MissionClearAll.messageSpec,
     MissionAck.messageSpec,
+    MissionRequest.messageSpec,
     MissionRequestInt.messageSpec,
     MissionItemInt.messageSpec,
     MissionSetCurrent.messageSpec,
@@ -1658,6 +1659,35 @@ class MissionAck extends MavMessage {
     ..u8(targetSystem)
     ..u8(targetComponent)
     ..u8(type);
+}
+
+/// MISSION_REQUEST (#40) — classic item pull used by ArduPilot / K++ after MISSION_COUNT.
+class MissionRequest extends MavMessage {
+  const MissionRequest({required this.seq, required this.targetSystem, required this.targetComponent});
+
+  static final MavMessageSpec messageSpec = MavMessageSpec(
+    id: 40,
+    crcExtra: 230,
+    baseLength: 4,
+    fullLength: 4,
+    decode: (r) {
+      final seq = r.u16();
+      return MissionRequest(seq: seq, targetSystem: r.u8(), targetComponent: r.u8());
+    },
+  );
+
+  final int seq;
+  final int targetSystem;
+  final int targetComponent;
+
+  @override
+  MavMessageSpec get spec => messageSpec;
+
+  @override
+  void writeFields(PayloadWriter w) => w
+    ..u16(seq)
+    ..u8(targetSystem)
+    ..u8(targetComponent);
 }
 
 class MissionRequestInt extends MavMessage {
