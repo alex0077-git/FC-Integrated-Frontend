@@ -68,9 +68,8 @@ class _ConnectionBarState extends ConsumerState<ConnectionBar> {
     });
   }
 
-  /// If the Port dropdown picks a Bluetooth COM, use the resilient BT MAVLink path
-  /// (same as the Transmitter → Bluetooth button). Treating it as USB was why
-  /// COM4 showed “check the cable” with 0 bytes.
+  /// Port dropdown: Bluetooth SPP COMs use the TX path and prefer Outgoing
+  /// (higher COM). Selecting Incoming COM4 was freezing Connect with semaphore timeout.
   ConnectionSettings get _settings {
     if (_selectedPort == ConnectionBar.simulatorOption) {
       return const ConnectionSettings(useSimulator: true);
@@ -82,8 +81,12 @@ class _ConnectionBarState extends ConsumerState<ConnectionBar> {
         break;
       }
     }
-    if (info != null && isBluetoothSerialPort(info)) {
-      return ConnectionSettings.bluetooth(portName: _selectedPort, baudRate: _baudRate);
+    if (info != null) {
+      return ConnectionSettings.forAvailablePort(
+        info,
+        baudRate: _baudRate,
+        allPorts: _ports,
+      );
     }
     return ConnectionSettings(useSimulator: false, portName: _selectedPort, baudRate: _baudRate);
   }

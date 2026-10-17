@@ -1,9 +1,12 @@
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fuselage_kpp/data/link/fc_link.dart';
+import 'package:fuselage_kpp/data/link/serial_fc_link.dart';
 import 'package:fuselage_kpp/data/mavlink/mavlink_codec.dart';
 import 'package:fuselage_kpp/data/mavlink/mavlink_crc.dart';
 import 'package:fuselage_kpp/data/mavlink/mavlink_messages.dart';
+import 'package:fuselage_kpp/data/session/mavlink_connection.dart';
 
 /// Wire frames: clear EB MAVLink after `rotl3(clear ^ 0xDF)` (magic becomes A1).
 const _serialFrames = {
@@ -149,5 +152,45 @@ void main() {
     expect((packets[7].message as RcChannelsRaw).channels[5], 2000);
     expect((packets[9].message as LogData).data.last, 89);
     expect(parser.rejectedFrames, 0);
+  });
+
+  test('clear MAVLink-1 (WiFi/UDP) uses 0xFE magic without USB obfuscation', () {
+    final encoder = MavFrameEncoder(
+      systemId: 255,
+      componentId: 190,
+      wireMode: MavWireMode.clearMavlink1,
+    );
+    final parser = MavFrameParser(wireMode: MavWireMode.clearMavlink1);
+    final frame = encoder.encode(
+      const Heartbeat(type: Heartbeat.typeGcs, autopilot: Heartbeat.autopilotInvalid),
+    );
+    expect(frame.first, mavlink1FrameMagic);
+    final packets = parser.addBytes(frame);
+    expect(packets, hasLength(1));
+    expect(packets.single.message, isA<Heartbeat>());
+    // Obfuscated USB/BT parser must not accept clear FE frames.
+    expect(MavFrameParser().addBytes(frame), isEmpty);
+  });
+
+  test('Bluetooth SPP uses the same K++ obfuscated wire as USB', () {
+    final bt = LabeledFcLink(
+      SerialFcLink(portName: 'COM5', baudRate: 57600, resilient: true),
+      'BT COM5 @ 57600',
+    );
+    expect(MavlinkConnection.wireModeForLink(bt), MavWireMode.kppObfuscated);
+    final usb = SerialFcLink(portName: 'COM3', baudRate: 57600);
+    expect(MavlinkConnection.wireModeForLink(usb), MavWireMode.kppObfuscated);
+  });
+
+  test('RADIO_STATUS decodes on clear FE (BT radio side-channel)', () {
+    final frame = _hex('fe09bd33446d000000005f64000000ddbf');
+    final parser = MavFrameParser(wireMode: MavWireMode.clearMavlink1);
+    final packets = parser.addBytes(frame);
+    expect(packets, hasLength(1));
+    expect(packets.single.message, isA<RadioStatus>());
+    final radio = packets.single.message as RadioStatus;
+    expect(radio.rssi, 95);
+    expect(radio.remrssi, 100);
+    expect(radio.hasRemoteLink, isTrue);
   });
 }

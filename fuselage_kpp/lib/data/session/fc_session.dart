@@ -4,6 +4,7 @@ import 'package:fuselage_kpp/data/link/fc_link.dart';
 import 'package:fuselage_kpp/data/link/network_fc_link.dart';
 import 'package:fuselage_kpp/data/link/serial_fc_link.dart';
 import 'package:fuselage_kpp/data/link/simulated_fc_link.dart';
+import 'package:fuselage_kpp/data/link/transmitter_devices.dart';
 import 'package:fuselage_kpp/data/mavlink/mavlink_messages.dart';
 import 'package:fuselage_kpp/data/session/command_service.dart';
 import 'package:fuselage_kpp/data/session/log_service.dart';
@@ -26,6 +27,31 @@ class ConnectionSettings {
     this.remotePort,
     this.localPort = defaultUdpListenPort,
   });
+
+  /// Port dropdown: Bluetooth SPP COMs use the resilient TX path (not USB).
+  ///
+  /// When several BT COMs exist, prefers the higher COM (usually Outgoing) so
+  /// Connect does not hang on Incoming with "semaphore timeout".
+  factory ConnectionSettings.forAvailablePort(
+    SerialPortInfo port, {
+    int baudRate = defaultBaudRate,
+    List<SerialPortInfo> allPorts = const [],
+  }) {
+    if (isBluetoothSerialPort(port)) {
+      final preferred = allPorts.isEmpty
+          ? port
+          : preferredBluetoothSerialPort(port, allPorts);
+      return ConnectionSettings.bluetooth(
+        portName: preferred.name,
+        baudRate: baudRate,
+      );
+    }
+    return ConnectionSettings(
+      useSimulator: false,
+      portName: port.name,
+      baudRate: baudRate,
+    );
+  }
 
   /// Wireless UDP listen (GCS binds [localPort], replies to last peer).
   const ConnectionSettings.udpListen({this.localPort = defaultUdpListenPort})
@@ -100,6 +126,24 @@ class ConnectionSettings {
       resolvedKind == FcLinkKind.bluetooth ||
       resolvedKind == FcLinkKind.udp ||
       resolvedKind == FcLinkKind.tcp;
+
+  /// Other Windows SPP COM for the same paired TX (Incoming ↔ Outgoing).
+  ConnectionSettings? alternateBluetoothPort([
+    List<SerialPortInfo> Function()? portLister,
+  ]) {
+    if (resolvedKind != FcLinkKind.bluetooth) {
+      return null;
+    }
+    final failed = portName;
+    if (failed == null) {
+      return null;
+    }
+    final other = alternateBluetoothComName(failed, portLister);
+    if (other == null) {
+      return null;
+    }
+    return ConnectionSettings.bluetooth(portName: other, baudRate: baudRate);
+  }
 
   FcLink createLink() {
     switch (resolvedKind) {
@@ -208,8 +252,13 @@ class FcSession {
     return isNetworkLink || label.startsWith('BT ') || label.startsWith('TX WiFi');
   }
 
-  /// Opens the link and waits for the first valid MAVLink frame.
-  /// (Same Bluetooth path as yesterday's working build.)
+  /// Opens the link and waits for the first valid K++ serial frame.
+  ///
+  /// Subscribe to [packets] *before* [MavlinkConnection.start] — the packet
+  /// stream is broadcast, and the TX often replies within milliseconds.
+  ///
+  /// Same sequence as the working Oct-12 setup / commit 4e565e6: open → first
+  /// A1 frame → JIYI stream handshake → caller downloads parameters.
   static Future<FcSession> open(ConnectionSettings settings) async {
     final connection = MavlinkConnection(link: settings.createLink());
     final session = FcSession._(connection);
@@ -217,28 +266,36 @@ class FcSession {
         ? const Duration(seconds: 12)
         : _firstPacketTimeout;
     try {
+      // Listen before start so the first reply is not lost on a broadcast stream.
+      final ready = connection.packets.first.timeout(firstPacketTimeout);
       await connection.start();
-      await connection.packets.first.timeout(firstPacketTimeout);
+      await ready;
       session.requestTelemetryStreams();
       return session;
     } on TimeoutException {
       final diagnosis = session._noReplyDiagnosis(settings);
       await session.close();
       throw FcConnectException(diagnosis);
-    } catch (_) {
+    } catch (error) {
+      if (error is StateError && error.message.contains('No element')) {
+        final diagnosis = session._noReplyDiagnosis(settings);
+        await session.close();
+        throw FcConnectException(diagnosis);
+      }
       await session.close();
       rethrow;
     }
   }
 
   /// Replays the JIYI assistant telemetry handshake (msgs 211 → streams → 220).
-  void requestTelemetryStreams() {
+  void requestTelemetryStreams({bool broadcast = false}) {
+    final system = broadcast ? 0 : connection.targetSystem;
     connection.send(const KppLinkSetup());
     // JIYI targets component 0 (broadcast) on REQUEST_DATA_STREAM.
     for (final (rateHz, streamId) in _jiyiStreams) {
       connection.send(
         RequestDataStream(
-          targetSystem: connection.targetSystem,
+          targetSystem: system,
           targetComponent: 0,
           rateHz: rateHz,
           streamId: streamId,
@@ -248,7 +305,7 @@ class FcSession {
     // Also ask for fused position — useful for the map when agri GPS locks.
     connection.send(
       RequestDataStream(
-        targetSystem: connection.targetSystem,
+        targetSystem: system,
         targetComponent: 0,
         rateHz: 2,
         streamId: RequestDataStream.position,
@@ -257,7 +314,7 @@ class FcSession {
     // Broad request so GPS_STATUS / RAW variants the assistant uses still flow.
     connection.send(
       RequestDataStream(
-        targetSystem: connection.targetSystem,
+        targetSystem: system,
         targetComponent: 0,
         rateHz: 2,
         streamId: RequestDataStream.allStreams,
@@ -306,6 +363,8 @@ class FcSession {
   String _noReplyDiagnosis(ConnectionSettings settings) {
     final bytes = connection.bytesReceived;
     final where = connection.link.label;
+    final radioOnly = connection.radioStatusFrames > 0 &&
+        connection.radioStatusFrames * 20 >= bytes; // mostly msgid-109 sized traffic
     if (bytes == 0) {
       if (settings.isNetwork) {
         return 'No data at all from $where. Power the aircraft and telemetry/WiFi bridge, '
@@ -313,19 +372,34 @@ class FcSession {
       }
       if (settings.resolvedKind == FcLinkKind.bluetooth || settings.isTransmitter) {
         return 'No data at all from $where (Bluetooth). Keep Windows → TX Connected, '
-            'power the aircraft and radio link, try the other BT COM, baud 57600.';
+            'power the aircraft and radio link, baud 57600.';
       }
       return 'No data at all from $where. Check the flight battery is connected and the cable is in the FC data port.';
+    }
+    if (settings.resolvedKind == FcLinkKind.bluetooth || settings.isTransmitter) {
+      if (radioOnly || connection.radioStatusFrames > 0) {
+        final rem = connection.lastRemRssi;
+        if (rem != null && rem > 0) {
+          return 'TX↔aircraft radio is up (remote RSSI=$rem on $where) but no K++ FC '
+              'frames on this COM (${connection.radioStatusFrames} radio-status, '
+              '$bytes bytes). The working Oct-12 setup used Bluetooth COM5 @ 57600 '
+              'with aircraft battery on. In Windows Bluetooth, remove T12_055 and pair '
+              'again so both Incoming + Outgoing COMs appear, pick the Outgoing '
+              '(often the higher COM), aircraft powered, baud 57600, then Connect.';
+        }
+        return 'Bluetooth reached the transmitter ($where) but no K++ FC frames '
+            '(${connection.radioStatusFrames} radio-status, $bytes bytes'
+            '${rem == null ? '' : ', remote RSSI=$rem'}). '
+            'Power the aircraft, confirm T12↔aircraft RF, try the other BT COM, baud 57600.';
+      }
+      return 'Received $bytes bytes from $where but no valid K++ serial frames '
+          '(${connection.rejectedFrames} rejected). '
+          'Power the aircraft and confirm baud 57600. For Bluetooth try the sibling COM.';
     }
     if (settings.isNetwork) {
       return 'Received $bytes bytes from $where but no valid MAVLink frames '
           '(${connection.rejectedFrames} rejected). '
           'Confirm the bridge is forwarding MAVLink (not a different protocol).';
-    }
-    if (settings.resolvedKind == FcLinkKind.bluetooth) {
-      return 'Received $bytes bytes from $where but no valid MAVLink frames '
-          '(${connection.rejectedFrames} rejected). '
-          'Try baud 57600 or 115200, and the other Bluetooth COM port.';
     }
     return 'Received $bytes bytes from $where but no valid serial frames '
         '(${connection.rejectedFrames} rejected). '

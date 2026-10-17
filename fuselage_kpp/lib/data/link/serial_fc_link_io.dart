@@ -6,10 +6,17 @@ import 'package:fuselage_kpp/data/link/fc_link.dart';
 
 /// A COM port the user can pick, e.g. "COM3 — USB-SERIAL CH340".
 class SerialPortInfo {
-  const SerialPortInfo({required this.name, required this.description});
+  const SerialPortInfo({
+    required this.name,
+    required this.description,
+    this.macAddress,
+  });
 
   final String name;
   final String description;
+
+  /// Present for some Bluetooth SPP devices (used to prefer Outgoing COMs).
+  final String? macAddress;
 
   static List<SerialPortInfo> available() {
     return [for (final name in SerialPort.availablePorts) _describe(name)];
@@ -18,7 +25,11 @@ class SerialPortInfo {
   static SerialPortInfo _describe(String name) {
     final port = SerialPort(name);
     try {
-      return SerialPortInfo(name: name, description: port.description ?? '');
+      return SerialPortInfo(
+        name: name,
+        description: port.description ?? '',
+        macAddress: port.macAddress,
+      );
     } finally {
       port.dispose();
     }
@@ -68,13 +79,38 @@ class SerialFcLink implements FcLink {
 
   @override
   Future<void> open() async {
-    final port = SerialPort(portName);
-    if (!port.openReadWrite()) {
-      final error = SerialPort.lastError;
-      port.dispose();
+    // Allow the Connecting spinner to paint before a blocking native open.
+    await Future<void>.delayed(Duration.zero);
+
+    SerialPort? port;
+    String? lastDetail;
+    // Bluetooth SPP: Windows may report T12 Connected before the Outgoing COM
+    // accepts CreateFile — one short retry after a settle often succeeds.
+    final attempts = resilient ? 3 : 1;
+    for (var attempt = 1; attempt <= attempts; attempt++) {
+      port = SerialPort(portName);
+      final opened = port.openReadWrite();
+      if (opened) {
+        break;
+      }
+      lastDetail = SerialPort.lastError?.message ?? 'unknown error';
+      try {
+        port.dispose();
+      } catch (_) {}
+      port = null;
+      if (attempt < attempts) {
+        await Future<void>.delayed(Duration(milliseconds: 400 * attempt));
+      }
+    }
+    if (port == null) {
+      final detail = lastDetail ?? 'unknown error';
+      final semaphore = detail.toLowerCase().contains('semaphore');
       throw FcLinkException(
-        'Could not open $portName: ${error?.message ?? 'unknown error'}. '
-        'Close any other app using this port (e.g. the original K++ assistant).',
+        'Could not open $portName: $detail. '
+        '${semaphore ? 'Keep T12 Connected in Windows Bluetooth, close the original '
+            'K++ assistant (and any other app using $portName), then Disconnect + '
+            'Connect the transmitter in Windows and retry. '
+            : 'Close any other app using this port (e.g. the original K++ assistant). '}',
       );
     }
     // The port takes ownership of the config and frees it in dispose().

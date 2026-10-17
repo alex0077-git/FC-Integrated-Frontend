@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fuselage_kpp/data/link/fc_link.dart';
 import 'package:fuselage_kpp/data/link/serial_fc_link.dart';
 import 'package:fuselage_kpp/data/session/fc_session.dart';
 
@@ -55,9 +57,11 @@ class FcConnectionController extends Notifier<FcConnectionState> {
   Future<void> connect(ConnectionSettings settings) async {
     await disconnect();
     state = const FcConnectionState(status: FcLinkStatus.connecting);
+    // Let the Connecting spinner paint before a blocking BT COM open.
+    await Future<void>.delayed(Duration.zero);
     final FcSession session;
     try {
-      session = await FcSession.open(settings);
+      session = await _openWithBluetoothFallback(settings);
     } catch (error) {
       state = FcConnectionState(errorMessage: error.toString());
       return;
@@ -67,6 +71,44 @@ class FcConnectionController extends Notifier<FcConnectionState> {
     await _downloadParameters(session);
     if (state.session == session) {
       _watchdog = Timer.periodic(_watchdogInterval, (_) => _checkLink(session));
+    }
+  }
+
+  /// Bluetooth: if Incoming COM fails to open (semaphore timeout) or never
+  /// replies, try the sibling Outgoing COM once. USB / WiFi unchanged.
+  Future<FcSession> _openWithBluetoothFallback(ConnectionSettings settings) async {
+    try {
+      return await FcSession.open(settings);
+    } on FcLinkException catch (firstError) {
+      final alternate = settings.alternateBluetoothPort(ref.read(serialPortListerProvider));
+      if (alternate == null) {
+        rethrow;
+      }
+      return _openAlternateBluetooth(settings, alternate, firstError);
+    } on FcConnectException catch (firstError) {
+      final alternate = settings.alternateBluetoothPort(ref.read(serialPortListerProvider));
+      if (alternate == null) {
+        rethrow;
+      }
+      return _openAlternateBluetooth(settings, alternate, firstError);
+    }
+  }
+
+  Future<FcSession> _openAlternateBluetooth(
+    ConnectionSettings settings,
+    ConnectionSettings alternate,
+    Object firstError,
+  ) async {
+    developer.log(
+      'BT ${settings.portName} failed ($firstError); retrying ${alternate.portName}',
+      name: 'FcConnection',
+    );
+    try {
+      return await FcSession.open(alternate);
+    } catch (secondError) {
+      throw FcConnectException(
+        '$firstError\nAlso tried ${alternate.portName}: $secondError',
+      );
     }
   }
 
@@ -109,6 +151,20 @@ class FcConnectionController extends Notifier<FcConnectionState> {
       await session.ensureTelemetryRates();
     } catch (e) {
       error = e.toString();
+      if (session.isTransmitterLink && error.contains('did not send any parameters')) {
+        error =
+            'Bluetooth linked but the FC sent no parameters. '
+            'Working setup used the Outgoing BT COM @ 57600 with aircraft powered — '
+            'try the other Bluetooth COM if listed, or re-pair T12_055 in Windows.';
+        _watchdog?.cancel();
+        _watchdog = null;
+        _openSession = null;
+        await session.close();
+        if (state.session == session || state.isBusy) {
+          state = FcConnectionState(errorMessage: error);
+        }
+        return;
+      }
     }
     if (state.session == session) {
       state = FcConnectionState(status: FcLinkStatus.connected, session: session, errorMessage: error);

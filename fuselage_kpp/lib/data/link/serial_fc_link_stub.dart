@@ -5,10 +5,15 @@ import 'package:fuselage_kpp/data/link/fc_link.dart';
 
 /// Stub when native serial is unavailable (e.g. web).
 class SerialPortInfo {
-  const SerialPortInfo({required this.name, required this.description});
+  const SerialPortInfo({
+    required this.name,
+    required this.description,
+    this.macAddress,
+  });
 
   final String name;
   final String description;
+  final String? macAddress;
 
   static List<SerialPortInfo> available() => const [];
 }

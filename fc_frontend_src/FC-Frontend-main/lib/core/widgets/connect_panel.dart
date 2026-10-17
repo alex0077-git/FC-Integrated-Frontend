@@ -182,9 +182,19 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
       showCommandResult(context, l10n.connectErrorNoComPort);
       return;
     }
-    await ref.read(fcConnectionProvider.notifier).connect(
-      ConnectionSettings(useSimulator: false, portName: port, baudRate: _baudRate),
-    );
+    SerialPortInfo? info;
+    for (final p in _ports) {
+      if (p.name == port) {
+        info = p;
+        break;
+      }
+    }
+    // Bluetooth SPP in the Port dropdown must use the TX path and prefer the
+    // Outgoing COM — Incoming (often COM4) hangs then fails with semaphore timeout.
+    final settings = info != null
+        ? ConnectionSettings.forAvailablePort(info, baudRate: _baudRate, allPorts: _ports)
+        : ConnectionSettings(useSimulator: false, portName: port, baudRate: _baudRate);
+    await ref.read(fcConnectionProvider.notifier).connect(settings);
   }
 
   int? _parsePort(TextEditingController controller, {required String label}) {

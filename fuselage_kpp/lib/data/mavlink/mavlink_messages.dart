@@ -61,6 +61,7 @@ class UnknownMavMessage extends MavMessage {
 final Map<int, MavMessageSpec> mavMessageSpecs = {
   for (final spec in [
     Heartbeat.messageSpec,
+    RadioStatus.messageSpec,
     SysStatus.messageSpec,
     BatteryStatus.messageSpec,
     ParamRequestRead.messageSpec,
@@ -218,6 +219,62 @@ class Heartbeat extends MavMessage {
     ..u8(baseMode)
     ..u8(systemStatus)
     ..u8(mavlinkVersion);
+}
+
+/// SiK / T12 radio status (msgid 109) — emitted by the transmitter itself over SPP.
+///
+/// MAVLink wire order is largest fields first (u16 then u8), not the docs'
+/// logical order.
+class RadioStatus extends MavMessage {
+  const RadioStatus({
+    required this.rxerrors,
+    required this.fixed,
+    required this.rssi,
+    required this.remrssi,
+    required this.txbuf,
+    required this.noise,
+    required this.remnoise,
+  });
+
+  static final MavMessageSpec messageSpec = MavMessageSpec(
+    id: 109,
+    crcExtra: 185,
+    baseLength: 9,
+    fullLength: 9,
+    decode: (r) => RadioStatus(
+      rxerrors: r.u16(),
+      fixed: r.u16(),
+      rssi: r.u8(),
+      remrssi: r.u8(),
+      txbuf: r.u8(),
+      noise: r.u8(),
+      remnoise: r.u8(),
+    ),
+  );
+
+  final int rxerrors;
+  final int fixed;
+  final int rssi;
+  final int remrssi;
+  final int txbuf;
+  final int noise;
+  final int remnoise;
+
+  /// True when the TX reports a remote (aircraft) radio signal.
+  bool get hasRemoteLink => remrssi > 0;
+
+  @override
+  MavMessageSpec get spec => messageSpec;
+
+  @override
+  void writeFields(PayloadWriter w) => w
+    ..u16(rxerrors)
+    ..u16(fixed)
+    ..u8(rssi)
+    ..u8(remrssi)
+    ..u8(txbuf)
+    ..u8(noise)
+    ..u8(remnoise);
 }
 
 class SysStatus extends MavMessage {

@@ -29,13 +29,27 @@ class MavPacket {
 /// The leading `EB` is not part of the checksum. The checksum is the X.25
 /// CRC of every following byte plus one extra byte chosen by the message id.
 ///
-/// On the wire every byte is obfuscated as `rotl3(clear ^ 0xDF)`, so the
+/// On the USB wire every byte is obfuscated as `rotl3(clear ^ 0xDF)`, so the
 /// magic appears as `0xA1`. That transform is reversed from JIYI221014's
 /// serial byte filter at 0x4388a0 / 0x4388c0.
+///
+/// WiFi TCP/UDP bridges speak **clear** MAVLink-1 (`0xFE` magic, no
+/// obfuscation). Bluetooth SPP to a T12 carries the same K++ obfuscated wire
+/// as USB for FC traffic; clear FE on that pipe is usually radio-status only.
 const int serialFrameMagic = 0xEB;
+const int mavlink1FrameMagic = 0xFE;
 const int serialWireKey = 0xDF;
 const int _headerLength = 6;
 const int _crcLength = 2;
+
+/// How frames are packed on a given [FcLink].
+enum MavWireMode {
+  /// Direct USB to K++ FC: clear `0xEB` then obfuscated on the wire.
+  kppObfuscated,
+
+  /// Network bridges (UDP/TCP WiFi): clear MAVLink-1 (`0xFE`), no obfuscation.
+  clearMavlink1,
+}
 
 int _rotl8(int value, int bits) => ((value << bits) | (value >> (8 - bits))) & 0xFF;
 
@@ -51,18 +65,26 @@ Uint8List encodeWireFrame(List<int> clearFrame) =>
 Uint8List decodeWireBytes(List<int> wireBytes) =>
     Uint8List.fromList([for (final b in wireBytes) decodeWireByte(b)]);
 
-/// Builds K++ serial frames for outgoing messages.
+/// Builds K++ serial / clear MAVLink-1 frames for outgoing messages.
 class MavFrameEncoder {
-  MavFrameEncoder({required this.systemId, required this.componentId});
+  MavFrameEncoder({
+    required this.systemId,
+    required this.componentId,
+    this.wireMode = MavWireMode.kppObfuscated,
+  });
 
   final int systemId;
   final int componentId;
+  final MavWireMode wireMode;
   int _sequence = 0;
+
+  int get _magic =>
+      wireMode == MavWireMode.clearMavlink1 ? mavlink1FrameMagic : serialFrameMagic;
 
   Uint8List encode(MavMessage message) {
     final spec = message.spec;
     final payload = message.encodePayload();
-    final header = [serialFrameMagic, payload.length, _sequence, systemId, componentId, spec.id];
+    final header = [_magic, payload.length, _sequence, systemId, componentId, spec.id];
     _sequence = (_sequence + 1) & 0xFF;
 
     final crcExtra = spec.id == KppGpsDetail.messageSpec.id
@@ -70,17 +92,26 @@ class MavFrameEncoder {
         : spec.crcExtra;
     final crc = x25Crc([...header.skip(1), ...payload, crcExtra]);
     final clear = [...header, ...payload, crc & 0xFF, crc >> 8];
+    if (wireMode == MavWireMode.clearMavlink1) {
+      return Uint8List.fromList(clear);
+    }
     return encodeWireFrame(clear);
   }
 }
 
-/// Turns an arbitrary byte stream into validated K++ serial frames.
+/// Turns an arbitrary byte stream into validated K++ / MAVLink-1 frames.
 ///
 /// Frames with unknown message ids are emitted as [UnknownMavMessage] (no CRC)
 /// so capture / discovery can still see them.
 class MavFrameParser {
+  MavFrameParser({this.wireMode = MavWireMode.kppObfuscated});
+
+  final MavWireMode wireMode;
   final List<int> _buffer = [];
   int _rejectedFrames = 0;
+
+  int get _magic =>
+      wireMode == MavWireMode.clearMavlink1 ? mavlink1FrameMagic : serialFrameMagic;
 
   /// Learned crc_extra for msgid 207 when the dialect constant does not match
   /// the FC firmware (one-shot discovery per process).
@@ -106,10 +137,11 @@ class MavFrameParser {
   }
 
   List<MavPacket> addBytes(List<int> bytes) {
-    _buffer.addAll(decodeWireBytes(bytes));
+    final clear = wireMode == MavWireMode.clearMavlink1 ? bytes : decodeWireBytes(bytes);
+    _buffer.addAll(clear);
     final packets = <MavPacket>[];
     while (true) {
-      final start = _buffer.indexOf(serialFrameMagic);
+      final start = _buffer.indexOf(_magic);
       if (start < 0) {
         _buffer.clear();
         break;
