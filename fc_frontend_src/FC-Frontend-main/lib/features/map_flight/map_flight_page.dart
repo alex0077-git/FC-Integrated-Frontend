@@ -13,11 +13,23 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuselage_kpp/core/theme/app_theme.dart' as kpp_theme;
 import 'package:fuselage_kpp/core/widgets/live_gps_map_layers.dart';
+import 'package:fuselage_kpp/data/repositories/connection_repository.dart';
 import 'package:fuselage_kpp/data/repositories/telemetry_repository.dart'
     as kpp_telemetry;
 import 'package:latlong2/latlong.dart';
 
-const _landingPoint = LatLng(12.9700, 77.5930);
+bool _isValidGps(LatLng? point) {
+  if (point == null) {
+    return false;
+  }
+  if (point.latitude.abs() < 1e-5 && point.longitude.abs() < 1e-5) {
+    return false;
+  }
+  if (point.latitude.abs() > 90 || point.longitude.abs() > 180) {
+    return false;
+  }
+  return true;
+}
 
 class MapFlightPage extends ConsumerStatefulWidget {
   const MapFlightPage({super.key});
@@ -27,10 +39,40 @@ class MapFlightPage extends ConsumerStatefulWidget {
 }
 
 class _MapFlightPageState extends ConsumerState<MapFlightPage> {
+  /// Landing / RTL home from the first valid FC GPS this connection (not a demo city).
+  LatLng? _homeGps;
+
+  void _lockHomeFrom(Telemetry? t) {
+    if (_homeGps != null || t == null || !t.hasGpsFix) {
+      return;
+    }
+    final fix = LatLng(t.latitude, t.longitude);
+    if (_isValidGps(fix)) {
+      setState(() => _homeGps = fix);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final telemetry = ref.watch(telemetryStreamProvider).asData?.value;
     final batterySettings = ref.watch(batterySettingsProvider);
+
+    ref.listen(fcConnectionProvider, (previous, next) {
+      if (next.session == null && _homeGps != null) {
+        setState(() => _homeGps = null);
+      }
+    });
+    ref.listen(telemetryStreamProvider, (previous, next) {
+      _lockHomeFrom(next.asData?.value);
+    });
+    if (_homeGps == null && telemetry != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+        _lockHomeFrom(ref.read(telemetryStreamProvider).asData?.value);
+      });
+    }
 
     final sideBySide = Responsive.useCompactMapLayout(context);
     final map = const _FlightMap();
@@ -54,6 +96,7 @@ class _MapFlightPageState extends ConsumerState<MapFlightPage> {
                         children: [
                           _TelemetryCards(
                             telemetry: telemetry,
+                            homeGps: _homeGps,
                             stacked: true,
                           ),
                         ],
@@ -65,7 +108,7 @@ class _MapFlightPageState extends ConsumerState<MapFlightPage> {
             )
           else ...[
             Expanded(child: map),
-            _TelemetryCards(telemetry: telemetry),
+            _TelemetryCards(telemetry: telemetry, homeGps: _homeGps),
           ],
         ],
       ),
@@ -182,18 +225,35 @@ class _FlightMapState extends ConsumerState<_FlightMap> {
   }
 }
 
-class _TelemetryCards extends StatelessWidget {
-  const _TelemetryCards({required this.telemetry, this.stacked = false});
+class _TelemetryCards extends ConsumerWidget {
+  const _TelemetryCards({
+    required this.telemetry,
+    required this.homeGps,
+    this.stacked = false,
+  });
 
   final Telemetry? telemetry;
+  final LatLng? homeGps;
   final bool stacked;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final drone = telemetry == null
-        ? null
-        : LatLng(telemetry!.latitude, telemetry!.longitude);
+    final drone = telemetry != null && telemetry!.hasGpsFix
+        ? LatLng(telemetry!.latitude, telemetry!.longitude)
+        : null;
+    final droneOk = _isValidGps(drone);
+    final device = ref.watch(deviceGpsProvider).asData?.value;
+
+    // Distance to drone: GCS/device GPS → live FC GPS (never demo map center).
+    final distanceToDrone = droneOk && _isValidGps(device)
+        ? _formatMeters(device!, drone!)
+        : '--';
+    // Distance to landing: live FC GPS → session home (first valid FC fix).
+    final distanceToLanding = droneOk && _isValidGps(homeGps)
+        ? _formatMeters(homeGps!, drone!)
+        : '--';
+
     final readings = [
       (
         label: l10n.altitude,
@@ -203,11 +263,11 @@ class _TelemetryCards extends StatelessWidget {
       ),
       (
         label: l10n.distanceToDrone,
-        value: drone == null ? '--' : _formatMeters(defaultMapCenter, drone),
+        value: distanceToDrone,
       ),
       (
         label: l10n.distanceToLanding,
-        value: drone == null ? '--' : _formatMeters(_landingPoint, drone),
+        value: distanceToLanding,
       ),
       (
         label: l10n.speed,
@@ -325,5 +385,8 @@ class _ReadingCard extends StatelessWidget {
 
 String _formatMeters(LatLng from, LatLng to) {
   final meters = const Distance().as(LengthUnit.Meter, from, to);
+  if (meters >= 1000) {
+    return '${(meters / 1000).toStringAsFixed(2)} km';
+  }
   return '${meters.toStringAsFixed(0)} m';
 }
