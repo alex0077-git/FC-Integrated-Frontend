@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fuselage_kpp/data/link/android_bluetooth_link.dart';
 import 'package:fuselage_kpp/data/link/serial_fc_link.dart';
 import 'package:fuselage_kpp/data/link/transmitter_devices.dart';
 import 'package:fuselage_kpp/data/link/wifi_network_info.dart';
@@ -139,7 +140,7 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
     });
   }
 
-  void _refreshBluetooth() {
+  Future<void> _refreshBluetooth() async {
     if (kIsWeb) {
       setState(() {
         _btDevices = const [];
@@ -148,13 +149,19 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
       return;
     }
     List<TransmitterBluetoothDevice> devices = const [];
+    Object? failure;
     try {
-      final lister = ref.read(serialPortListerProvider);
-      devices = _showAllComAsBt
-          ? listSerialPortsAsBluetoothCandidates(lister)
-          : listBluetoothTransmitterPorts(lister);
-    } catch (_) {
+      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+        devices = await AndroidBluetoothFcLink.pairedDevices();
+      } else {
+        final lister = ref.read(serialPortListerProvider);
+        devices = _showAllComAsBt
+            ? listSerialPortsAsBluetoothCandidates(lister)
+            : listBluetoothTransmitterPorts(lister);
+      }
+    } catch (error) {
       devices = const [];
+      failure = error;
     }
     if (!mounted) {
       return;
@@ -165,6 +172,9 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
         _selectedBtId = devices.isEmpty ? null : devices.first.id;
       }
     });
+    if (failure is PlatformException && failure.message != null) {
+      showCommandResult(context, failure.message!);
+    }
   }
 
   Future<void> _disconnect() async {
@@ -419,7 +429,9 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                 Text(
                   connected
                       ? l10n.connectLiveLink(connection.session?.linkLabel ?? 'K++')
-                      : l10n.connectUsbIntro,
+                      : !kIsWeb && defaultTargetPlatform == TargetPlatform.android
+                          ? 'On this phone, connect with transmitter Bluetooth or WiFi.'
+                          : l10n.connectUsbIntro,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: 16),
@@ -429,6 +441,7 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                     style: TextStyle(color: Theme.of(context).colorScheme.error),
                   )
                 else ...[
+                  if (defaultTargetPlatform != TargetPlatform.android) ...[
                   // —— USB (unchanged) ——
                   Text(l10n.usbGround, style: Theme.of(context).textTheme.titleSmall),
                   const SizedBox(height: 8),
@@ -498,9 +511,30 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                     icon: Icon(connected ? Icons.link_off : Icons.usb),
                     label: Text(connected ? l10n.disconnect : l10n.connectUsbToKpp),
                   ),
+                  ],
 
                   // —— Transmitter Bluetooth / WiFi ——
+                  // On Android this is the main connect path (no USB COM). Show it
+                  // open, not buried under an ExpansionTile like the Windows add-on.
                   const SizedBox(height: 8),
+                  if (defaultTargetPlatform == TargetPlatform.android) ...[
+                    Text(
+                      l10n.transmitterBtWifi,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    Text(
+                      l10n.airbornePath,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 8),
+                    ..._transmitterConnectBody(
+                      context: context,
+                      l10n: l10n,
+                      connected: connected,
+                      busy: busy,
+                      transmitter: transmitter,
+                    ),
+                  ] else
                   Theme(
                     data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
                     child: ExpansionTile(
@@ -515,7 +549,82 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                         l10n.airbornePath,
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
-                      children: [
+                      children: _transmitterConnectBody(
+                        context: context,
+                        l10n: l10n,
+                        connected: connected,
+                        busy: busy,
+                        transmitter: transmitter,
+                      ),
+                    ),
+                  ),
+                ],
+                if (connection.status == FcLinkStatus.connecting) ...[
+                  const SizedBox(height: 12),
+                  const LinearProgressIndicator(),
+                  const SizedBox(height: 8),
+                  Text(
+                    !kIsWeb && defaultTargetPlatform == TargetPlatform.android
+                        ? 'Connecting… opening Bluetooth and waiting for MAVLink.'
+                        : 'Connecting… opening the link and waiting for MAVLink '
+                            '(Bluetooth: use Outgoing COM, baud 57600).',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: _disconnect,
+                    icon: const Icon(Icons.close),
+                    label: Text(l10n.cancel),
+                  ),
+                ],
+                if (connection.status == FcLinkStatus.loadingParameters) ...[
+                  const SizedBox(height: 12),
+                  LinearProgressIndicator(
+                    value: connection.paramsTotal == 0
+                        ? null
+                        : connection.paramsReceived / connection.paramsTotal,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n.loadingParameters(
+                      connection.paramsReceived,
+                      connection.paramsTotal,
+                    ),
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+                if (connection.status == FcLinkStatus.linkLost) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    transmitter ? l10n.linkLostTransmitter : l10n.linkLostUsb,
+                    style: TextStyle(color: Theme.of(context).colorScheme.error),
+                  ),
+                ],
+                if (connection.errorMessage != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    connection.errorMessage!,
+                    style: TextStyle(color: Theme.of(context).colorScheme.error),
+                  ),
+                ],
+                const SizedBox(height: 12),
+                _LiveHint(text: l10n.connectLiveHint),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _transmitterConnectBody({
+    required BuildContext context,
+    required AppLocalizations l10n,
+    required bool connected,
+    required bool busy,
+    required bool transmitter,
+  }) {
+    return [
                         Text(
                           l10n.transmitterPickHint,
                           style: Theme.of(context).textTheme.bodySmall,
@@ -566,6 +675,14 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                         ),
                         const SizedBox(height: 12),
                         if (_txTransport == _TxTransport.bluetooth) ...[
+                          if (defaultTargetPlatform == TargetPlatform.android) ...[
+                            Text(
+                              'Pair the transmitter in Android Bluetooth settings, allow Bluetooth, then refresh. '
+                              'Same path as agri assistant: Bluetooth SPP + UART pass-through for FC telem.',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                            const SizedBox(height: 8),
+                          ],
                           Row(
                             children: [
                               Expanded(
@@ -605,7 +722,8 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                             ],
                           ),
                           const SizedBox(height: 8),
-                          CheckboxListTile(
+                          if (kIsWeb || defaultTargetPlatform != TargetPlatform.android)
+                            CheckboxListTile(
                             contentPadding: EdgeInsets.zero,
                             dense: true,
                             value: _showAllComAsBt,
@@ -796,64 +914,7 @@ class _ConnectPanelState extends ConsumerState<ConnectPanel> {
                               label: Text(l10n.disconnectTransmitter),
                             ),
                         ],
-                      ],
-                    ),
-                  ),
-                ],
-                if (connection.status == FcLinkStatus.connecting) ...[
-                  const SizedBox(height: 12),
-                  const LinearProgressIndicator(),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Connecting… opening the link and waiting for MAVLink '
-                    '(Bluetooth: use Outgoing COM, baud 57600).',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  const SizedBox(height: 8),
-                  OutlinedButton.icon(
-                    onPressed: _disconnect,
-                    icon: const Icon(Icons.close),
-                    label: Text(l10n.cancel),
-                  ),
-                ],
-                if (connection.status == FcLinkStatus.loadingParameters) ...[
-                  const SizedBox(height: 12),
-                  LinearProgressIndicator(
-                    value: connection.paramsTotal == 0
-                        ? null
-                        : connection.paramsReceived / connection.paramsTotal,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    l10n.loadingParameters(
-                      connection.paramsReceived,
-                      connection.paramsTotal,
-                    ),
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
-                if (connection.status == FcLinkStatus.linkLost) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    transmitter ? l10n.linkLostTransmitter : l10n.linkLostUsb,
-                    style: TextStyle(color: Theme.of(context).colorScheme.error),
-                  ),
-                ],
-                if (connection.errorMessage != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    connection.errorMessage!,
-                    style: TextStyle(color: Theme.of(context).colorScheme.error),
-                  ),
-                ],
-                const SizedBox(height: 12),
-                _LiveHint(text: l10n.connectLiveHint),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+    ];
   }
 }
 

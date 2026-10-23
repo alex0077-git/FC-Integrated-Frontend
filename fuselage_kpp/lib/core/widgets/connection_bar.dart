@@ -1,8 +1,10 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuselage_kpp/core/theme/app_theme.dart';
 import 'package:fuselage_kpp/core/widgets/app_card.dart';
+import 'package:fuselage_kpp/data/link/android_bluetooth_link.dart';
 import 'package:fuselage_kpp/data/link/serial_fc_link.dart';
 import 'package:fuselage_kpp/data/link/transmitter_devices.dart';
 import 'package:fuselage_kpp/data/repositories/connection_repository.dart';
@@ -24,11 +26,13 @@ class _ConnectionBarState extends ConsumerState<ConnectionBar> {
   List<SerialPortInfo> _ports = const [];
   String _selectedPort = ConnectionBar.simulatorOption;
   int _baudRate = ConnectionSettings.defaultBaudRate;
-  bool _showTransmitter = false;
+  bool _showTransmitter = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
   List<TransmitterBluetoothDevice> _btDevices = const [];
   String? _selectedBtId;
   final _wifiHost = TextEditingController(text: '192.168.4.1');
   final _wifiPort = TextEditingController(text: '${ConnectionSettings.defaultTcpPort}');
+
+  bool get _isAndroid => !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
   @override
   void initState() {
@@ -44,15 +48,27 @@ class _ConnectionBarState extends ConsumerState<ConnectionBar> {
     super.dispose();
   }
 
-  void _refreshBluetooth() {
-    final devices = listBluetoothTransmitterPorts(ref.read(serialPortListerProvider));
-    final fallback = devices.isEmpty
-        ? listSerialPortsAsBluetoothCandidates(ref.read(serialPortListerProvider))
-        : devices;
+  Future<void> _refreshBluetooth() async {
+    List<TransmitterBluetoothDevice> devices = const [];
+    try {
+      if (_isAndroid) {
+        devices = await AndroidBluetoothFcLink.pairedDevices();
+      } else {
+        final listed = listBluetoothTransmitterPorts(ref.read(serialPortListerProvider));
+        devices = listed.isEmpty
+            ? listSerialPortsAsBluetoothCandidates(ref.read(serialPortListerProvider))
+            : listed;
+      }
+    } catch (_) {
+      devices = const [];
+    }
+    if (!mounted) {
+      return;
+    }
     setState(() {
-      _btDevices = fallback;
-      if (_selectedBtId == null || !fallback.any((d) => d.id == _selectedBtId)) {
-        _selectedBtId = fallback.isEmpty ? null : fallback.first.id;
+      _btDevices = devices;
+      if (_selectedBtId == null || !devices.any((d) => d.id == _selectedBtId)) {
+        _selectedBtId = devices.isEmpty ? null : devices.first.id;
       }
     });
   }
@@ -133,52 +149,65 @@ class _ConnectionBarState extends ConsumerState<ConnectionBar> {
               runSpacing: 8,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                _LabeledDropdown<String>(
-                  label: l10n.port,
-                  value: _selectedPort,
-                  enabled: editable,
-                  items: {
-                    for (final port in _ports) port.name: '${port.name}  ${port.description}',
-                    ConnectionBar.simulatorOption: l10n.simulatorNoHardware,
-                  },
-                  onChanged: (value) => setState(() => _selectedPort = value),
-                ),
-                IconButton(
-                  tooltip: l10n.refreshComPorts,
-                  onPressed: editable ? _refreshPorts : null,
-                  icon: const Icon(Icons.refresh),
-                ),
-                if (isSerial) ...[
-                  _LabeledDropdown<int>(
-                    label: l10n.baud,
-                    value: _baudRate,
+                if (!_isAndroid) ...[
+                  _LabeledDropdown<String>(
+                    label: l10n.port,
+                    value: _selectedPort,
                     enabled: editable,
-                    items: {for (final baud in ConnectionSettings.baudRates) baud: '$baud'},
-                    onChanged: (value) => setState(() => _baudRate = value),
+                    items: {
+                      for (final port in _ports) port.name: '${port.name}  ${port.description}',
+                      ConnectionBar.simulatorOption: l10n.simulatorNoHardware,
+                    },
+                    onChanged: (value) => setState(() => _selectedPort = value),
                   ),
+                  IconButton(
+                    tooltip: l10n.refreshComPorts,
+                    onPressed: editable ? _refreshPorts : null,
+                    icon: const Icon(Icons.refresh),
+                  ),
+                  if (isSerial) ...[
+                    _LabeledDropdown<int>(
+                      label: l10n.baud,
+                      value: _baudRate,
+                      enabled: editable,
+                      items: {for (final baud in ConnectionSettings.baudRates) baud: '$baud'},
+                      onChanged: (value) => setState(() => _baudRate = value),
+                    ),
+                  ],
+                  if (connection.hasSession || connection.isBusy)
+                    OutlinedButton.icon(
+                      onPressed: connection.status == FcLinkStatus.connecting ? null : controller.disconnect,
+                      icon: const Icon(Icons.link_off),
+                      label: Text(l10n.disconnect),
+                    )
+                  else
+                    FilledButton.icon(
+                      onPressed: () => controller.connect(_settings),
+                      icon: const Icon(Icons.link),
+                      label: Text(l10n.connect),
+                    ),
+                  TextButton(
+                    onPressed: editable
+                        ? () => setState(() => _showTransmitter = !_showTransmitter)
+                        : null,
+                    child: Text(_showTransmitter ? l10n.hideTransmitter : l10n.showTransmitter),
+                  ),
+                ] else ...[
+                  Text(
+                    l10n.showTransmitter,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  if (connection.hasSession || connection.isBusy)
+                    OutlinedButton.icon(
+                      onPressed: connection.status == FcLinkStatus.connecting ? null : controller.disconnect,
+                      icon: const Icon(Icons.link_off),
+                      label: Text(l10n.disconnect),
+                    ),
                 ],
-                if (connection.hasSession || connection.isBusy)
-                  OutlinedButton.icon(
-                    onPressed: connection.status == FcLinkStatus.connecting ? null : controller.disconnect,
-                    icon: const Icon(Icons.link_off),
-                    label: Text(l10n.disconnect),
-                  )
-                else
-                  FilledButton.icon(
-                    onPressed: () => controller.connect(_settings),
-                    icon: const Icon(Icons.link),
-                    label: Text(l10n.connect),
-                  ),
-                TextButton(
-                  onPressed: editable
-                      ? () => setState(() => _showTransmitter = !_showTransmitter)
-                      : null,
-                  child: Text(_showTransmitter ? l10n.hideTransmitter : l10n.showTransmitter),
-                ),
                 _StatusChip(state: connection),
               ],
             ),
-            if (_showTransmitter && editable) ...[
+            if ((_showTransmitter || _isAndroid) && editable) ...[
               const SizedBox(height: 10),
               Wrap(
                 spacing: 12,
