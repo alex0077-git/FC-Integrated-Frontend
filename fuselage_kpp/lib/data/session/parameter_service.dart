@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:fuselage_kpp/data/mavlink/mavlink_messages.dart';
+import 'package:fuselage_kpp/data/params/param_number.dart';
 import 'package:fuselage_kpp/data/session/mavlink_connection.dart';
 
 class ParameterException implements Exception {
@@ -20,8 +21,10 @@ class ParameterService {
   }
 
   static const Duration _listIdleTimeout = Duration(seconds: 3);
+  static const Duration _listIdleTimeoutSlow = Duration(seconds: 8);
   static const Duration _ackTimeout = Duration(milliseconds: 1500);
   static const int _maxAttempts = 3;
+  static const int _maxAttemptsSlow = 6;
   static const double _ackTolerance = 1e-4;
 
   final MavlinkConnection _connection;
@@ -39,9 +42,19 @@ class ParameterService {
 
   /// Downloads the full parameter list, re-requesting any missing indices.
   /// [onProgress] receives (received, total).
-  Future<void> downloadAll({void Function(int received, int total)? onProgress}) async {
+  /// [broadcast] targets sys/comp 0 (JIYI phone path). [slowLink] uses longer
+  /// idle waits (Android BT / radio telem).
+  Future<void> downloadAll({
+    void Function(int received, int total)? onProgress,
+    bool broadcast = false,
+    bool slowLink = false,
+  }) async {
     _idsByIndex.clear();
     _expectedCount = null;
+    final idle = slowLink ? _listIdleTimeoutSlow : _listIdleTimeout;
+    final attempts = slowLink ? _maxAttemptsSlow : _maxAttempts;
+    final sys = broadcast ? 0 : _connection.targetSystem;
+    final comp = broadcast ? 0 : _connection.targetComponent;
     final progress = _updates.stream.listen((_) {
       final total = _expectedCount;
       if (total != null) {
@@ -50,19 +63,20 @@ class ParameterService {
     });
     try {
       // K++ answers reliably after a READ kick + LIST (JIYI does the same on the wire).
-      for (var kick = 0; kick < _maxAttempts && _expectedCount == null; kick++) {
-        _sendParamRead(0);
-        _sendParamList();
-        await _waitUntilIdle();
+      // On slow BT also TX clear FE copies — some T12 RFCOMM paths only forward FE.
+      for (var kick = 0; kick < attempts && _expectedCount == null; kick++) {
+        _sendParamRead(0, sys, comp, alsoClear: slowLink);
+        _sendParamList(sys, comp, alsoClear: slowLink);
+        await _waitUntilIdle(idle);
       }
-      for (var attempt = 0; attempt < _maxAttempts && _missingIndices().isNotEmpty; attempt++) {
+      for (var attempt = 0; attempt < attempts && _missingIndices().isNotEmpty; attempt++) {
         final missing = _missingIndices();
-        // Batch a modest window so we do not flood the link.
-        final batch = missing.take(40);
+        // Smaller batches on slow BT so we do not overrun the radio buffer.
+        final batch = missing.take(slowLink ? 15 : 40);
         for (final index in batch) {
-          _sendParamRead(index);
+          _sendParamRead(index, sys, comp, alsoClear: slowLink);
         }
-        await _waitUntilIdle();
+        await _waitUntilIdle(idle);
       }
     } finally {
       unawaited(progress.cancel());
@@ -76,21 +90,25 @@ class ParameterService {
     }
   }
 
-  void _sendParamList() {
-    _connection.send(
-      ParamRequestList(targetSystem: _connection.targetSystem, targetComponent: _connection.targetComponent),
-    );
+  void _sendParamList(int system, int component, {bool alsoClear = false}) {
+    final msg = ParamRequestList(targetSystem: system, targetComponent: component);
+    _connection.send(msg);
+    if (alsoClear) {
+      _connection.sendClearMavlink(msg);
+    }
   }
 
-  void _sendParamRead(int index) {
-    _connection.send(
-      ParamRequestRead(
-        targetSystem: _connection.targetSystem,
-        targetComponent: _connection.targetComponent,
-        paramId: '',
-        paramIndex: index,
-      ),
+  void _sendParamRead(int index, int system, int component, {bool alsoClear = false}) {
+    final msg = ParamRequestRead(
+      targetSystem: system,
+      targetComponent: component,
+      paramId: '',
+      paramIndex: index,
     );
+    _connection.send(msg);
+    if (alsoClear) {
+      _connection.sendClearMavlink(msg);
+    }
   }
 
   /// Writes [value] and waits until the flight controller echoes it back.
@@ -109,7 +127,7 @@ class ParameterService {
       try {
         final stored = (await echo).value;
         if ((stored - value).abs() > _ackTolerance) {
-          throw ParameterException('$id was rejected: the flight controller kept ${_format(stored)}.');
+          throw ParameterException('$id was rejected: the flight controller kept ${formatParamNumber(stored)}.');
         }
         return stored;
       } on TimeoutException {
@@ -144,13 +162,13 @@ class ParameterService {
     ];
   }
 
-  Future<void> _waitUntilIdle() async {
+  Future<void> _waitUntilIdle(Duration idleTimeout) async {
     final idle = Completer<void>();
-    Timer timer = Timer(_listIdleTimeout, idle.complete);
+    Timer timer = Timer(idleTimeout, idle.complete);
     final subscription = _updates.stream.listen((_) {
       timer.cancel();
       final done = _expectedCount != null && _missingIndices().isEmpty;
-      timer = Timer(done ? Duration.zero : _listIdleTimeout, () {
+      timer = Timer(done ? Duration.zero : idleTimeout, () {
         if (!idle.isCompleted) {
           idle.complete();
         }
@@ -160,6 +178,4 @@ class ParameterService {
     timer.cancel();
     unawaited(subscription.cancel());
   }
-
-  static String _format(double value) => value == value.roundToDouble() ? value.toStringAsFixed(0) : value.toString();
 }

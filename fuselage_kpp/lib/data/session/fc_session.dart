@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+import 'package:fuselage_kpp/data/link/android_bluetooth_link.dart';
 import 'package:fuselage_kpp/data/link/fc_link.dart';
 import 'package:fuselage_kpp/data/link/network_fc_link.dart';
 import 'package:fuselage_kpp/data/link/serial_fc_link.dart';
@@ -161,7 +163,9 @@ class ConnectionSettings {
           throw const FcLinkException('Choose a Bluetooth transmitter port first.');
         }
         return LabeledFcLink(
-          SerialFcLink(portName: port, baudRate: baudRate, resilient: true),
+          !kIsWeb && defaultTargetPlatform == TargetPlatform.android
+              ? AndroidBluetoothFcLink(address: port)
+              : SerialFcLink(portName: port, baudRate: baudRate, resilient: true),
           'BT $port @ $baudRate',
         );
       case FcLinkKind.udp:
@@ -184,9 +188,15 @@ class ConnectionSettings {
 }
 
 class FcConnectException implements Exception {
-  const FcConnectException(this.message);
+  const FcConnectException(
+    this.message, {
+    this.androidBtRadioOnlyNoFc = false,
+  });
 
   final String message;
+
+  /// Android BT reached the TX radio (RADIO_STATUS) but saw no K++ A1 frames.
+  final bool androidBtRadioOnlyNoFc;
 
   @override
   String toString() => message;
@@ -254,36 +264,75 @@ class FcSession {
 
   /// Opens the link and waits for the first valid K++ serial frame.
   ///
-  /// Subscribe to [packets] *before* [MavlinkConnection.start] — the packet
-  /// stream is broadcast, and the TX often replies within milliseconds.
-  ///
-  /// Same sequence as the working Oct-12 setup / commit 4e565e6: open → first
-  /// A1 frame → JIYI stream handshake → caller downloads parameters.
+  /// Same sequence as working Windows BT / Oct-12 (commit 4e565e6):
+  /// open COM-or-SPP → listen before start → first non-GCS A1 frame →
+  /// JIYI stream handshake → caller downloads parameters.
   static Future<FcSession> open(ConnectionSettings settings) async {
     final connection = MavlinkConnection(link: settings.createLink());
     final session = FcSession._(connection);
+    // Windows TX 12s; Android SPP needs a little longer for RFCOMM bring-up.
+    final androidBt = !kIsWeb &&
+        defaultTargetPlatform == TargetPlatform.android &&
+        settings.resolvedKind == FcLinkKind.bluetooth;
     final firstPacketTimeout = settings.isTransmitter
-        ? const Duration(seconds: 12)
+        ? (androidBt ? const Duration(seconds: 20) : const Duration(seconds: 12))
         : _firstPacketTimeout;
+    // Non-GCS frame only (T12 can echo our sys-255 HEARTBEAT).
+    final ready = connection.packets
+        .firstWhere((p) => p.systemId != MavlinkConnection.gcsSystemId)
+        .timeout(firstPacketTimeout);
     try {
-      // Listen before start so the first reply is not lost on a broadcast stream.
-      final ready = connection.packets.first.timeout(firstPacketTimeout);
       await connection.start();
       await ready;
       session.requestTelemetryStreams();
       return session;
     } on TimeoutException {
+      await session._refreshAndroidBluetoothStats();
       final diagnosis = session._noReplyDiagnosis(settings);
+      final radioOnlyNoFc = session._androidRadioOnlyNoFc(settings);
       await session.close();
-      throw FcConnectException(diagnosis);
+      throw FcConnectException(
+        diagnosis,
+        androidBtRadioOnlyNoFc: radioOnlyNoFc,
+      );
     } catch (error) {
+      unawaited(ready.then((_) {}, onError: (_) {}));
       if (error is StateError && error.message.contains('No element')) {
+        await session._refreshAndroidBluetoothStats();
         final diagnosis = session._noReplyDiagnosis(settings);
+        final radioOnlyNoFc = session._androidRadioOnlyNoFc(settings);
         await session.close();
-        throw FcConnectException(diagnosis);
+        throw FcConnectException(
+          diagnosis,
+          androidBtRadioOnlyNoFc: radioOnlyNoFc,
+        );
       }
       await session.close();
+      if (error is FcLinkException) {
+        throw FcConnectException(error.message);
+      }
       rethrow;
+    }
+  }
+
+  bool _androidRadioOnlyNoFc(ConnectionSettings settings) {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+      return false;
+    }
+    if (settings.resolvedKind != FcLinkKind.bluetooth) {
+      return false;
+    }
+    final rem = connection.lastRemRssi;
+    return connection.radioStatusFrames > 0 &&
+        connection.bytesReceived > 0 &&
+        (rem == null || rem > 0);
+  }
+
+  Future<void> _refreshAndroidBluetoothStats() async {
+    final link = connection.link;
+    final inner = link is LabeledFcLink ? link.inner : link;
+    if (inner is AndroidBluetoothFcLink) {
+      await inner.refreshStats();
     }
   }
 
@@ -371,14 +420,36 @@ class FcSession {
             'confirm the host/port, and that no other GCS is using the same link.';
       }
       if (settings.resolvedKind == FcLinkKind.bluetooth || settings.isTransmitter) {
+        if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+          return 'Phone linked to T12 over Bluetooth, but T12 sent 0 telem bytes.'
+              '${_androidBluetoothStatsHint()} '
+              'Next check: open FiAssistant or QGroundControl on this same phone '
+              'and Connect the same T12 via Bluetooth. If those also get no data, '
+              're-pair T12 (PIN 1234) and set telem baud 57600 in Skydroid Device Helper. '
+              'If FiAssistant works here, tell us — we will match that path.';
+        }
         return 'No data at all from $where (Bluetooth). Keep Windows → TX Connected, '
             'power the aircraft and radio link, baud 57600.';
       }
       return 'No data at all from $where. Check the flight battery is connected and the cable is in the FC data port.';
     }
     if (settings.resolvedKind == FcLinkKind.bluetooth || settings.isTransmitter) {
+      final onAndroid = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
       if (radioOnly || connection.radioStatusFrames > 0) {
         final rem = connection.lastRemRssi;
+      if (onAndroid) {
+        final radioUp = rem != null && rem > 0;
+        return 'Bluetooth + TX radio OK ($where; '
+            '${connection.radioStatusFrames} radio-status, $bytes bytes'
+            '${rem == null ? '' : ', remote RSSI=$rem'}).'
+            '${_androidBluetoothStatsHint()} '
+            '${radioUp ? 'This phone BT channel only carries radio-status — no K++ FC frames. '
+                'Windows Outgoing BT COM can still work on the same T12. '
+                'Try: (1) Skydroid Device Helper → telem baud 57600, (2) join T12 WiFi '
+                'and Connect via TX WiFi, or (3) confirm QGroundControl on this phone '
+                'gets FC data over the same Bluetooth T12.'
+                : 'Power the aircraft and confirm the radio link to the FC.'}';
+      }
         if (rem != null && rem > 0) {
           return 'TX↔aircraft radio is up (remote RSSI=$rem on $where) but no K++ FC '
               'frames on this COM (${connection.radioStatusFrames} radio-status, '
@@ -392,6 +463,12 @@ class FcSession {
             '${rem == null ? '' : ', remote RSSI=$rem'}). '
             'Power the aircraft, confirm T12↔aircraft RF, try the other BT COM, baud 57600.';
       }
+      if (onAndroid) {
+        return 'Received $bytes bytes from $where but no valid K++ serial frames '
+            '(${connection.rejectedFrames} rejected).'
+            '${_androidBluetoothStatsHint()} '
+            'Power the aircraft and confirm the radio link to the FC.';
+      }
       return 'Received $bytes bytes from $where but no valid K++ serial frames '
           '(${connection.rejectedFrames} rejected). '
           'Power the aircraft and confirm baud 57600. For Bluetooth try the sibling COM.';
@@ -404,5 +481,14 @@ class FcSession {
     return 'Received $bytes bytes from $where but no valid serial frames '
         '(${connection.rejectedFrames} rejected). '
         'The baud rate does not match this flight controller.';
+  }
+
+  String _androidBluetoothStatsHint() {
+    final link = connection.link;
+    final inner = link is LabeledFcLink ? link.inner : link;
+    if (inner is AndroidBluetoothFcLink) {
+      return inner.statsSummary();
+    }
+    return '';
   }
 }

@@ -19,7 +19,12 @@ class SerialPortInfo {
   final String? macAddress;
 
   static List<SerialPortInfo> available() {
-    return [for (final name in SerialPort.availablePorts) _describe(name)];
+    try {
+      return [for (final name in SerialPort.availablePorts) _describe(name)];
+    } catch (_) {
+      // Android has no Windows COM list. USB serial there is a different path.
+      return const [];
+    }
   }
 
   static SerialPortInfo _describe(String name) {

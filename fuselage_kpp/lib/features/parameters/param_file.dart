@@ -1,9 +1,11 @@
+import 'package:fuselage_kpp/data/params/param_number.dart';
+
 /// Plain-text parameter file: one `NAME,VALUE` per line, `#` for comments
 /// (the format Mission Planner and QGroundControl also read).
 abstract final class ParamFile {
   static String encode(Map<String, double> values, {required String header}) {
     final ids = values.keys.toList()..sort();
-    return ['# $header', for (final id in ids) '$id,${_format(values[id]!)}'].join('\n');
+    return ['# $header', for (final id in ids) '$id,${formatParamNumber(values[id]!)}'].join('\n');
   }
 
   /// Parses [text]; throws [FormatException] naming the first bad line.
@@ -24,6 +26,4 @@ abstract final class ParamFile {
     }
     return values;
   }
-
-  static String _format(double value) => value == value.roundToDouble() ? value.toStringAsFixed(0) : value.toString();
 }

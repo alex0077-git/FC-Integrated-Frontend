@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:developer' as developer;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fuselage_kpp/data/link/android_bluetooth_link.dart';
 import 'package:fuselage_kpp/data/link/fc_link.dart';
 import 'package:fuselage_kpp/data/link/serial_fc_link.dart';
 import 'package:fuselage_kpp/data/session/fc_session.dart';
@@ -76,6 +78,7 @@ class FcConnectionController extends Notifier<FcConnectionState> {
 
   /// Bluetooth: if Incoming COM fails to open (semaphore timeout) or never
   /// replies, try the sibling Outgoing COM once. USB / WiFi unchanged.
+  /// Android BT matches FiAssistant: raw insecure SPP only (no CoolFly on open).
   Future<FcSession> _openWithBluetoothFallback(ConnectionSettings settings) async {
     try {
       return await FcSession.open(settings);
@@ -134,28 +137,39 @@ class FcConnectionController extends Notifier<FcConnectionState> {
 
   Future<void> _downloadParameters(FcSession session) async {
     String? error;
+    final androidBt = !kIsWeb &&
+        defaultTargetPlatform == TargetPlatform.android &&
+        session.linkLabel.startsWith('BT ');
+    void onProgress(int received, int total) {
+      if (state.session == session) {
+        state = FcConnectionState(
+          status: FcLinkStatus.loadingParameters,
+          session: session,
+          paramsReceived: received,
+          paramsTotal: total,
+        );
+      }
+    }
+
     try {
-      await session.parameters.downloadAll(
-        onProgress: (received, total) {
-          if (state.session == session) {
-            state = FcConnectionState(
-              status: FcLinkStatus.loadingParameters,
-              session: session,
-              paramsReceived: received,
-              paramsTotal: total,
-            );
-          }
-        },
-      );
+      // Same as Windows agri/Outgoing COM: one downloadAll after streams handshake.
+      await session.parameters.downloadAll(onProgress: onProgress);
       // After params are known, turn on position/GPS streams (SR0_* default to 0 on K++).
       await session.ensureTelemetryRates();
     } catch (e) {
       error = e.toString();
       if (session.isTransmitterLink && error.contains('did not send any parameters')) {
-        error =
-            'Bluetooth linked but the FC sent no parameters. '
-            'Working setup used the Outgoing BT COM @ 57600 with aircraft powered — '
-            'try the other Bluetooth COM if listed, or re-pair T12_055 in Windows.';
+        if (androidBt) {
+          error =
+              'Bluetooth open OK but FC sent no parameters (same check as Windows BT COM). '
+              'Aircraft powered? T12_055 telem baud 57600 in Device Helper? '
+              'On PC this path is Outgoing COM @ 57600.';
+        } else {
+          error =
+              'Bluetooth linked but the FC sent no parameters. '
+              'Working setup used the Outgoing BT COM @ 57600 with aircraft powered — '
+              'try the other Bluetooth COM if listed, or re-pair T12_055 in Windows.';
+        }
         _watchdog?.cancel();
         _watchdog = null;
         _openSession = null;
