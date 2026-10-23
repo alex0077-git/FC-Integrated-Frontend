@@ -484,9 +484,6 @@ class FcTelemetry {
         (raw2 != null && now.difference(raw2) <= standardGpsDetailFreshFor);
   }
 
-  @Deprecated('Use gpsQualityLabel / displaySatellites')
-  String get gpsSignalLabel => gpsQualityLabel;
-
   static String fixLabelFor(int? fixType) => switch (fixType) {
     null => 'No data',
     0 || 1 => 'No fix',

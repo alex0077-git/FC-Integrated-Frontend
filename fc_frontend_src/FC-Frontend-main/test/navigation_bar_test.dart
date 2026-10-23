@@ -261,14 +261,6 @@ void main() {
   });
 }
 
-void _expectSheetWithinCap(WidgetTester tester) {
-  final pageHeight = tester.getSize(find.byType(GroundPlanPage)).height;
-  final cap = pageHeight * (pageHeight < 480 ? 0.45 : 0.34);
-  final sheetHeight = tester.getSize(find.byKey(const Key('ground-plan-sheet'))).height;
-  expect(sheetHeight, lessThanOrEqualTo(cap + 1));
-  expect(sheetHeight, lessThan(pageHeight * 0.5));
-}
-
 Finder _rtlButton() {
   return find.byWidgetPredicate(
     (widget) =>

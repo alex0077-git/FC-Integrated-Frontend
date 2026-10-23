@@ -128,12 +128,44 @@ class CommandService {
     );
   }
 
-  Future<CommandAck> setMode(int customMode) {
-    return sendCommand(
-      command: MavCmd.doSetMode,
-      param1: 1, // custom mode
-      param2: customMode.toDouble(),
+  /// Switch flight mode. This K++ rejects command 176, so fall back to SET_MODE
+  /// and wait until the heartbeat shows the new mode. Land and RTL use the same path.
+  Future<CommandAck> setMode(int customMode) async {
+    try {
+      final ack = await sendCommand(
+        command: MavCmd.doSetMode,
+        param1: 1, // custom mode
+        param2: customMode.toDouble(),
+      );
+      if (_connection.lastCustomMode == customMode) {
+        return ack;
+      }
+    } on CommandException {
+      // Command 176 unsupported/denied. Try the legacy SET_MODE message.
+    }
+
+    final base = (_connection.lastBaseMode | SetMode.flagCustomModeEnabled) & 0xFF;
+    _connection.send(
+      SetMode(
+        targetSystem: _connection.targetSystem,
+        baseMode: base,
+        customMode: customMode,
+      ),
     );
+    final deadline = DateTime.now().add(const Duration(seconds: 3));
+    while (DateTime.now().isBefore(deadline)) {
+      if (_connection.lastCustomMode == customMode) {
+        return const CommandAck(command: MavCmd.doSetMode, result: MavResult.accepted);
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    }
+    if (_connection.lastCustomMode != customMode) {
+      throw CommandException(
+        'Could not switch to ${CopterMode.label(customMode)}. '
+        'The transmitter mode switch is holding the current mode.',
+      );
+    }
+    return const CommandAck(command: MavCmd.doSetMode, result: MavResult.accepted);
   }
 
   /// RTL over the live link (USB / BT / WiFi).
@@ -255,38 +287,9 @@ class CommandService {
     return m.contains('unsupported') || m.contains('failed') || m.contains('denied');
   }
 
-  /// Switch flight mode via DO_SET_MODE, then raw SET_MODE if needed, until heartbeat matches.
+  /// Land / RTL entry. [setMode] already falls back when command 176 is rejected.
   Future<void> _setCopterMode(int customMode) async {
-    try {
-      await setMode(customMode);
-      if (_connection.lastCustomMode == customMode) {
-        return;
-      }
-    } on CommandException {
-      // Fall through to SET_MODE message — K++ may reject DO_SET_MODE too.
-    }
-
-    final base = (_connection.lastBaseMode | SetMode.flagCustomModeEnabled) & 0xFF;
-    _connection.send(
-      SetMode(
-        targetSystem: _connection.targetSystem,
-        baseMode: base,
-        customMode: customMode,
-      ),
-    );
-    final deadline = DateTime.now().add(const Duration(seconds: 3));
-    while (DateTime.now().isBefore(deadline)) {
-      if (_connection.lastCustomMode == customMode) {
-        return;
-      }
-      await Future<void>.delayed(const Duration(milliseconds: 100));
-    }
-    if (_connection.lastCustomMode != customMode) {
-      throw CommandException(
-        'Could not switch to ${CopterMode.label(customMode)}. '
-        'Confirm the aircraft is armed / has a home point, then try again.',
-      );
-    }
+    await setMode(customMode);
   }
 
   Future<bool> _armViaSetMode() async {

@@ -1,7 +1,6 @@
 import 'package:fc_frontend/core/geometry/local_meters.dart';
 import 'package:fc_frontend/data/models/coverage_line.dart';
 import 'package:fc_frontend/data/repositories/mission_repository.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 

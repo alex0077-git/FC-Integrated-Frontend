@@ -278,21 +278,22 @@ class _GroundPlanPageState extends ConsumerState<GroundPlanPage> {
                         ),
                       ),
                     ),
-                  if (openSection == GroundPlanSection.waypoints ||
-                      openSection == GroundPlanSection.history)
+                  if (openSection case final GroundPlanSection sheet
+                      when sheet == GroundPlanSection.waypoints ||
+                          sheet == GroundPlanSection.history)
                     Positioned(
                       left: 0,
                       right: 0,
                       bottom: 0,
                       child: _SectionPanel(
-                        key: ValueKey(openSection),
-                        title: _sectionTitle(openSection!, l10n),
+                        key: ValueKey(sheet),
+                        title: _sectionTitle(sheet, l10n),
                         maxHeight: sheetMax,
                         onClose: () {
                           ref.read(groundPlanSectionProvider.notifier).close();
                         },
                         child: _sectionContent(
-                          section: openSection!,
+                          section: sheet,
                           mission: mission,
                           selected: selected,
                           canUndo: canUndo,

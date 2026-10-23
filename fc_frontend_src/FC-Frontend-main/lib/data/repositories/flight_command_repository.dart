@@ -59,7 +59,14 @@ class FlightCommandRepository {
   }
 
   Future<void> setAutoMode() {
-    return _run((session) => session.commands.setMode(CopterMode.auto));
+    return _run((session) async {
+      await _putAutoOnRepeatedSwitchPosition(session);
+      if (session.telemetry.current.customMode != CopterMode.auto) {
+        throw const FlightCommandException(
+          'Flip the switch to the position that was Mode 23. That position is now Auto. AltHold and Loiter stay.',
+        );
+      }
+    });
   }
 
   /// Uploads the planned coverage mission and starts Auto on the real aircraft.
@@ -78,6 +85,7 @@ class FlightCommandRepository {
     }
     try {
       await session.missions.upload(items);
+      await _putAutoOnRepeatedSwitchPosition(session);
       var needsRcArm = false;
       if (!session.telemetry.current.armed) {
         try {
@@ -90,16 +98,9 @@ class FlightCommandRepository {
           needsRcArm = true;
         }
       }
-      try {
-        await session.commands.setMode(CopterMode.auto);
-      } on CommandException catch (error) {
-        if (!needsRcArm) {
-          rethrow;
-        }
-        // Disarmed K++ may refuse Auto until stick-arm; upload still succeeded.
-        throw FlightCommandException(
-          'Mission uploaded. ${error.message.isNotEmpty ? error.message : 'Set Auto after RC arm.'} '
-          'Arm with the RC (throttle low + yaw right), then set Auto / Start.',
+      if (session.telemetry.current.customMode != CopterMode.auto) {
+        throw const FlightCommandException(
+          'Mission uploaded. Flip the switch to the position that was Mode 23. That position is now Auto. AltHold and Loiter stay.',
         );
       }
       try {
@@ -168,6 +169,70 @@ class FlightCommandRepository {
         m.contains('arm with the rc') ||
         m.contains('unsupported') ||
         m.contains('stick-arm');
+  }
+
+  /// The transmitter's third position is custom mode 23. Leave AltHold and
+  /// Loiter alone and store Auto in every mode-23 slot that is not selected.
+  Future<void> _putAutoOnRepeatedSwitchPosition(FcSession session) async {
+    const thirdMode = 23;
+    final saved = <int, int>{};
+    for (var slot = 1; slot <= 6; slot++) {
+      final raw = session.parameters.values['FLTMODE$slot'];
+      if (raw != null) {
+        saved[slot] = raw.round();
+      }
+    }
+    if (saved.isEmpty || !saved.values.contains(thirdMode)) {
+      if (saved.values.contains(CopterMode.auto)) {
+        return;
+      }
+      throw const FlightCommandException(
+        'Mode 23 was not found on the switch, so Auto was not written.',
+      );
+    }
+
+    final active = _activeModeSlot(session);
+    final targets = <int>[
+      for (final entry in saved.entries)
+        if (entry.value == thirdMode && entry.key != active) entry.key,
+    ];
+    if (targets.isEmpty) {
+      throw const FlightCommandException(
+        'Move the switch to AltHold or Loiter, then upload again. The Mode 23 position will be set to Auto.',
+      );
+    }
+    for (final slot in targets) {
+      await session.parameters.setParam('FLTMODE$slot', CopterMode.auto.toDouble());
+    }
+  }
+
+  /// PWM band of the flight-mode switch, or null when the stick position is unknown.
+  int? _activeModeSlot(FcSession session) {
+    final channel = session.parameters.values['FLTMODE_CH']?.round() ?? 5;
+    final channels = session.telemetry.current.rcChannels;
+    if (channel < 1 || channel > channels.length) {
+      return null;
+    }
+    final pwm = channels[channel - 1];
+    if (pwm < 900 || pwm > 2200) {
+      return null;
+    }
+    if (pwm < 1231) {
+      return 1;
+    }
+    if (pwm < 1361) {
+      return 2;
+    }
+    if (pwm < 1491) {
+      return 3;
+    }
+    if (pwm < 1621) {
+      return 4;
+    }
+    if (pwm < 1750) {
+      return 5;
+    }
+    return 6;
   }
 
   /// Same bar as the UI: RAW 3D+ or K++ quality Good/RTK, ≥6 sats, live lat/lon.

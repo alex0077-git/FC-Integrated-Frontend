@@ -6,7 +6,8 @@ import 'package:fc_frontend/data/models/waypoint.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart' show databaseFactoryFfi, sqfliteFfiInit;
 
 /// Local SQLite store for Ground Plan saved / uploaded missions.
 class MissionDatabase {

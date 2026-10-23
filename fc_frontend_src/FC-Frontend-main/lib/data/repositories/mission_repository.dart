@@ -121,7 +121,7 @@ class MissionState {
 class MissionRepository extends StateNotifier<MissionState> {
   MissionRepository({
     MissionState initialState = const MissionState(),
-    MissionDatabase? this._database,
+    this._database,
   }) : super(initialState);
 
   final MissionDatabase? _database;
