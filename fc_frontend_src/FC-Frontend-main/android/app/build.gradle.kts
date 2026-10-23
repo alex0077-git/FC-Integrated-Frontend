@@ -43,3 +43,8 @@ kotlin {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // Debug resource link needs AppCompat layouts (abc_*); AGP 9 can drop them otherwise.
+    implementation("androidx.appcompat:appcompat:1.7.1")
+}
