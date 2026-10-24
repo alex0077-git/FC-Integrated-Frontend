@@ -198,36 +198,62 @@ class CommandService {
     return const CommandAck(command: MavCmd.navLand, result: MavResult.accepted);
   }
 
-  /// Arm motors. JIYI K++ usually ACKs MAV_CMD 400 as unsupported over USB —
-  /// that means the link is fine; the firmware only arms from the RC. We still
-  /// try SET_MODE + RC override, then tell the pilot to stick-arm.
+  /// Arm motors from the GCS. Transmitter stick-arm stays fully available too —
+  /// both work in parallel. After any GCS attempt we always release RC override
+  /// so the TX sticks are free again.
+  ///
+  /// App paths: COMMAND_LONG 400 (normal + force), SET_MODE armed bit, then
+  /// sustained RC_CHANNELS_OVERRIDE stick gestures (Mode-2 / Mode-1), including
+  /// a combined SET_MODE + override hold until heartbeat shows armed.
   Future<CommandAck> arm({bool force = false}) async {
-    final forceFlags = force ? const [true] : const [false, true];
-    for (final useForce in forceFlags) {
-      try {
-        return await sendCommand(
-          command: MavCmd.componentArmDisarm,
-          param1: 1,
-          param2: useForce ? 21196 : 0,
-          targetComponent: _kppBroadcastComponent,
-        );
-      } on CommandException catch (error) {
-        if (!_shouldFallbackToMode(error)) {
-          rethrow;
-        }
-      }
+    if (_connection.heartbeatArmed) {
+      return const CommandAck(command: MavCmd.componentArmDisarm, result: MavResult.accepted);
     }
 
-    if (await _armViaSetMode()) {
-      return const CommandAck(command: MavCmd.componentArmDisarm, result: MavResult.accepted);
+    try {
+      final forceFlags = force ? const [true] : const [false, true];
+      for (final comp in const [_kppBroadcastComponent, 1]) {
+        for (final useForce in forceFlags) {
+          try {
+            final ack = await sendCommand(
+              command: MavCmd.componentArmDisarm,
+              param1: 1,
+              param2: useForce ? 21196 : 0,
+              targetComponent: comp,
+            );
+            if (_connection.heartbeatArmed || await _waitArmed(const Duration(milliseconds: 800))) {
+              return ack;
+            }
+          } on CommandException catch (error) {
+            if (!_shouldFallbackToMode(error)) {
+              rethrow;
+            }
+          }
+        }
+      }
+
+      if (await _armViaSetMode()) {
+        return const CommandAck(command: MavCmd.componentArmDisarm, result: MavResult.accepted);
+      }
+      if (await _armViaRcOverrideHold()) {
+        return const CommandAck(command: MavCmd.componentArmDisarm, result: MavResult.accepted);
+      }
+      if (await _armViaCombinedHold()) {
+        return const CommandAck(command: MavCmd.componentArmDisarm, result: MavResult.accepted);
+      }
+
+      // Pilot may already have armed on the TX while we were trying.
+      if (_connection.heartbeatArmed) {
+        return const CommandAck(command: MavCmd.componentArmDisarm, result: MavResult.accepted);
+      }
+
+      throw const CommandException(
+        'App arm did not take yet. Retry Arm in the app, or arm with the transmitter '
+        '(throttle low + yaw right) — both work. Need live link, Good GPS (≥6 sats), sensors OK.',
+      );
+    } finally {
+      _releaseRcOverride();
     }
-    if (await _armViaRcStick()) {
-      return const CommandAck(command: MavCmd.componentArmDisarm, result: MavResult.accepted);
-    }
-    throw const CommandException(
-      'USB/link is OK — this K++ does not accept MAVLink Arm (cmd 400). '
-      'Arm with the RC (throttle low + yaw right), then use Takeoff / mission from the app.',
-    );
   }
 
   Future<CommandAck> disarm({bool force = false}) async {
@@ -293,39 +319,101 @@ class CommandService {
   }
 
   Future<bool> _armViaSetMode() async {
-    final base = _connection.lastBaseMode | SetMode.flagSafetyArmed | SetMode.flagCustomModeEnabled;
-    _connection.send(
-      SetMode(
-        targetSystem: _connection.targetSystem,
-        baseMode: base & 0xFF,
-        customMode: _connection.lastCustomMode,
-      ),
-    );
-    final deadline = DateTime.now().add(const Duration(seconds: 2));
+    final deadline = DateTime.now().add(const Duration(seconds: 3));
     while (DateTime.now().isBefore(deadline)) {
+      final base = _connection.lastBaseMode | SetMode.flagSafetyArmed | SetMode.flagCustomModeEnabled;
+      try {
+        _connection.send(
+          SetMode(
+            targetSystem: _connection.targetSystem,
+            baseMode: base & 0xFF,
+            customMode: _connection.lastCustomMode,
+          ),
+        );
+      } on FcLinkException {
+        return false;
+      }
       if (_connection.heartbeatArmed) {
         return true;
       }
-      await Future<void>.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 80));
     }
     return _connection.heartbeatArmed;
   }
 
-  /// Throttle-low + yaw-right via RC_CHANNELS_OVERRIDE (JIYI radio arm gesture).
-  Future<bool> _armViaRcStick() async {
-    final arm = RcChannelsOverride.stickArm(targetSystem: _connection.targetSystem);
-    final release = RcChannelsOverride.release(targetSystem: _connection.targetSystem);
-    final deadline = DateTime.now().add(const Duration(seconds: 3));
+  /// Sustained RC_CHANNELS_OVERRIDE stick-arm (app simulates TX arm gesture).
+  Future<bool> _armViaRcOverrideHold() async {
+    final sys = _connection.targetSystem;
+    final gestures = <RcChannelsOverride>[
+      RcChannelsOverride.stickArmMode2(targetSystem: sys),
+      RcChannelsOverride.stickArmMode2(targetSystem: sys, throttleUs: 1100, yawUs: 1900),
+      RcChannelsOverride.stickArmMode1(targetSystem: sys),
+    ];
+    for (final gesture in gestures) {
+      if (await _holdOverrideUntilArmed(gesture, const Duration(seconds: 4))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /// SET_MODE armed bit + Mode-2 override together (strongest app-side path).
+  Future<bool> _armViaCombinedHold() async {
+    final sys = _connection.targetSystem;
+    final gesture = RcChannelsOverride.stickArmMode2(targetSystem: sys);
+    final release = RcChannelsOverride.release(targetSystem: sys);
+    final deadline = DateTime.now().add(const Duration(seconds: 5));
     while (DateTime.now().isBefore(deadline)) {
+      final base = _connection.lastBaseMode | SetMode.flagSafetyArmed | SetMode.flagCustomModeEnabled;
       try {
-        _connection.send(arm);
+        _connection.send(
+          SetMode(
+            targetSystem: sys,
+            baseMode: base & 0xFF,
+            customMode: _connection.lastCustomMode,
+          ),
+        );
+        _connection.send(gesture);
+        // Keep trying force arm while holding sticks.
+        _connection.send(
+          CommandLong(
+            command: MavCmd.componentArmDisarm,
+            targetSystem: sys,
+            targetComponent: _kppBroadcastComponent,
+            param1: 1,
+            param2: 21196,
+          ),
+        );
       } on FcLinkException {
         break;
       }
       if (_connection.heartbeatArmed) {
         break;
       }
-      await Future<void>.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    }
+    try {
+      _connection.send(release);
+    } on FcLinkException {
+      // ignore
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 250));
+    return _connection.heartbeatArmed;
+  }
+
+  Future<bool> _holdOverrideUntilArmed(RcChannelsOverride gesture, Duration holdFor) async {
+    final release = RcChannelsOverride.release(targetSystem: gesture.targetSystem);
+    final deadline = DateTime.now().add(holdFor);
+    while (DateTime.now().isBefore(deadline)) {
+      try {
+        _connection.send(gesture);
+      } on FcLinkException {
+        return false;
+      }
+      if (_connection.heartbeatArmed) {
+        break;
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 50));
     }
     try {
       _connection.send(release);
@@ -334,6 +422,28 @@ class CommandService {
     }
     await Future<void>.delayed(const Duration(milliseconds: 200));
     return _connection.heartbeatArmed;
+  }
+
+  Future<bool> _waitArmed(Duration timeout) async {
+    final deadline = DateTime.now().add(timeout);
+    while (DateTime.now().isBefore(deadline)) {
+      if (_connection.heartbeatArmed) {
+        return true;
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    }
+    return _connection.heartbeatArmed;
+  }
+
+  /// Drop GCS stick override so the transmitter owns the sticks again.
+  void _releaseRcOverride() {
+    try {
+      _connection.send(
+        RcChannelsOverride.release(targetSystem: _connection.targetSystem),
+      );
+    } on FcLinkException {
+      // ignore — link may already be down
+    }
   }
 
   static String _describeResult(int command, int result) {

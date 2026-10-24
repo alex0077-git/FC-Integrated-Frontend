@@ -1426,10 +1426,32 @@ class RcChannelsOverride extends MavMessage {
 
   /// Throttle-low + yaw-right arm gesture (Mode-2 AETR: ch3 thr, ch4 yaw).
   static RcChannelsOverride stickArm({required int targetSystem, int targetComponent = 0}) {
+    return stickArmMode2(targetSystem: targetSystem, targetComponent: targetComponent);
+  }
+
+  /// Mode-2 AETR: roll/pitch center, throttle low, yaw right.
+  static RcChannelsOverride stickArmMode2({
+    required int targetSystem,
+    int targetComponent = 0,
+    int throttleUs = 1000,
+    int yawUs = 2000,
+  }) {
     return RcChannelsOverride(
       targetSystem: targetSystem,
       targetComponent: targetComponent,
-      channels: const [1500, 1500, 1000, 2000, ignore, ignore, ignore, ignore],
+      channels: [1500, 1500, throttleUs, yawUs, ignore, ignore, ignore, ignore],
+    );
+  }
+
+  /// Mode-1-style: throttle on ch1 low, yaw on ch4 right.
+  static RcChannelsOverride stickArmMode1({
+    required int targetSystem,
+    int targetComponent = 0,
+  }) {
+    return RcChannelsOverride(
+      targetSystem: targetSystem,
+      targetComponent: targetComponent,
+      channels: const [1000, 1500, 1500, 2000, ignore, ignore, ignore, ignore],
     );
   }
 
