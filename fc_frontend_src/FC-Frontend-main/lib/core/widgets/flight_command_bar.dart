@@ -61,14 +61,12 @@ class _FlightCommandBarState extends ConsumerState<FlightCommandBar> {
   }
 
   Future<void> _onTakeoff() async {
-    // Default spray height until a dedicated takeoff altitude setting exists.
-    const altitude = 10.0;
     final l10n = AppLocalizations.of(context);
-    final confirmed = await _confirm(
-      title: l10n.takeoff,
-      message: l10n.takeoffConfirmMessage(altitude.toStringAsFixed(0)),
+    final altitude = await showDialog<double>(
+      context: context,
+      builder: (context) => const _TakeoffAltitudeDialog(defaultAltitude: 10),
     );
-    if (!confirmed || !mounted) {
+    if (altitude == null || !mounted) {
       return;
     }
     await _run(l10n.takeoff, (c) => c.takeoff(altitudeMeters: altitude));
@@ -168,6 +166,92 @@ class _FlightCommandButton extends StatelessWidget {
         onPressed: onPressed,
         child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
       ),
+    );
+  }
+}
+
+class _TakeoffAltitudeDialog extends StatefulWidget {
+  const _TakeoffAltitudeDialog({required this.defaultAltitude});
+
+  final double defaultAltitude;
+
+  @override
+  State<_TakeoffAltitudeDialog> createState() => _TakeoffAltitudeDialogState();
+}
+
+class _TakeoffAltitudeDialogState extends State<_TakeoffAltitudeDialog> {
+  late bool _setAltitude;
+  late final TextEditingController _altitudeController;
+
+  @override
+  void initState() {
+    super.initState();
+    _setAltitude = true;
+    _altitudeController = TextEditingController(
+      text: widget.defaultAltitude.toStringAsFixed(0),
+    );
+  }
+
+  @override
+  void dispose() {
+    _altitudeController.dispose();
+    super.dispose();
+  }
+
+  void _confirm() {
+    if (!_setAltitude) {
+      Navigator.of(context).pop(widget.defaultAltitude);
+      return;
+    }
+    final parsed = double.tryParse(_altitudeController.text.trim());
+    if (parsed == null || parsed <= 0 || parsed > 500) {
+      return;
+    }
+    Navigator.of(context).pop(parsed);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final meters = _setAltitude
+        ? _altitudeController.text.trim()
+        : widget.defaultAltitude.toStringAsFixed(0);
+    return AlertDialog(
+      title: Text(l10n.takeoff),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(l10n.takeoffConfirmMessage(meters.isEmpty ? '—' : meters)),
+          const SizedBox(height: 12),
+          CheckboxListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(l10n.setTakeoffAltitude),
+            value: _setAltitude,
+            onChanged: (value) => setState(() => _setAltitude = value ?? false),
+          ),
+          if (_setAltitude)
+            TextField(
+              controller: _altitudeController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: InputDecoration(
+                labelText: l10n.takeoffAltitudeMeters,
+                suffixText: 'm',
+              ),
+              onChanged: (_) => setState(() {}),
+            ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: _confirm,
+          child: Text(l10n.confirm),
+        ),
+      ],
     );
   }
 }

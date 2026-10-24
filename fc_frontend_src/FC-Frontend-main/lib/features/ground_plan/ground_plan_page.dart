@@ -1155,39 +1155,24 @@ class _GroundPlanPageState extends ConsumerState<GroundPlanPage> {
       _showMessage('Validation error: no waypoints to upload');
       return;
     }
-    final takeoffAltitude = waypoints.first.altitude > 0 ? waypoints.first.altitude : 10.0;
-    final confirmed = await showDialog<bool>(
+    final defaultAltitude = waypoints.first.altitude > 0 ? waypoints.first.altitude : 10.0;
+    final choice = await showDialog<_UploadFlyChoice>(
       context: context,
-      builder: (context) {
-        final l10n = AppLocalizations.of(context);
-        return AlertDialog(
-          title: Text(l10n.uploadAndFly),
-          content: Text(
-            l10n.uploadFlyConfirmMessage(
-              waypoints.length,
-              takeoffAltitude.toStringAsFixed(1),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text(l10n.cancel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: Text(l10n.uploadAndStart),
-            ),
-          ],
-        );
-      },
+      builder: (context) => _UploadAndFlyDialog(
+        waypointCount: waypoints.length,
+        defaultAltitude: defaultAltitude,
+      ),
     );
-    if (confirmed != true || !mounted) {
+    if (choice == null || !mounted) {
       return;
     }
+    final missionWaypoints = choice.applyAltitudeToWaypoints
+        ? [for (final waypoint in waypoints) waypoint.copyWith(altitude: choice.altitude)]
+        : waypoints;
     try {
       await ref.read(flightCommandRepositoryProvider).uploadAndStartMission(
-            waypoints,
-            takeoffAltitude: takeoffAltitude,
+            missionWaypoints,
+            takeoffAltitude: choice.altitude,
           );
       await ref.read(missionRepositoryProvider.notifier).recordUploadedMission();
       if (!mounted) {
@@ -2669,6 +2654,130 @@ class _LoadMissionDialog extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _UploadFlyChoice {
+  const _UploadFlyChoice({
+    required this.altitude,
+    required this.applyAltitudeToWaypoints,
+  });
+
+  final double altitude;
+  final bool applyAltitudeToWaypoints;
+}
+
+/// Upload & Auto fly confirm: optional takeoff / spray altitude override.
+class _UploadAndFlyDialog extends StatefulWidget {
+  const _UploadAndFlyDialog({
+    required this.waypointCount,
+    required this.defaultAltitude,
+  });
+
+  final int waypointCount;
+  final double defaultAltitude;
+
+  @override
+  State<_UploadAndFlyDialog> createState() => _UploadAndFlyDialogState();
+}
+
+class _UploadAndFlyDialogState extends State<_UploadAndFlyDialog> {
+  late bool _setAltitude;
+  late final TextEditingController _altitudeController;
+  String? _altitudeError;
+
+  @override
+  void initState() {
+    super.initState();
+    _setAltitude = true;
+    _altitudeController = TextEditingController(
+      text: widget.defaultAltitude.toStringAsFixed(1),
+    );
+  }
+
+  @override
+  void dispose() {
+    _altitudeController.dispose();
+    super.dispose();
+  }
+
+  void _confirm() {
+    if (!_setAltitude) {
+      Navigator.of(context).pop(
+        _UploadFlyChoice(
+          altitude: widget.defaultAltitude,
+          applyAltitudeToWaypoints: false,
+        ),
+      );
+      return;
+    }
+    final parsed = double.tryParse(_altitudeController.text.trim());
+    if (parsed == null || parsed <= 0 || parsed > 500) {
+      setState(() => _altitudeError = 'Enter altitude 0.1–500 m');
+      return;
+    }
+    Navigator.of(context).pop(
+      _UploadFlyChoice(altitude: parsed, applyAltitudeToWaypoints: true),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final meters = _setAltitude
+        ? (_altitudeController.text.trim().isEmpty
+            ? widget.defaultAltitude.toStringAsFixed(1)
+            : _altitudeController.text.trim())
+        : widget.defaultAltitude.toStringAsFixed(1);
+    return AlertDialog(
+      title: Text(l10n.uploadAndFly),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(l10n.uploadFlyConfirmMessage(widget.waypointCount, meters)),
+          const SizedBox(height: 12),
+          CheckboxListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(l10n.setTakeoffAltitude),
+            value: _setAltitude,
+            onChanged: (value) {
+              setState(() {
+                _setAltitude = value ?? false;
+                _altitudeError = null;
+              });
+            },
+          ),
+          if (_setAltitude)
+            TextField(
+              controller: _altitudeController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: InputDecoration(
+                labelText: l10n.takeoffAltitudeMeters,
+                errorText: _altitudeError,
+                suffixText: 'm',
+              ),
+              onChanged: (_) {
+                if (_altitudeError != null) {
+                  setState(() => _altitudeError = null);
+                } else {
+                  setState(() {});
+                }
+              },
+            ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: _confirm,
+          child: Text(l10n.uploadAndStart),
+        ),
+      ],
     );
   }
 }
