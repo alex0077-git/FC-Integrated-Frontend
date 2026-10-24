@@ -28,7 +28,17 @@ class FlightCommandRepository {
 
   Future<void> arm() => _run((session) async {
         _requireFlyReady(session, needGps: true);
-        await session.commands.arm();
+        // Already armed from TX or a previous app arm — both are valid.
+        if (session.telemetry.current.armed) {
+          return;
+        }
+        await session.commands.arm(force: true);
+        if (!session.telemetry.current.armed) {
+          throw const FlightCommandException(
+            'Not armed yet. Tap Arm again in the app, or arm on the transmitter '
+            '(throttle low + yaw right) — both work in parallel.',
+          );
+        }
       });
 
   Future<void> disarm() => _run((session) => session.commands.disarm());
@@ -37,7 +47,17 @@ class FlightCommandRepository {
     return _run((session) async {
       _requireFlyReady(session, needGps: true);
       if (!session.telemetry.current.armed) {
-        await session.commands.arm();
+        try {
+          await session.commands.arm(force: true);
+        } on CommandException {
+          // TX may arm in parallel — wait briefly for either path.
+          await Future<void>.delayed(const Duration(milliseconds: 500));
+        }
+      }
+      if (!session.telemetry.current.armed) {
+        throw const FlightCommandException(
+          'Not armed for takeoff. Arm from the app or the transmitter, then Takeoff.',
+        );
       }
       await session.commands.takeoff(altitudeMeters: altitudeMeters);
     });
@@ -86,32 +106,30 @@ class FlightCommandRepository {
     try {
       await session.missions.upload(items);
       await _putAutoOnRepeatedSwitchPosition(session);
-      var needsRcArm = false;
+      // Prefer app arm; TX stick-arm is equally valid if the craft is already armed
+      // or the pilot arms on the transmitter in parallel.
       if (!session.telemetry.current.armed) {
         try {
-          await session.commands.arm();
-        } on CommandException catch (error) {
-          // K++ rejects MAV_CMD 400; mission is already on the FC — continue.
-          if (!_isKppRcArmOnly(error.message)) {
-            rethrow;
-          }
-          needsRcArm = true;
+          await session.commands.arm(force: true);
+        } on CommandException {
+          await Future<void>.delayed(const Duration(milliseconds: 400));
         }
+      }
+      if (!session.telemetry.current.armed) {
+        throw const FlightCommandException(
+          'Mission uploaded. Arm from the app or the transmitter '
+          '(throttle low + yaw right), then flip to Auto (former Mode 23).',
+        );
       }
       if (session.telemetry.current.customMode != CopterMode.auto) {
         throw const FlightCommandException(
-          'Mission uploaded. Flip the switch to the position that was Mode 23. That position is now Auto. AltHold and Loiter stay.',
+          'Mission uploaded and armed. Flip the switch to the position that was Mode 23. That position is now Auto. AltHold and Loiter stay.',
         );
       }
       try {
         await session.commands.startMission();
       } on CommandException {
         // Auto mode alone starts the mission on many K++ / ArduCopter builds.
-      }
-      if (needsRcArm && !session.telemetry.current.armed) {
-        throw const FlightCommandException(
-          'Mission uploaded. This K++ needs RC arm (throttle low + yaw right) before Auto will fly.',
-        );
       }
     } on FlightCommandException {
       rethrow;
@@ -159,16 +177,6 @@ class FlightCommandRepository {
     if (reason != null) {
       throw FlightCommandException(reason);
     }
-  }
-
-  /// True when arm failed only because this K++ is RC-stick-arm (link is fine).
-  static bool _isKppRcArmOnly(String message) {
-    final m = message.toLowerCase();
-    return m.contains('cmd 400') ||
-        m.contains('mavlink arm') ||
-        m.contains('arm with the rc') ||
-        m.contains('unsupported') ||
-        m.contains('stick-arm');
   }
 
   /// The transmitter's third position is custom mode 23. Leave AltHold and
