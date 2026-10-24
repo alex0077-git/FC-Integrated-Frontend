@@ -243,6 +243,11 @@ class SimulatedFcLink implements FcLink {
       RcChannelsRaw(port: 0, channels: [stick(0), stick(1), stick(2), stick(3), 1100, 1500, 1900, 1500], rssi: 230),
     );
     _send(const RcChannelsRaw(port: 1, channels: [1500, 1500, 1100, 1100, 1500, 1500, 1500, 1500], rssi: 230));
+    // Simulate K1 flow meter so spray HUD can be exercised offline.
+    if (_tick % 2 == 0) {
+      final flowLpm = 1.2 + wave.abs() * 0.8;
+      _send(StatusText(severity: 6, text: 'flow: ${flowLpm.toStringAsFixed(2)}'));
+    }
   }
 
   void _sendLogList() {

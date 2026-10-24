@@ -13,6 +13,9 @@ class Telemetry {
     required this.hasGpsFix,
     required this.mode,
     required this.armed,
+    this.flowRateLpm,
+    this.liquidLevelPercent,
+    this.sprayedLiters,
   });
 
   final double latitude;
@@ -35,4 +38,13 @@ class Telemetry {
   final bool hasGpsFix;
   final String mode;
   final bool armed;
+
+  /// Flow meter (K1) rate in L/min when the FC reports it.
+  final double? flowRateLpm;
+
+  /// Liquid level 0–100 when reported.
+  final double? liquidLevelPercent;
+
+  /// Cumulative sprayed liters when reported.
+  final double? sprayedLiters;
 }

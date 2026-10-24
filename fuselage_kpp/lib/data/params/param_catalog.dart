@@ -487,7 +487,7 @@ abstract final class ParamCatalog {
       section: ParamSection.liquid,
       simulatedDefault: 1,
       help:
-          'K++ options: Not used, Switch sensor (FC port K2), Real-time level. Flow meter goes on port K1. Value mapping not yet confirmed.',
+          'K++ options: Not used, Switch sensor (FC port K2), Real-time level. Flow meter on port K1 — live L/min shown on Start / Liquid when the FC reports it.',
     ),
     ParamSpec(
       id: 'FS_LIQ_ENABLE',

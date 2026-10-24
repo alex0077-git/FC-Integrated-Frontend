@@ -2,6 +2,7 @@ import 'dart:developer' as developer;
 import 'dart:math' as math;
 
 import 'package:fuselage_kpp/data/mavlink/mavlink_messages.dart';
+import 'package:fuselage_kpp/data/session/spray_telem.dart';
 
 /// UI colour for observed GPS quality grades (206[2] / 207[65]).
 enum GpsQualityTone { grey, amber, green, blue }
@@ -78,6 +79,10 @@ class FcTelemetry {
     this.rcChannels = const [],
     this.rssi,
     this.lastStatusText,
+    this.flowRateLpm,
+    this.liquidLevelPercent,
+    this.sprayedLiters,
+    this.liquidValue,
   });
 
   static const Duration gpsSatsStaleAfter = Duration(seconds: 3);
@@ -130,7 +135,23 @@ class FcTelemetry {
   final int? rssi;
   final String? lastStatusText;
 
+  /// Flow meter on K1 (L/min), when the FC reports it.
+  final double? flowRateLpm;
+
+  /// Level sensor reading (0–100), when reported.
+  final double? liquidLevelPercent;
+
+  /// Cumulative sprayed volume (L), when reported.
+  final double? sprayedLiters;
+
+  /// Raw JIYI-style liquidValue (flow or level).
+  final double? liquidValue;
+
   bool get armed => baseMode & baseModeArmed != 0;
+
+  /// True when any spray / liquid reading is present.
+  bool get hasSprayTelem =>
+      flowRateLpm != null || liquidLevelPercent != null || sprayedLiters != null || liquidValue != null;
 
   SensorHealth healthOf(FcSensor sensor) {
     if (sensor == FcSensor.gps) {
@@ -566,9 +587,35 @@ class FcTelemetry {
       ScaledPressure() => _copy(pressureHpa: message.pressureHpa, temperatureC: message.temperatureCenti / 100),
       RcChannelsRaw() => _copy(rcChannels: _mergeRawPort(message), rssi: message.rssi),
       RcChannels() => _copy(rcChannels: message.channels, rssi: message.rssi),
-      StatusText() => _copy(lastStatusText: message.text),
+      StatusText() => _applyStatusText(message),
+      UnknownMavMessage() => _applyUnknownSpray(message),
       _ => this,
     };
+  }
+
+  FcTelemetry _applyStatusText(StatusText message) {
+    final spray = SprayTelem.fromStatusText(message.text);
+    return _copy(
+      lastStatusText: message.text,
+      flowRateLpm: spray?.flowRateLpm,
+      liquidLevelPercent: spray?.liquidLevelPercent,
+      sprayedLiters: spray?.sprayedLiters,
+      liquidValue: spray?.liquidValue,
+      keepSpray: spray == null,
+    );
+  }
+
+  FcTelemetry _applyUnknownSpray(UnknownMavMessage message) {
+    final spray = SprayTelem.fromUnknown(message);
+    if (spray == null) {
+      return this;
+    }
+    return _copy(
+      flowRateLpm: spray.flowRateLpm,
+      liquidLevelPercent: spray.liquidLevelPercent,
+      sprayedLiters: spray.sprayedLiters,
+      liquidValue: spray.liquidValue,
+    );
   }
 
   static double _groundSpeedMps(int vxCms, int vyCms) {
@@ -625,6 +672,11 @@ class FcTelemetry {
     List<int>? rcChannels,
     int? rssi,
     String? lastStatusText,
+    double? flowRateLpm,
+    double? liquidLevelPercent,
+    double? sprayedLiters,
+    double? liquidValue,
+    bool keepSpray = false,
   }) {
     return FcTelemetry(
       voltage: keepVoltage ? this.voltage : (voltage ?? this.voltage),
@@ -671,6 +723,11 @@ class FcTelemetry {
       rcChannels: rcChannels ?? this.rcChannels,
       rssi: rssi ?? this.rssi,
       lastStatusText: lastStatusText ?? this.lastStatusText,
+      flowRateLpm: keepSpray ? this.flowRateLpm : (flowRateLpm ?? this.flowRateLpm),
+      liquidLevelPercent:
+          keepSpray ? this.liquidLevelPercent : (liquidLevelPercent ?? this.liquidLevelPercent),
+      sprayedLiters: keepSpray ? this.sprayedLiters : (sprayedLiters ?? this.sprayedLiters),
+      liquidValue: keepSpray ? this.liquidValue : (liquidValue ?? this.liquidValue),
     );
   }
 }

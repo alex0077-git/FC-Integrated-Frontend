@@ -127,6 +127,24 @@ class OverviewPage extends ConsumerWidget {
                   value: telemetry.rssi == null ? '—' : '${telemetry.rssi}',
                   level: telemetry.rssi == null ? StatusLevel.unknown : StatusLevel.good,
                 ),
+                StatusTile(
+                  label: 'Flow rate',
+                  value: telemetry.flowRateLpm == null
+                      ? '—'
+                      : '${telemetry.flowRateLpm!.toStringAsFixed(2)} L/min',
+                  level: telemetry.flowRateLpm == null
+                      ? StatusLevel.unknown
+                      : (telemetry.flowRateLpm! > 0.05 ? StatusLevel.good : StatusLevel.unknown),
+                ),
+                StatusTile(
+                  label: 'Liquid',
+                  value: telemetry.liquidLevelPercent == null
+                      ? (telemetry.liquidValue == null
+                          ? '—'
+                          : telemetry.liquidValue!.toStringAsFixed(2))
+                      : '${telemetry.liquidLevelPercent!.toStringAsFixed(0)} %',
+                  level: telemetry.hasSprayTelem ? StatusLevel.good : StatusLevel.unknown,
+                ),
                 StatusTile(label: l10n.link, value: connection.session?.linkLabel ?? '—', level: StatusLevel.good),
                 StatusTile(
                   label: l10n.firmwareVersion,

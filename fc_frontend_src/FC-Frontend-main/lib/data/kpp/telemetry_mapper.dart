@@ -48,6 +48,10 @@ Telemetry mapFcTelemetry(FcTelemetry source) {
     hasGpsFix: hasFix,
     mode: CopterMode.label(source.customMode),
     armed: source.armed,
+    flowRateLpm: source.flowRateLpm ??
+        (source.liquidValue != null && source.liquidValue! <= 8 ? source.liquidValue : null),
+    liquidLevelPercent: source.liquidLevelPercent,
+    sprayedLiters: source.sprayedLiters,
   );
 }
 
