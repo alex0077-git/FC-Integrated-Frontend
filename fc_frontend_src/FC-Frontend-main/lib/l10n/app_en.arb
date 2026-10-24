@@ -119,6 +119,8 @@
   "kppTuningFullSubtitle": "Status, sensors, gains, logs, firmware…",
   "batteryCritical": "Battery critical",
   "batteryLow": "Battery low",
+  "batteryFirstWarning": "Battery first warning",
+  "batterySecondWarningRtl": "Battery second warning — returning home (RTL)",
   "altitude": "Altitude",
   "distanceToDrone": "Distance to Drone",
   "distanceToLanding": "Distance to Landing Point",
@@ -305,6 +307,10 @@
   "action": "Action",
   "selectCrop": "Select Crop",
   "sprayRate": "Spray Rate",
+  "flowRate": "Flow rate",
+  "liquidLevel": "Liquid",
+  "setTakeoffAltitude": "Set takeoff altitude",
+  "takeoffAltitudeMeters": "Altitude (m)",
   "notes": "Notes",
   "name": "Name",
   "defaultMissionName": "Mission",
@@ -316,6 +322,14 @@
       },
       "meters": {
         "type": "String"
+      }
+    }
+  },
+  "uploadFlyConfirmBody": "Upload {count} waypoints to the live K++ and start Auto?",
+  "@uploadFlyConfirmBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
       }
     }
   },

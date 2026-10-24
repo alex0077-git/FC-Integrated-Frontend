@@ -26,6 +26,7 @@ class FlightStatusBar extends ConsumerWidget {
         : BatteryDisplay.fromFc(
             remaining: telemetry.batteryRemainingRaw,
             voltage: telemetry.batteryVoltage,
+            settings: settings,
           );
     final batteryColor = _batteryColor(battery, settings, statusColors);
     final location = GoRouterState.of(context).uri.path;
@@ -156,12 +157,8 @@ class _BatteryReadout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Exact FC % when present; otherwise real pack volts — never an invented %.
-    final label = battery?.percent != null
-        ? '${battery!.percent!.toStringAsFixed(0)}%'
-        : battery?.voltage != null
-            ? '${battery!.voltage!.toStringAsFixed(2)}V'
-            : '--';
+    // Attached aircraft pack only: charge % + live pack volts for verification.
+    final label = battery?.hudLabel ?? '--';
     final fraction = battery?.percent == null ? null : battery!.percent! / 100;
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -226,8 +223,8 @@ Color _batteryColor(
     return statusColors.statusGood;
   }
   return switch (batteryAlertLevel(battery, settings)) {
-    BatteryAlertLevel.critical => statusColors.statusCritical,
-    BatteryAlertLevel.warning => statusColors.statusWarning,
+    BatteryAlertLevel.second => statusColors.statusCritical,
+    BatteryAlertLevel.first => statusColors.statusWarning,
     null => statusColors.statusGood,
   };
 }

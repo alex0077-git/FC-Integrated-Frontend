@@ -632,6 +632,18 @@ abstract class AppLocalizations {
   /// **'Battery low'**
   String get batteryLow;
 
+  /// No description provided for @batteryFirstWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Battery first warning'**
+  String get batteryFirstWarning;
+
+  /// No description provided for @batterySecondWarningRtl.
+  ///
+  /// In en, this message translates to:
+  /// **'Battery second warning — returning home (RTL)'**
+  String get batterySecondWarningRtl;
+
   /// No description provided for @altitude.
   ///
   /// In en, this message translates to:
@@ -1417,6 +1429,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Spray Rate'**
   String get sprayRate;
+
+  /// No description provided for @flowRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Flow rate'**
+  String get flowRate;
+
+  /// No description provided for @liquidLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Liquid'**
+  String get liquidLevel;
+
+  /// No description provided for @setTakeoffAltitude.
+  ///
+  /// In en, this message translates to:
+  /// **'Set takeoff altitude'**
+  String get setTakeoffAltitude;
+
+  /// No description provided for @takeoffAltitudeMeters.
+  ///
+  /// In en, this message translates to:
+  /// **'Altitude (m)'**
+  String get takeoffAltitudeMeters;
 
   /// No description provided for @notes.
   ///

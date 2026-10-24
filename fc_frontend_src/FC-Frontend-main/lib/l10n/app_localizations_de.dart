@@ -284,6 +284,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get batteryLow => 'Batterie niedrig';
 
   @override
+  String get batteryFirstWarning => 'Batterie erste Warnung';
+
+  @override
+  String get batterySecondWarningRtl =>
+      'Batterie zweite Warnung — Rückflug (RTL)';
+
+  @override
   String get altitude => 'Höhe';
 
   @override
@@ -709,6 +716,18 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get sprayRate => 'Sprührate';
+
+  @override
+  String get flowRate => 'Durchfluss';
+
+  @override
+  String get liquidLevel => 'Flüssigkeit';
+
+  @override
+  String get setTakeoffAltitude => 'Startaltitude festlegen';
+
+  @override
+  String get takeoffAltitudeMeters => 'Höhe (m)';
 
   @override
   String get notes => 'Notizen';

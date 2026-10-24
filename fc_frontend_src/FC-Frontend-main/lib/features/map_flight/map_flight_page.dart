@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fc_frontend/core/map/map_gps_focus.dart';
 import 'package:fc_frontend/core/map/map_view.dart';
 import 'package:fc_frontend/core/theme/app_theme.dart';
@@ -5,6 +7,7 @@ import 'package:fc_frontend/core/widgets/responsive.dart';
 import 'package:fc_frontend/data/models/battery_level.dart';
 import 'package:fc_frontend/data/models/battery_settings.dart';
 import 'package:fc_frontend/data/models/telemetry.dart';
+import 'package:fc_frontend/data/repositories/flight_command_repository.dart';
 import 'package:fc_frontend/data/repositories/settings_repository.dart';
 import 'package:fc_frontend/data/repositories/telemetry_repository.dart';
 import 'package:fc_frontend/l10n/app_localizations.dart';
@@ -13,6 +16,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuselage_kpp/core/theme/app_theme.dart' as kpp_theme;
 import 'package:fuselage_kpp/core/widgets/live_gps_map_layers.dart';
+import 'package:fuselage_kpp/data/mavlink/mavlink_messages.dart';
 import 'package:fuselage_kpp/data/repositories/connection_repository.dart';
 import 'package:fuselage_kpp/data/repositories/telemetry_repository.dart'
     as kpp_telemetry;
@@ -42,6 +46,10 @@ class _MapFlightPageState extends ConsumerState<MapFlightPage> {
   /// Landing / RTL home from the first valid FC GPS this connection (not a demo city).
   LatLng? _homeGps;
 
+  /// Prevents spamming RTL while charge stays under the second warning.
+  bool _secondWarningRtlSent = false;
+  bool _rtlInFlight = false;
+
   void _lockHomeFrom(Telemetry? t) {
     if (_homeGps != null || t == null || !t.hasGpsFix) {
       return;
@@ -52,6 +60,67 @@ class _MapFlightPageState extends ConsumerState<MapFlightPage> {
     }
   }
 
+  Future<void> _maybeAutoRtlOnSecondWarning(
+    Telemetry? telemetry,
+    BatterySettings settings,
+  ) async {
+    if (telemetry == null) {
+      return;
+    }
+    final battery = BatteryDisplay.fromFc(
+      remaining: telemetry.batteryRemainingRaw,
+      voltage: telemetry.batteryVoltage,
+      settings: settings,
+    );
+    final level = batteryAlertLevel(battery, settings);
+
+    // Allow another auto-RTL only after charge recovers above second warning.
+    if (level != BatteryAlertLevel.second) {
+      _secondWarningRtlSent = false;
+      return;
+    }
+    if (_secondWarningRtlSent || _rtlInFlight) {
+      return;
+    }
+    if (!telemetry.armed) {
+      return;
+    }
+    if (telemetry.mode == CopterMode.label(CopterMode.rtl) ||
+        telemetry.mode == CopterMode.label(CopterMode.land)) {
+      _secondWarningRtlSent = true;
+      return;
+    }
+
+    final commands = ref.read(flightCommandRepositoryProvider);
+    if (!commands.isConnected) {
+      return;
+    }
+
+    _secondWarningRtlSent = true;
+    _rtlInFlight = true;
+    try {
+      await commands.returnToLaunch();
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).batterySecondWarningRtl),
+        ),
+      );
+    } on FlightCommandException catch (error) {
+      _secondWarningRtlSent = false;
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message)),
+      );
+    } finally {
+      _rtlInFlight = false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final telemetry = ref.watch(telemetryStreamProvider).asData?.value;
@@ -59,11 +128,16 @@ class _MapFlightPageState extends ConsumerState<MapFlightPage> {
 
     ref.listen(fcConnectionProvider, (previous, next) {
       if (next.session == null && _homeGps != null) {
-        setState(() => _homeGps = null);
+        setState(() {
+          _homeGps = null;
+          _secondWarningRtlSent = false;
+        });
       }
     });
     ref.listen(telemetryStreamProvider, (previous, next) {
-      _lockHomeFrom(next.asData?.value);
+      final value = next.asData?.value;
+      _lockHomeFrom(value);
+      unawaited(_maybeAutoRtlOnSecondWarning(value, batterySettings));
     });
     if (_homeGps == null && telemetry != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -127,6 +201,7 @@ class _BatteryBanner extends StatelessWidget {
     final battery = BatteryDisplay.fromFc(
       remaining: telemetry.batteryRemainingRaw,
       voltage: telemetry.batteryVoltage,
+      settings: settings,
     );
     final level = batteryAlertLevel(battery, settings);
     if (level == null) {
@@ -134,12 +209,13 @@ class _BatteryBanner extends StatelessWidget {
     }
 
     final statusColors = Theme.of(context).extension<AppStatusColors>()!;
-    final critical = level == BatteryAlertLevel.critical;
-    final color = critical
+    final second = level == BatteryAlertLevel.second;
+    final color = second
         ? statusColors.statusCritical
         : statusColors.statusWarning;
     final l10n = AppLocalizations.of(context);
-    final message = critical ? l10n.batteryCritical : l10n.batteryLow;
+    final message =
+        second ? l10n.batterySecondWarningRtl : l10n.batteryFirstWarning;
 
     return Material(
       color: color.withValues(alpha: 0.18),
@@ -274,6 +350,18 @@ class _TelemetryCards extends ConsumerWidget {
         value: telemetry == null
             ? '--'
             : '${telemetry!.speed.toStringAsFixed(1)} m/s',
+      ),
+      (
+        label: l10n.flowRate,
+        value: telemetry?.flowRateLpm == null
+            ? '--'
+            : '${telemetry!.flowRateLpm!.toStringAsFixed(2)} L/min',
+      ),
+      (
+        label: l10n.liquidLevel,
+        value: telemetry?.liquidLevelPercent == null
+            ? '--'
+            : '${telemetry!.liquidLevelPercent!.toStringAsFixed(0)} %',
       ),
     ];
     if (stacked) {
