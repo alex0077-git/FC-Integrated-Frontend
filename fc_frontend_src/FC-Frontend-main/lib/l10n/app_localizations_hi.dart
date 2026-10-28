@@ -281,11 +281,11 @@ class AppLocalizationsHi extends AppLocalizations {
   String get batteryLow => 'बैटरी कम';
 
   @override
-  String get batteryFirstWarning => 'बैटरी पहली चेतावनी';
+  String get batteryFirstWarning => 'Battery first warning';
 
   @override
   String get batterySecondWarningRtl =>
-      'बैटरी दूसरी चेतावनी — घर वापसी (RTL)';
+      'Battery second warning — returning home (RTL)';
 
   @override
   String get altitude => 'ऊंचाई';
@@ -713,16 +713,16 @@ class AppLocalizationsHi extends AppLocalizations {
   String get sprayRate => 'स्प्रे दर';
 
   @override
-  String get flowRate => 'प्रवाह दर';
+  String get flowRate => 'Flow rate';
 
   @override
-  String get liquidLevel => 'तरल';
+  String get liquidLevel => 'Liquid';
 
   @override
-  String get setTakeoffAltitude => 'टेकऑफ़ ऊँचाई सेट करें';
+  String get setTakeoffAltitude => 'Set takeoff altitude';
 
   @override
-  String get takeoffAltitudeMeters => 'ऊँचाई (मी)';
+  String get takeoffAltitudeMeters => 'Altitude (m)';
 
   @override
   String get notes => 'नोट';
@@ -736,6 +736,11 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String uploadFlyConfirmMessage(int count, String meters) {
     return 'लाइव K++ पर $count वेपॉइंट अपलोड, जरूरत हो तो आर्म और Auto शुरू (टेकऑफ $meters m)?';
+  }
+
+  @override
+  String uploadFlyConfirmBody(int count) {
+    return 'Upload $count waypoints to the live K++ and start Auto?';
   }
 
   @override

@@ -740,6 +740,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String uploadFlyConfirmBody(int count) {
+    return 'Upload $count waypoints to the live K++ and start Auto?';
+  }
+
+  @override
   String get missionUploadedSuccess =>
       'Mission uploaded — saved locally and Auto started on live K++';
 

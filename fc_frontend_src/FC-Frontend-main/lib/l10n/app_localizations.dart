@@ -1478,6 +1478,12 @@ abstract class AppLocalizations {
   /// **'Upload {count} waypoints to the live K++, arm if needed, and start Auto (takeoff {meters} m)?'**
   String uploadFlyConfirmMessage(int count, String meters);
 
+  /// No description provided for @uploadFlyConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload {count} waypoints to the live K++ and start Auto?'**
+  String uploadFlyConfirmBody(int count);
+
   /// No description provided for @missionUploadedSuccess.
   ///
   /// In en, this message translates to:

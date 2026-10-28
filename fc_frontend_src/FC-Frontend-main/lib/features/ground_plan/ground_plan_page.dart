@@ -89,6 +89,8 @@ class _GroundPlanPageState extends ConsumerState<GroundPlanPage> {
   String? _areaPreviewId;
   LatLng? _areaPreviewPoint;
   FieldArea _fieldArea = const FieldArea.invalid(FieldAreaProblem.needsThreePoints);
+  /// User can dismiss the coverage joystick like section panels; reopen via chip.
+  bool _coveragePanelOpen = true;
 
   @override
   void initState() {
@@ -158,6 +160,16 @@ class _GroundPlanPageState extends ConsumerState<GroundPlanPage> {
           previous?.obstacles != next.obstacles) {
         _scheduleArea();
       }
+      final coverageAppeared = previous != null &&
+          previous.coverageLines.isEmpty &&
+          next.coverageLines.isNotEmpty;
+      if (coverageAppeared && !_coveragePanelOpen) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            setState(() => _coveragePanelOpen = true);
+          }
+        });
+      }
       final becameBlocked = next.coverageBlockedByObstacle &&
           previous?.coverageBlockedByObstacle != true;
       if (!becameBlocked) {
@@ -193,13 +205,29 @@ class _GroundPlanPageState extends ConsumerState<GroundPlanPage> {
               final sheetMax = sheetSection
                   ? _groundPlanSheetCap(constraints.maxHeight)
                   : 0.0;
-              final toolAtTop = hasCoverage;
+              // Phone cannot fit coverage joystick + left tool chrome together.
+              final compactPlan = Responsive.useCompactMapLayout(context) ||
+                  constraints.maxHeight < 480;
+              final leftToolsOpen = openSection == GroundPlanSection.boundary ||
+                  openSection == GroundPlanSection.split ||
+                  openSection == GroundPlanSection.obstacles;
+              final coverageSlotFree =
+                  hasCoverage && !(leftToolsOpen && compactPlan);
+              final showCoveragePanel =
+                  coverageSlotFree && _coveragePanelOpen;
+              final showCoverageReopen =
+                  coverageSlotFree && !_coveragePanelOpen;
+              final toolAtTop = showCoveragePanel;
               final toolBottom = toolAtTop ? null : sheetMax + 8;
               final toolTop = toolAtTop ? 12.0 : null;
               final controlsMax = (constraints.maxHeight - sheetMax - 16)
                   .clamp(96.0, 440.0);
-              final toolMaxHeight = controlsMax.clamp(120.0, 240.0);
+              final toolMaxHeight = leftToolsOpen && !showCoveragePanel
+                  ? controlsMax.clamp(160.0, 320.0)
+                  : controlsMax.clamp(120.0, 240.0);
               final controlsWidth = (constraints.maxWidth - 168).clamp(220.0, 360.0);
+              // Bottom-left is free for coverage; map style sits top-left.
+              final coverageBottom = sheetMax + 8;
               return Stack(
                 children: [
                   Positioned.fill(child: _planMap(mission, openSection, areaUnit)),
@@ -301,21 +329,55 @@ class _GroundPlanPageState extends ConsumerState<GroundPlanPage> {
                         ),
                       ),
                     ),
-                  if (hasCoverage)
+                  if (showCoveragePanel)
                     Positioned(
                       left: 8,
-                      bottom: sheetMax + 8,
+                      bottom: coverageBottom,
                       width: controlsWidth,
                       child: ConstrainedBox(
                         constraints: BoxConstraints(maxHeight: controlsMax),
-                        child: const SingleChildScrollView(
+                        child: SingleChildScrollView(
                           child: Material(
                             color: AppTheme.surface,
                             elevation: 4,
-                            borderRadius: BorderRadius.all(Radius.circular(12)),
+                            borderRadius: const BorderRadius.all(Radius.circular(12)),
                             child: Padding(
-                              padding: EdgeInsets.all(8),
-                              child: CoverageAdjustControls(),
+                              padding: const EdgeInsets.all(8),
+                              child: CoverageAdjustControls(
+                                onClose: () {
+                                  setState(() => _coveragePanelOpen = false);
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (showCoverageReopen)
+                    Positioned(
+                      left: 8,
+                      bottom: coverageBottom,
+                      child: Material(
+                        color: AppTheme.surface,
+                        elevation: 4,
+                        borderRadius: const BorderRadius.all(Radius.circular(12)),
+                        child: InkWell(
+                          borderRadius: const BorderRadius.all(Radius.circular(12)),
+                          onTap: () {
+                            setState(() => _coveragePanelOpen = true);
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.tune, size: 20),
+                                const SizedBox(width: 8),
+                                Text(l10n.coverageAdjust),
+                              ],
                             ),
                           ),
                         ),
@@ -1054,6 +1116,9 @@ class _GroundPlanPageState extends ConsumerState<GroundPlanPage> {
       spacingMeters: minLineSpacingMeters,
       orientationDegrees: 0,
     );
+    if (mounted) {
+      setState(() => _coveragePanelOpen = true);
+    }
   }
 
   void _onMapReady() {
@@ -1523,7 +1588,11 @@ class _PlanMapState extends ConsumerState<_PlanMap> {
           ),
         ),
       overlays: [
-        const MapStyleToggle(),
+        // Top-left: clears coverage adjust / reopen chip on the bottom-left.
+        const MapStyleToggle(
+          alignment: Alignment.topLeft,
+          padding: EdgeInsets.fromLTRB(12, 48, 12, 12),
+        ),
         Positioned(
           left: 12,
           top: 12,

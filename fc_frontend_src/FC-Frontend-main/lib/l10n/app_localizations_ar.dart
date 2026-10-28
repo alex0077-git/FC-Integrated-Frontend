@@ -282,11 +282,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get batteryLow => 'البطارية منخفضة';
 
   @override
-  String get batteryFirstWarning => 'تحذير البطارية الأول';
+  String get batteryFirstWarning => 'Battery first warning';
 
   @override
   String get batterySecondWarningRtl =>
-      'تحذير البطارية الثاني — العودة للمنزل (RTL)';
+      'Battery second warning — returning home (RTL)';
 
   @override
   String get altitude => 'الارتفاع';
@@ -713,16 +713,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get sprayRate => 'معدل الرش';
 
   @override
-  String get flowRate => 'معدل التدفق';
+  String get flowRate => 'Flow rate';
 
   @override
-  String get liquidLevel => 'السائل';
+  String get liquidLevel => 'Liquid';
 
   @override
-  String get setTakeoffAltitude => 'تعيين ارتفاع الإقلاع';
+  String get setTakeoffAltitude => 'Set takeoff altitude';
 
   @override
-  String get takeoffAltitudeMeters => 'الارتفاع (م)';
+  String get takeoffAltitudeMeters => 'Altitude (m)';
 
   @override
   String get notes => 'ملاحظات';
@@ -736,6 +736,11 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String uploadFlyConfirmMessage(int count, String meters) {
     return 'رفع $count نقطة إلى K++ المباشر، تسليح إن لزم، وبدء Auto (إقلاع $meters م)؟';
+  }
+
+  @override
+  String uploadFlyConfirmBody(int count) {
+    return 'Upload $count waypoints to the live K++ and start Auto?';
   }
 
   @override
