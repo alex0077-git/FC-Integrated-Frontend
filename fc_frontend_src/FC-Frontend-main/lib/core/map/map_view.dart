@@ -162,13 +162,22 @@ class _MapModeStackState extends ConsumerState<MapModeStack> {
 }
 
 class MapStyleToggle extends StatelessWidget {
-  const MapStyleToggle({super.key});
+  const MapStyleToggle({
+    super.key,
+    this.alignment = Alignment.bottomLeft,
+    this.padding = const EdgeInsets.all(12),
+  });
+
+  /// Start / fly maps keep bottom-left. Ground Plan uses top-left so it does
+  /// not sit under the coverage joystick / reopen chip.
+  final Alignment alignment;
+  final EdgeInsets padding;
 
   @override
   Widget build(BuildContext context) {
-    return const Align(
-      alignment: Alignment.bottomLeft,
-      child: Padding(padding: EdgeInsets.all(12), child: MapStyleButton()),
+    return Align(
+      alignment: alignment,
+      child: Padding(padding: padding, child: const MapStyleButton()),
     );
   }
 }
