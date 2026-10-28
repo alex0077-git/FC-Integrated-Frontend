@@ -9,9 +9,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// map. The stick moves on its own; the spray path follows on the coverage
 /// timer.
 class CoverageAdjustControls extends ConsumerWidget {
-  const CoverageAdjustControls({super.key, this.gap = 8});
+  const CoverageAdjustControls({super.key, this.gap = 8, this.onClose});
 
   final double gap;
+
+  /// Same idea as closing Boundary / Obstacles — hides this panel until reopened.
+  final VoidCallback? onClose;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -21,7 +24,23 @@ class CoverageAdjustControls extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(l10n.coverageAdjust, style: Theme.of(context).textTheme.titleSmall),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                l10n.coverageAdjust,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+            ),
+            if (onClose != null)
+              IconButton(
+                tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+                visualDensity: VisualDensity.compact,
+                onPressed: onClose,
+                icon: const Icon(Icons.close),
+              ),
+          ],
+        ),
         SizedBox(height: gap),
         Row(
           children: [
